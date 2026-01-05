@@ -1,0 +1,312 @@
+version: '3.7'
+
+services:
+  database:
+    image: postgres:18.1
+    container_name: database
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: fightpicker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # sql init scripts run in alphabetical order
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro,Z
+      - ./db/load_users.sql:/docker-entrypoint-initdb.d/02-load-users.sql:ro,Z
+      - ./db/load_roles.sql:/docker-entrypoint-initdb.d/03-load-roles.sql:ro,Z
+      - ./db/load_fighters.sql:/docker-entrypoint-initdb.d/04-load-fighters.sql:ro,Z
+    networks:
+      - fightpicker
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    command:
+      - redis-server
+      - /usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+    volumes:
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro,Z
+      - redis-data:/data:Z
+    networks:
+      - fightpicker
+    restart: unless-stopped
+
+  kafka:
+    image: apache/kafka:4.1.1
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - 9092:9092
+      - 29092:29092
+    environment:
+      CLUSTER_ID: fightpicker
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+
+      # Listeners
+      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:9092,EXTERNAL://localhost:29092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT'
+
+      # Dev Settings
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - fightpicker
+
+  kafka-init:
+      image: apache/kafka:4.1.1
+      container_name: kafka-init
+      depends_on:
+        - kafka
+      entrypoint: ["/bin/bash", "-c"]
+      command: |
+        "
+        echo 'Waiting for Kafka to be ready...'
+        # Give the broker time to initialize Kraft and open the port
+        sleep 15
+
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic media-user-profile-picture-uploads --partitions 3 --replication-factor 1
+
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic media-user-profile-picture-uploads.dlq --partitions 1 --replication-factor 1
+
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic users-user-created --partitions 3 --replication-factor 1
+
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic users-user-created.dlq --partitions 1 --replication-factor 1
+
+        echo 'Topics created successfully.'
+        "
+      networks:
+        - fightpicker
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: test_key
+      MINIO_ROOT_PASSWORD: test_secret
+      MINIO_CONSOLE_PORT: "9001"
+
+      MINIO_NOTIFY_KAFKA_ENABLE: on
+      MINIO_NOTIFY_KAFKA_BROKERS: kafka:9092
+      MINIO_NOTIFY_KAFKA_TOPIC: media-user-profile-picture-uploads
+      MINIO_NOTIFY_KAFKA_QUEUE_DIR: /tmp/minio-kafka
+      MINIO_NOTIFY_KAFKA_QUEUE_LIMIT: "10000"
+    ports:
+      - 9000:9000   # S3 API
+      - 9001:9001   # Web console
+    volumes:
+      - minio-data:/data:Z
+    networks:
+      - fightpicker
+    restart: unless-stopped
+
+  minio-init:
+      image: quay.io/minio/mc:latest
+      depends_on:
+        - kafka
+        - minio
+      entrypoint: ["/bin/bash", "-c"]
+      command: |
+        "
+        # 1. Wait for MinIO & Kafka ports to be reachable
+        echo 'Waiting for services...';
+        sleep 15;
+
+        # 2. Alias setup (this is essentially 'logging in' to MinIO)
+        until mc alias set local http://minio:9000 test_key test_secret; do sleep 2; done;
+
+        # 3. Create Buckets
+        mc mb -p local/fightpicker-media || true;
+        mc mb -p local/fightpicker-media-raw || true;
+        mc anonymous set download local/fightpicker-media;
+
+        # 4. Apply Kafka Config with retry loop (handles the 'connection refused')
+        echo 'Configuring Kafka target...';
+        until mc admin config set local notify_kafka:media \
+          brokers='kafka:9092' \
+          topic='media-user-profile-picture-uploads' \
+          queue_dir='/tmp/minio-kafka' \
+          queue_limit='10000';
+        do
+          echo 'Kafka handshake failed (likely broker starting up), retrying in 5s...';
+          sleep 5;
+        done;
+
+        # 5. Restart MinIO
+        echo 'Restarting MinIO server...';
+        mc admin service restart local --json;
+        sleep 10;
+
+        # 6. Add event trigger
+        echo 'Adding bucket event...';
+        mc event add local/fightpicker-media-raw arn:minio:sqs::media:kafka --event put --prefix users;
+
+        echo 'Initialization complete!';
+        "
+      networks:
+        - fightpicker
+
+  # --- Mail Server for testing email integration locally --- #
+  mailpit:
+      image: axllent/mailpit:v1.28
+      container_name: mailpit
+      restart: unless-stopped
+      volumes:
+          - mailpit-data:/data
+      ports:
+          - 8025:8025
+          - 1025:1025
+      environment:
+          MP_MAX_MESSAGES: 1000
+          MP_DATABASE: /data/mailpit.db
+          MP_SMTP_AUTH_ACCEPT_ANY: 1
+          MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  # --- Observability Stack ---
+  # Uncomment the following block to enable the all in one LGTM (logs, graphs, traces, metrics) stack rather than individual components
+  # Note: LGTM is experimental and may not be stable for production use
+  # lgtm:
+  #     image: grafana/otel-lgtm:latest
+  #     container_name: lgtm
+  #     ports:
+  #       # Grafana UI
+  #       - "3000:3000" 
+  #       # Loki (for logcli)
+  #       - "3100:3100" 
+  #       # OTel Collector gRPC (Your app sends logs here)
+  #       - "4317:4317" 
+  #     # Use the same network as your application for easy communication
+  #     networks:
+  #       - fightpicker
+  #     restart: unless-stopped
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    volumes:
+      - ./config/observability/config.alloy:/etc/alloy/config.alloy:Z
+    command:
+      - run
+      - --feature.community-components.enabled
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --stability.level=experimental
+    ports:
+      - 4317:4317       # OTLP gRPC ingest
+      - 4141:4141       # Pyroscope HTTP ingest
+      - 12345:12345     # Alloy admin HTTP
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
+      - pyroscope
+    networks:
+      - fightpicker
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    command: ["-config.file=/etc/loki/loki.yaml"]
+    volumes:
+      - ./config/observability/loki.yaml:/etc/loki/loki.yaml:Z
+      - loki-data:/loki:rw,Z
+    ports:
+      - 3100:3100
+    extra_hosts:
+      - loki:127.0.0.1
+    expose:
+      - "7946/udp"
+    networks:
+      - fightpicker
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./config/observability/tempo.yaml:/etc/tempo/tempo.yaml:Z
+      - tempo-data:/var/tempo:rw,Z
+    ports:
+      - 3200:3200     # Tempo HTTP query
+    networks:
+      - fightpicker
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./config/observability/prometheus.yaml:/etc/prometheus/prometheus.yaml:Z
+      - prometheus-data:/prometheus:rw,Z
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-remote-write-receiver'
+    ports:
+      - 9090:9090
+    networks:
+      - fightpicker
+
+  pyroscope:
+    image: grafana/pyroscope:main-f27dc74
+    container_name: pyroscope
+    volumes:
+      - ./config/observability/pyroscope.yaml:/etc/pyroscope/pyroscope.yaml:Z
+      - pyroscope-data:/var/lib/pyroscope:rw,Z
+    command: 
+      - server
+    ports:
+      - 4040:4040
+    networks:
+      - fightpicker
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_ENABLE_GZIP=true
+      - GF_USERS_DEFAULT_THEME=light
+      - GF_PLUGINS_PREINSTALL_SYNC=grafana-pyroscope-app
+    ports:
+      - 3000:3000
+    volumes:
+      - ./config/observability/grafana/provisioning:/etc/grafana/provisioning:ro,Z
+      - grafana-data:/var/lib/grafana:rw,Z
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
+    networks:
+      - fightpicker
+
+volumes:
+  loki-data:
+  tempo-data:
+  prometheus-data:
+  grafana-data:
+  pgdata:
+  mailpit-data:
+  pyroscope-data:
+  redis-data:
+  minio-data:
+  kafka-data:
+
+networks:
+  fightpicker:
+    driver: bridge

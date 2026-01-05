@@ -1,0 +1,102 @@
+// Grafana Alloy Configuration for OTLP Ingest and Routing to Loki, Tempo, and Prometheus
+
+// --- 1. OTLP Receiver (Source) ---
+// Listens for OpenTelemetry Protocol (OTLP) data on gRPC (4317) and HTTP (4317).
+otelcol.receiver.otlp "default" {
+  grpc {}
+  http {}
+
+  output {
+    // Logs flow: receiver -> batch processor
+    logs = [otelcol.processor.batch.logs_batch.input]
+
+    // Traces flow: receiver -> tempo exporter
+    traces = [otelcol.exporter.otlp.tempo_exporter.input]
+
+    // Metrics flow: receiver -> prometheus remote write exporter
+    metrics = [otelcol.exporter.prometheus.metrics_bridge.input]
+  }
+}
+
+// --- 2. LOGS PIPELINE: Receiver -> Batch -> Loki Bridge -> Loki Write ---
+// 2a. Logs Batch Processor: Buffers OTLP logs before conversion
+otelcol.processor.batch "logs_batch" {
+  timeout = "1s"
+  send_batch_size = 100
+  // Input is implicitly received from otelcol.receiver.otlp.default
+
+  output {
+  // Send batched logs to the Loki Bridge Exporter
+  logs = [otelcol.exporter.loki.loki_bridge.input]
+  }
+}
+
+// 2b. Loki Bridge Exporter: Converts OTLP Logs to Loki format
+otelcol.exporter.loki "loki_bridge" {
+  // Send the converted logs to the Loki Write component's receiver input
+  forward_to = [loki.write.loki_exporter.receiver]
+}
+
+// 2c. Loki Writer (Sink): Sends formatted logs to the Loki service
+loki.write "loki_exporter" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+    tenant_id = "tenant_123"
+  }
+}
+
+// --- 3. TRACES PIPELINE: Receiver -> Tempo Exporter (OTLP) ---
+// Traces Exporter (Sink): Sends OTLP traces directly to Tempo's OTLP HTTP endpoint (4318)
+otelcol.exporter.otlp "tempo_exporter" {
+  // Input is implicitly received from otelcol.receiver.otlp.default
+
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
+    headers = {
+      "X-Scope-OrgID" = "tenant_123",
+    }
+  }
+}
+
+// --- 4. METRICS PIPELINE: Receiver -> Metrics Bridge -> Prometheus Remote Write ---
+// 4a. Metrics Bridge Exporter: Converts OTLP Metrics to Prometheus format
+// This component takes OTLP metrics from the receiver and outputs Prometheus-compatible metrics.
+otelcol.exporter.prometheus "metrics_bridge" {
+// Send the Prometheus-compatible data to the remote_write component's receiver
+  forward_to = [prometheus.remote_write.prometheus_exporter.receiver]
+}
+
+// 4b. Metrics Exporter (Sink): Sends Prometheus metrics to Prometheus (9090)
+prometheus.remote_write "prometheus_exporter" {
+// receiver is implicitly received from otelcol.exporter.prometheus.metrics_bridge
+
+// endpoint attribute must be an endpoint block with a url attribute
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+    headers = {
+      "X-Scope-OrgID" = "tenant_123",
+    }
+  }
+}
+
+// --- 5. PROFILES PIPELINE: Receiver -> Pyroscope Exporter ---
+pyroscope.receive_http "pyro_receiver" {
+  http {
+    listen_address = "0.0.0.0"
+    listen_port = "4141"
+  }
+
+  forward_to = [pyroscope.write.pyro_exporter.receiver]                                                                     
+}
+
+pyroscope.write "pyro_exporter" {
+  endpoint {
+    url = "http://pyroscope:4040"
+    headers = {
+      "X-Scope-OrgID" = "tenant_123",
+    }
+  }
+}

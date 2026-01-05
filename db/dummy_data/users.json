@@ -1,0 +1,112 @@
+[
+    {
+        "email": "alex.hunter@example.com",
+        "first_name": "Alex",
+        "last_name": "Hunter",
+        "username": "alexh",
+        "bio": "Coffee lover and tech enthusiast.",
+        "profile_picture": "https://example.com/profiles/alexh.jpg",
+        "dob": "1992-05-14",
+        "location": "New York, USA",
+        "is_admin": false
+    },
+    {
+        "email": "sara.james@example.com",
+        "first_name": "Sara",
+        "last_name": "James",
+        "username": "sarahj",
+        "bio": "Traveler, writer, dreamer.",
+        "profile_picture": null,
+        "dob": "1988-11-22",
+        "location": "Toronto, Canada",
+        "is_admin": true
+    },
+    {
+        "email": "jamie.cole@example.net",
+        "first_name": "Jamie",
+        "last_name": "Cole",
+        "username": "jamie_c",
+        "bio": null,
+        "profile_picture": "https://example.com/profiles/jamie.jpg",
+        "dob": "1990-03-10",
+        "location": "London, UK",
+        "is_admin": false
+    },
+    {
+        "email": "lucas.ward@example.com",
+        "first_name": "Lucas",
+        "last_name": "Ward",
+        "username": "lward",
+        "bio": "MMA analyst and stats nerd.",
+        "profile_picture": "https://example.com/profiles/lward.png",
+        "dob": "1985-01-05",
+        "location": "Las Vegas, USA",
+        "is_admin": true
+    },
+    {
+        "email": "emily.chan@example.org",
+        "first_name": "Emily",
+        "last_name": "Chan",
+        "username": "emchan88",
+        "bio": null,
+        "profile_picture": null,
+        "dob": "1996-09-17",
+        "location": "Singapore",
+        "is_admin": false
+    },
+    {
+        "email": "tom.reed@example.com",
+        "first_name": "Tom",
+        "last_name": "Reed",
+        "username": "tomreed",
+        "bio": "Coach and former fighter.",
+        "profile_picture": "https://example.com/profiles/tomr.jpg",
+        "dob": "1982-07-21",
+        "location": "Sydney, Australia",
+        "is_admin": false
+    },
+    {
+        "email": "nina.kim@example.co",
+        "first_name": "Nina",
+        "last_name": "Kim",
+        "username": "ninak",
+        "bio": "Podcast host and analyst.",
+        "profile_picture": null,
+        "dob": "1993-12-03",
+        "location": "Seoul, South Korea",
+        "is_admin": false
+    },
+    {
+        "email": "ryan.bell@example.com",
+        "first_name": "Ryan",
+        "last_name": "Bell",
+        "username": "rbell99",
+        "bio": "Fight card curator.",
+        "profile_picture": "https://example.com/profiles/ryanb.jpg",
+        "dob": "1989-06-25",
+        "location": "Chicago, USA",
+        "is_admin": false
+    },
+    {
+        "email": "victoria.lane@example.org",
+        "first_name": "Victoria",
+        "last_name": "Lane",
+        "username": "vlanex",
+        "bio": null,
+        "profile_picture": "https://example.com/profiles/vlane.jpg",
+        "dob": "1991-04-30",
+        "location": "Berlin, Germany",
+        "is_admin": false
+    },
+    {
+        "email": "matt.stone@example.com",
+        "first_name": "Matt",
+        "last_name": "Stone",
+        "username": "mstone",
+        "bio": "Fighter manager and promoter.",
+        "profile_picture": null,
+        "dob": "1980-02-14",
+        "location": "Dublin, Ireland",
+        "is_admin": true
+    }
+]

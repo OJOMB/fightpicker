@@ -1,0 +1,1089 @@
+openapi: 3.0.0
+info:
+  title: fightpicker API
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+security:
+  - BearerAuth: []
+
+# ---------------------------------------------------------------------------------#
+# OperationIds conform to the pattern: {version}.{resource}.{http_method}.{action} #
+# all lowercase and snake case where required, e.g. v1.users.get.list              #
+# ---------------------------------------------------------------------------------#
+
+paths:
+  #------------------------#
+  #     AUTHENTICATION     #
+  #------------------------#
+
+  /auth/login:
+    post:
+      security: []
+      summary: User login
+      operationId: v1.auth.post.login
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Account locked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/refresh:
+    post:
+      security: []
+      summary: Refresh access token
+      operationId: v1.auth.post.refresh
+      tags:
+        - auth
+      description: >
+        Issues a new access token using a valid refresh token.
+        The refresh token is provided via an HttpOnly cookie.
+      responses:
+        '200':
+          description: Access token refreshed successfully
+          headers:
+            Set-Cookie:
+              description: Rotated refresh token
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Refresh token revoked or account locked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/logout:
+    post:
+      summary: Logout user
+      operationId: v1.auth.post.logout
+      tags:
+        - auth
+      security: []
+      description: >
+        Logs the user out by revoking the refresh token and clearing the refresh cookie.
+      responses:
+        '204':
+          description: Logged out successfully
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  #-------------------------#
+  #      USERS PATHS        #
+  #-------------------------#
+
+  /users:
+    get:
+      summary: List users paginated
+      description: |
+        Returns a paginated list of users.
+        Supports cursor-based pagination using `last_seen_id` and `page_size` parameters.
+        You can also filter by `email` or `username`. These filter cannot be used in combination with pagination parameters (last_seen_id, page_size).
+        The response structure remains the same regardless of whether you use filtering or pagination.
+        If no users match the criteria, an empty array is returned.
+      operationId: v1.users.get.list
+      parameters:
+        - name: last_seen_id
+          in: query
+          required: false
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+          description: |
+            will return a user matching the email exactly or empty array if none found (admin only)
+            cannot be used in combination with the pagination parameters (last_seen_id, page_size)
+        - name: username
+          in: query
+          required: false
+          schema:
+            type: string
+          description: |
+            will return a user matching the username exactly or empty array if none found
+            cannot be used in combination with the pagination parameters (last_seen_id, page_size)
+      tags:
+        - users
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUsersResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    post:
+      security: []
+      summary: Create a new user
+      operationId: v1.users.post.create
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateReq'
+      responses:
+        '201':
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Email or username already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /users/verify:
+    get:
+      security: []
+      summary: Verify user email
+      operationId: v1.users.get.verify_email
+      tags:
+        - users
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Email verified successfully
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /users/{user_id}:
+    get:
+      summary: Get user by ID
+      operationId: v1.users.get.get
+      tags:
+        - users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    patch:
+      summary: Update user by ID
+      operationId: updateUserByIDV1
+      tags:
+        - users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateReq'
+      responses:
+        '200':
+          description: User successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: the new email or username already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      summary: Delete user by ID
+      operationId: v1.users.delete.delete
+      tags:
+        - users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+      responses:
+        '204':
+          description: User successfully deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /users/{user_id}/follow:
+    put:
+      description: creates a follow relationship between the authenticated user and the specified user
+      summary: Follow a user
+      operationId: v1.users.put.follow
+      tags:
+        - users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+      responses:
+        '204':
+          description: Successfully followed user
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      description: removes the follow relationship between the authenticated user and the specified user if it exists.
+      summary: Unfollow a user
+      operationId: v1.users.delete.unfollow
+      tags:
+        - users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+      responses:
+        '204':
+          description: Successfully unfollowed user
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /users/{user_id}/followers:
+    get:
+      summary: List followers of a user in paginated form in descending order of follow time
+      operationId: v1.users.get.followers
+      tags:
+        - users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+        - name: last_seen_id
+          in: query
+          required: false
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: A list of users following the specified user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUsersResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /users/{user_id}/followees:
+    get:
+      summary: List users followed by a user in paginated form in descending order of follow time
+      operationId: v1.users.get.following
+      tags:
+        - users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+        - name: last_seen_id
+          in: query
+          required: false
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: A list of users followed by the specified user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUsersResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /users/{user_id}/profile-picture/upload-url:
+    post:
+      summary: Generate a pre-signed URL for uploading a profile picture
+      operationId: v1.users.post.generate_presigned_url
+      tags:
+        - users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfilePictureUploadURLRequest'
+      responses:
+        '200':
+          description: Pre-signed upload URL generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfilePictureUploadURLResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  #-------------------------#
+  #     FIGHTERS PATHS      #
+  #-------------------------#
+
+  /fighters/{fighter_id}:
+    get:
+      summary: Get fighter by ID
+      operationId: v1.fighters.get.get
+      tags:
+        - fighters
+      parameters:
+        - name: fighter_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-import:
+              path: github.com/gofrs/uuid
+      responses:
+        '200':
+          description: Fighter found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FighterResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Fighter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    # -------------------------#
+    #     AUTH STRUCTURES      #
+    # -------------------------#
+
+    LoginRequest:
+      description: User login request body
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          format: jwt
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      headers:
+        Set-Cookie:
+          description: Refresh token cookie
+          schema:
+            type: string
+            example: "refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth; Max-Age=86400"
+      required:
+        - access_token
+
+    # ----------------------------------#
+    #     REUSABLE DATA STRUCTURES      #
+    # ----------------------------------#
+
+    SimpleDate:
+      type: string
+      format: date
+      example: "1990-01-01"
+
+    # ------------------------#
+    #     USER STRUCTURES     #
+    # ------------------------#
+
+    UserCreateReq:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        username:
+          type: string
+        dob:
+          $ref: '#/components/schemas/SimpleDate'
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+            - other
+        location:
+          type: string
+        bio:
+          type: string
+        password:
+          type: string
+          format: password
+      required:
+        - email
+        - first_name
+        - last_name
+        - username
+        - dob
+        - gender
+        - password
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          x-go-type: uuid.UUID
+          x-go-import:
+            path: github.com/gofrs/uuid
+        email:
+          type: string
+          format: email
+        email_verified:
+          type: boolean
+        first_name:
+          type: string
+        last_name:
+          type: string
+        username:
+          type: string
+        dob:
+          $ref: '#/components/schemas/SimpleDate'
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+            - other
+        location:
+          type: string
+        bio:
+          type: string
+        profile_picture:
+          description: Presigned URL to access the user's profile picture - may be null if a profile picture has not been set
+          type: string
+          format: uri
+        last_login:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - bio
+        - gender
+        - created_at
+        - updated_at
+
+    UserProfilePictureUploadURLRequest:
+      type: object
+      properties:
+        content_type:
+          type: string
+          description: MIME type of the profile picture (e.g., image/jpeg, image/png)
+      required:
+        - content_type
+
+    UserProfilePictureUploadURLResponse:
+      type: object
+      properties:
+        upload_url:
+          type: string
+          format: uri
+        signed_header:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - upload_url
+        - signed_header
+
+    ListUsersResponse:
+      description: |
+        Paginated list of users.
+        presigned profile picture URLs are ommitted in this response for performance reasons.
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        last_seen_id:
+          type: string
+          x-go-type: uuid.UUID
+          x-go-import:
+            path: github.com/gofrs/uuid
+          nullable: true
+        page_size:
+          type: integer
+        total_count:
+          type: integer
+          description: |
+            Total number of users available (ignoring pagination). Useful for clients to understand the size of the dataset.
+            if filtering by email or username is used, this will be either 0 or 1.
+      required:
+        - users
+        - page_size
+        - last_seen_id
+        - total_count
+
+    UserUpdateReq:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        username:
+          type: string
+        dob:
+          $ref: '#/components/schemas/SimpleDate'
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+            - other
+        location:
+          type: string
+        bio:
+          type: string
+        password:
+          type: string
+          format: password
+      anyOf:
+        - required: [email]
+        - required: [first_name]
+        - required: [last_name]
+        - required: [username]
+        - required: [dob]
+        - required: [location]
+        - required: [bio]
+        - required: [password]
+
+    # -------------------------#
+    #     FIGHTER STRUCTURES   #
+    # -------------------------#
+
+    FighterResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          x-go-type: uuid.UUID
+          x-go-import:
+            path: github.com/gofrs/uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        nickname:
+          type: string
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+            - other
+        dob:
+          $ref: '#/components/schemas/SimpleDate'
+        height:
+          type: number
+          format: double
+        weight:
+          type: number
+          format: double
+        reach:
+          type: number
+          format: double
+        stance:
+          type: string
+        country:
+          type: string
+        fighting_out_of:
+          type: string
+        bio:
+          type: string
+        profile_picture:
+          type: string
+          format: uri
+        wins:
+          type: integer
+        losses:
+          type: integer
+        draws:
+          type: integer
+        disqualifications:
+          type: integer
+        no_contests:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          x-go-type: uuid.UUID
+          x-go-import:
+            path: github.com/gofrs/uuid
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          x-go-type: uuid.UUID
+          x-go-import:
+            path: github.com/gofrs/uuid
+      required:
+        - id
+        - first_name
+        - last_name
+        - nickname
+        - gender
+        - dob
+        - height
+        - weight
+        - reach
+        - stance
+        - country
+        - fighting_out_of
+        - bio
+        - profile_picture
+        - wins
+        - losses
+        - draws
+        - disqualifications
+        - no_contests
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+
+    # -------------------------#
+    #     ERROR STRUCTURES     #
+    # -------------------------#
+
+    ErrorEnvelope:
+      type: object
+      description: Standard API error wrapper
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+      required:
+        - error
+      example:
+        error:
+          code: "BAD_REQUEST"
+          message: "Email is required."
+          request_id: "c2f0bad52b9f4fb3"
+
+    ErrorObject:
+      type: object
+      description: Machine-readable error structure
+      properties:
+        code:
+          type: string
+          description: Application-level error code (NOT HTTP status)
+          example: "INVALID_INPUT"
+        message:
+          type: string
+          description: Human-readable explanation of the error
+          example: "Email is required."
+        request_id:
+          type: string
+          description: Correlation ID for tracing the request
+          example: "c2f0bad52b9f4fb3"
+      required:
+        - code
+        - message
+        - request_id

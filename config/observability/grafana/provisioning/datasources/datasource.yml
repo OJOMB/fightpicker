@@ -1,0 +1,94 @@
+apiVersion: 1
+
+datasources:
+
+  # --- 1. Prometheus Data Source (Metrics) ---
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus_ds
+    access: proxy
+    orgId: 1
+    url: http://prometheus:9090
+    isDefault: true
+    version: 1
+    editable: true
+    jsonData:
+      httpHeaderName1: "X-Scope-OrgID"
+    secureJsonData:
+      httpHeaderValue1: "tenant_123"
+
+  # --- 2. Loki Data Source (Logs) ---
+  - name: Loki
+    type: loki
+    uid: loki_ds
+    access: proxy
+    orgId: 1
+    url: http://loki:3100
+    version: 1
+    editable: true
+    jsonData:
+      httpHeaderName1: "X-Scope-OrgID"
+    secureJsonData:
+      httpHeaderValue1: "tenant_123"
+
+  # --- 3. Tempo Data Source (Traces) ---
+  - name: Tempo
+    type: tempo
+    uid: tempo_ds
+    access: proxy
+    orgId: 1
+    url: http://tempo:3200
+    version: 1
+    editable: true
+
+    jsonData:
+      # Link traces -> logs
+      tracesToLogs:
+        datasourceUid: loki_ds
+        filterByTraceID: true
+        filterBySpanID: false
+
+      # Link traces -> metrics
+      tracesToMetrics:
+        datasourceUid: prometheus_ds
+
+      # Link service map → metrics (recommended)
+      serviceMap:
+        datasourceUid: prometheus_ds
+
+      # Loki log queries should treat this field as traceID
+      lokiSearch:
+        spanIdField: span_id
+        traceIdField: traceID
+
+  # --- 4. Pyroscope Data Source (Profiles) ---
+  - name: Pyroscope
+    type: grafana-pyroscope-datasource
+    access: proxy
+    orgId: 1
+    uid: pyroscope
+    version: 1
+    editable: true
+    url: http://pyroscope:4040
+    jsonData:
+      httpHeaderName1: "X-Scope-OrgID"
+    secureJsonData:
+      httpHeaderValue1: "tenant_123"
+
+
+
+  # --- 5. Postgres Data Source (Database) ---
+  - name: Postgres
+    type: postgres
+    uid: postgres_ds
+    access: proxy
+    orgId: 1
+    url: database:5432
+    database: fightpicker
+    user: postgres
+    secureJsonData:
+      password: postgres
+    version: 1
+    editable: true
+    jsonData:
+      sslmode: "disable"  

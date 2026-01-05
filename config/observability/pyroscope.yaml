@@ -1,0 +1,60 @@
+# pyroscope.yaml
+#
+# Configuration for the Pyroscope server component. This file enables local
+# persistence and multi-tenancy to work with the Grafana datasource setup.
+
+# ==============================================================================
+# 1. CORE CONFIGURATION
+# ==============================================================================
+
+# Use 'all' to run Pyroscope in single-binary mode, enabling all core services
+# (distributor, querier, ingester, etc.).
+target: all
+
+# ==============================================================================
+# 2. AUTHENTICATION / MULTI-TENANCY (CRITICAL FOR YOUR STACK)
+# ==============================================================================
+
+# When set to true, incoming HTTP requests (queries and ingests) MUST specify
+# tenant ID in the 'X-Scope-OrgId' header.
+# This aligns Pyroscope with your Loki, Prometheus, and Grafana configurations.
+multitenancy_enabled: true
+
+# ==============================================================================
+# 3. PYROSCOPE DATABASE / STORAGE
+# ==============================================================================
+
+pyroscopedb:
+  # Directory used for local storage. This should align with the volume mount 
+  # defined in your docker-compose.yml: /var/lib/pyroscope/data
+  data_path: /var/lib/pyroscope/data
+
+  # Upper limit to the duration of a Pyroscope block. (1 hour)
+  max_block_duration: 1h
+
+  # Example retention policy: 7 days
+  # Note: Retention is based on disk space and time; this setting works with
+  # the storage block below.
+  # The database handles the retention based on available disk space and age.
+
+# ==============================================================================
+# 4. SERVER CONFIGURATION
+# ==============================================================================
+
+server:
+  # The main HTTP listening port for UI, API, and Ingestion.
+  http_listen_port: 4040
+
+# ==============================================================================
+# 5. STORAGE BACKEND
+# ==============================================================================
+
+# Since you are running in Docker Compose with a volume mount, we use the
+# 'filesystem' backend for local persistence.
+storage:
+  backend: filesystem
+
+  filesystem:
+    # Directory used for Pyroscope blocks (should be the same path as above).
+    # This must align with your volume mount.
+    directory: /var/lib/pyroscope/data

@@ -1,0 +1,38 @@
+server:
+  http_listen_port: 3200
+
+compactor:
+  compaction:
+    block_retention: 168h  # 7 days
+    compacted_block_retention: 168h
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          endpoint: 0.0.0.0:4318 
+        grpc:
+          endpoint: 0.0.0.0:4317
+
+ingester:
+  max_block_bytes: 100_000_000
+  max_block_duration: 10m
+
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
+
+metrics_generator:
+  processor:
+    service_graphs:
+    span_metrics:
+  storage:
+    path: /var/tempo/metrics
+
+query_frontend:
+  max_outstanding_per_tenant: 2000

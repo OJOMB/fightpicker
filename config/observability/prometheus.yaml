@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: "fightpicker-local"
+
+# Local TSDB tuned for durability + performance
+storage:
+  tsdb:
+    out_of_order_time_window: 30m
