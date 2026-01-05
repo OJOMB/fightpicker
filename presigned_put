@@ -1,4 +1,4 @@
 curl -X PUT \
-  --upload-file /home/oscar_oram/Pictures/Fd102016.jpg \
+  --upload-file ${FILE_PATH} \
   -H 'Content-Type: image/jpeg' \
- 'http://localhost:9000/fightpicker-media-raw/users/019b7a3a-f344-747f-a1a9-d4343c95a4e9/media/profile_image.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=test_key%2F20260101%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Date=20260101T154653Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&x-id=PutObject&X-Amz-Signature=d4a3949149b88ff9b8509efa3b8cd1b33ad31ada6370179c639fca259454a424'
+ '${PRESIGNED_URL}'
