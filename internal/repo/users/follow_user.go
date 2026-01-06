@@ -12,8 +12,10 @@ import (
 )
 
 // FollowUser creates a follow relationship between the follower and followee in the database.
-func (r *Repo) FollowUser(ctx context.Context, followerID, followeeID uuid.UUID) error {
+// the followID is a unique identifier for the follow relationship used for pagination consistency and simplicity.
+func (r *Repo) FollowUser(ctx context.Context, followID, followerID, followeeID uuid.UUID) error {
 	params := postgres.FollowUserParams{
+		ID:         followID,
 		FollowerID: followerID,
 		FolloweeID: followeeID,
 		CreatedAt: pgtype.Timestamptz{
