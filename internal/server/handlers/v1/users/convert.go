@@ -5,30 +5,32 @@ import (
 	"github.com/oapi-codegen/runtime/types"
 
 	"github.com/OJOMB/fightpicker/internal/server/dtos"
-	service "github.com/OJOMB/fightpicker/internal/service/users"
+	"github.com/OJOMB/fightpicker/internal/service"
+	usersservice "github.com/OJOMB/fightpicker/internal/service/users"
 )
 
-func userCreateRequestDTOtoIDO(ucr dtos.UserCreateReq) service.User {
-	return service.User{
+func userCreateRequestDTOtoIDO(ucr dtos.UserCreateReq) usersservice.User {
+	return usersservice.User{
 		Email:        string(ucr.Email),
 		FirstName:    ucr.FirstName,
 		LastName:     ucr.LastName,
 		Username:     ucr.Username,
 		DOB:          ucr.Dob.Time,
+		Gender:       service.GenderFromString(string(ucr.Gender)),
 		Location:     deref.OrDefault(ucr.Location),
 		Bio:          deref.OrDefault(ucr.Bio),
 		PasswordHash: ucr.Password,
 	}
 }
 
-func userUpdateDTOToIDO(ucr dtos.UserUpdateReq) service.UserUpdate {
+func userUpdateDTOToIDO(ucr dtos.UserUpdateReq) usersservice.UserUpdate {
 	var email *string
 	if ucr.Email != nil {
 		e := string(*ucr.Email)
 		email = &e
 	}
 
-	return service.UserUpdate{
+	return usersservice.UserUpdate{
 		Email:     email,
 		FirstName: ucr.FirstName,
 		LastName:  ucr.LastName,
@@ -42,7 +44,7 @@ func userUpdateDTOToIDO(ucr dtos.UserUpdateReq) service.UserUpdate {
 // userIDOToDTO converts a service.User to a dtos.UserResponse.
 // It omits sensitive fields such as Email, LastName, Password, and DOB
 // if they are empty or zeroed.
-func userIDOToDTO(u service.User) dtos.UserResponse {
+func userIDOToDTO(u usersservice.User) dtos.UserResponse {
 	var email *types.Email
 	if u.Email != "" {
 		e := types.Email(u.Email)
@@ -83,6 +85,7 @@ func userIDOToDTO(u service.User) dtos.UserResponse {
 		Dob:            dob,
 		Location:       location,
 		Bio:            u.Bio,
+		Gender:         dtos.UserResponseGender(u.Gender.String()),
 		ProfilePicture: profilePicture,
 		CreatedAt:      u.CreatedAt,
 		UpdatedAt:      u.UpdatedAt,
