@@ -106,7 +106,7 @@ func (s *Service) SendVerificationEmail(ctx context.Context, userID uuid.UUID, f
 		return ErrInternalError
 	}
 
-	verificationLink := fmt.Sprintf("%s.com/api/v1/users/%s/verify?token=%s", s.host, userID.String(), token)
+	verificationLink := fmt.Sprintf("%s/api/v1/users/verify?token=%s", s.domain, token)
 
 	tmpl, err := template.New("email").Parse(verificationEmailBody)
 	if err != nil {

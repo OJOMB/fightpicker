@@ -324,7 +324,7 @@ func main() {
 		baseLogger.InfoContext(ctx, "users API enabled, initializing users service and handler")
 
 		imageProcessor := mediaprocessor.NewImageProcessor()
-		usersService, err := serviceusers.NewService(usersRepo, idGen, dateTimeTool, authTool, imageProcessor, cfg.Domain, cfg.Email.AddressNoReply, baseLogger)
+		usersService, err := serviceusers.NewService(usersRepo, idGen, dateTimeTool, authTool, imageProcessor, fmt.Sprintf("http://%s:%d", cfg.Domain, cfg.Port), cfg.Email.AddressNoReply, baseLogger)
 		if err != nil {
 			baseLogger.FatalContext(ctx, "failed to create user service", "error", err)
 		}

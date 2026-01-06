@@ -55,7 +55,7 @@ type ImageProcessor interface {
 // Service responsible for user-related business logic.
 type Service struct {
 	repo                Repo
-	host                string
+	domain              string
 	authTool            AuthTool
 	regexEmail          *regexp.Regexp
 	idGen               IDGenerator
@@ -68,7 +68,7 @@ type Service struct {
 }
 
 // NewService creates a new instance of the user service.
-func NewService(repo Repo, idGen IDGenerator, now datetimes.Now, authTool AuthTool, imageProcessor ImageProcessor, host, emailAddressNoReply string, logger logs.Logger) (*Service, error) {
+func NewService(repo Repo, idGen IDGenerator, now datetimes.Now, authTool AuthTool, imageProcessor ImageProcessor, domain, emailAddressNoReply string, logger logs.Logger) (*Service, error) {
 	if repo == nil {
 		return nil, ErrNilRepo
 	}
@@ -110,7 +110,7 @@ func NewService(repo Repo, idGen IDGenerator, now datetimes.Now, authTool AuthTo
 		dateTimeTool:        now,
 		imageProcessor:      imageProcessor,
 		authTool:            authTool,
-		host:                host,
+		domain:              domain,
 		emailAddressNoReply: emailAddressNoReply,
 
 		metrics: metrics,
@@ -135,5 +135,5 @@ func (s *Service) injectPresignedGetURLIfNeeded(ctx context.Context, user *User)
 }
 
 func (s *Service) getDefaultProfilePictureURL(user *User) string {
-	return fmt.Sprintf("%s/static/images/default-profile-picture-%s.webp", s.host, user.Gender.String())
+	return fmt.Sprintf("%s/static/images/default-profile-picture-%s.webp", s.domain, user.Gender.String())
 }
