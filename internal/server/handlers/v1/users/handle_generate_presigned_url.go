@@ -14,11 +14,12 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
+// PresignedPutURLGenerator defines the interface for generating presigned PUT URLs.
 type PresignedPutURLGenerator interface {
 	GeneratePresignedPutURL(ctx context.Context, userID uuid.UUID, contentType string) (string, http.Header, error)
 }
 
-// updateUser handles the HTTP PATCH request for the v1 update_user endpoint.
+// generatePresignedURL handles the HTTP POST request for the v1 generate_presigned_url endpoint.
 func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator, logger logs.Logger) http.HandlerFunc {
 	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersUpdate)
 
