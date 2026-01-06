@@ -9,20 +9,22 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
 )
 
-// uuidSentinelMax is a UUID greater than any valid UUID7.
-// UUID7 structure:
-// | 48 bits timestamp | 4 bits version | 12 bits subsec |
-// | 2–3 bits variant  | 62 bits random |
-// the version is always 7 (0111) and the variant bits are either 10 or 11,
-// so the maximum possible UUID7 is ffffffff-ffff-7fff-bfff-ffffffffffff
-var uuidSentinelMax = uuid.Must(uuid.FromString("ffffffff-ffff-7fff-bfff-ffffffffffff"))
-
-func (r *Repo) ListFollowers(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]service.User, error) {
+// ListFollowers retrieves a paginated list of followers for the given user in descending order (newest first).
+// it also returns the total count of followers for that user.
+func (r *Repo) ListFollowers(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]service.User, int, error) {
 	if lastSeenID == nil {
 		// Use uuidSentinelMax to represent the starting point when no lastSeenID is provided
 		// this means we don't need a special case in the query for the first page
 		// we're using UUID7 which sorts lexicographically, so uuidSentinelMax is greater than any valid UUID7
 		lastSeenID = &uuidSentinelMax
+	}
+
+	count, err := r.dbClient.CountFollowers(ctx, userID)
+	if err != nil {
+		return nil, 0, dbErrorToServiceError(err)
+	} else if count == 0 {
+		// user not followed by anyone return empty list
+		return []service.User{}, 0, nil
 	}
 
 	args := postgres.ListFollowersParams{
@@ -33,7 +35,7 @@ func (r *Repo) ListFollowers(ctx context.Context, userID uuid.UUID, pageSize int
 
 	rows, err := r.dbClient.ListFollowers(ctx, args)
 	if err != nil {
-		return nil, dbErrorToServiceError(err)
+		return nil, 0, dbErrorToServiceError(err)
 	}
 
 	users := make([]service.User, len(rows))
@@ -41,5 +43,5 @@ func (r *Repo) ListFollowers(ctx context.Context, userID uuid.UUID, pageSize int
 		users[i] = listFollowersRowDBOToUserIDO(row)
 	}
 
-	return users, nil
+	return users, int(count), nil
 }

@@ -176,8 +176,8 @@ SELECT COUNT(*) AS follower_count
 FROM followers
 WHERE followee_id = $1;
 
--- name: CountFollowing :one
-SELECT COUNT(*) AS following_count
+-- name: CountFollowees :one
+SELECT COUNT(*) AS followee_count
 FROM followers
 WHERE follower_id = $1;
 

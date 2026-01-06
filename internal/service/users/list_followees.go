@@ -9,15 +9,15 @@ import (
 )
 
 type UserFolloweeLister interface {
-	ListFollowees(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]User, error)
+	ListFollowees(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]User, int, error)
 }
 
 // ListFollowees retrieves a paginated list of followees for a given user
 // PI is removed from each followee if the requestor is not an admin.
-func (s *Service) ListFollowees(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]User, error) {
-	followees, err := s.repo.ListFollowees(ctx, userID, pageSize, lastSeenID)
+func (s *Service) ListFollowees(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]User, int, error) {
+	followees, totalCount, err := s.repo.ListFollowees(ctx, userID, pageSize, lastSeenID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	if !contextual.ReqSubjectIsAnAdmin(ctx) {
@@ -28,5 +28,5 @@ func (s *Service) ListFollowees(ctx context.Context, userID uuid.UUID, pageSize 
 
 	// we do not inject presigned URLs for list operations to reduce overhead
 
-	return followees, nil
+	return followees, totalCount, nil
 }

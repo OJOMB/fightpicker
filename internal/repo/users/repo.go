@@ -17,6 +17,14 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
+// uuidSentinelMax is a UUID greater than any valid UUID7.
+// UUID7 structure:
+// | 48 bits timestamp | 4 bits version | 12 bits subsec |
+// | 2–3 bits variant  | 62 bits random |
+// the version is always 7 (0111) and the variant bits are either 10 or 11,
+// so the maximum possible UUID7 is ffffffff-ffff-7fff-bfff-ffffffffffff
+var uuidSentinelMax = uuid.Must(uuid.FromString("ffffffff-ffff-7fff-bfff-ffffffffffff"))
+
 type KafkaClient interface {
 	ProduceMessage(ctx context.Context, key, value []byte) error
 }
@@ -24,7 +32,7 @@ type KafkaClient interface {
 type DBClient interface {
 	AssignRoleToUserByRoleName(ctx context.Context, arg postgres.AssignRoleToUserByRoleNameParams) error
 	CountFollowers(ctx context.Context, followeeID uuid.UUID) (int64, error)
-	CountFollowing(ctx context.Context, followerID uuid.UUID) (int64, error)
+	CountFollowees(ctx context.Context, followerID uuid.UUID) (int64, error)
 	CreateFighter(ctx context.Context, arg postgres.CreateFighterParams) error
 	CreateUser(ctx context.Context, arg postgres.CreateUserParams) error
 	DeleteUserByID(ctx context.Context, id uuid.UUID) error

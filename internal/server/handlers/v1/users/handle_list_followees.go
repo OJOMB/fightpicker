@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gofrs/uuid"
+	"github.com/gorilla/mux"
 
 	"github.com/OJOMB/fightpicker/internal/server/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
@@ -15,7 +16,7 @@ import (
 )
 
 type UserFolloweeLister interface {
-	ListFollowees(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]service.User, error)
+	ListFollowees(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]service.User, int, error)
 }
 
 // listFollowees handles the HTTP GET request for the v1 list_followees endpoint.
@@ -29,7 +30,8 @@ func (h *Handler) listFollowees(svc UserFolloweeLister, logger logs.Logger) http
 		query := r.URL.Query()
 		pageSizeStr := query.Get(v1.QueryParamPageSize)
 		lastSeenIDStr := query.Get(v1.QueryParamLastSeenID)
-		userIDStr := query.Get(v1.QueryParamUserID)
+
+		userIDStr := mux.Vars(r)[v1.QueryParamUserID]
 		userID, err := uuid.FromString(userIDStr)
 		if err != nil {
 			logger.ErrorContext(ctx, "invalid user_id", "error", err)
@@ -66,15 +68,16 @@ func (h *Handler) listFollowees(svc UserFolloweeLister, logger logs.Logger) http
 			}
 		}
 
-		users, err := svc.ListFollowees(ctx, userID, pageSize, lastSeenID)
+		users, totalCount, err := svc.ListFollowees(ctx, userID, pageSize, lastSeenID)
 		if err != nil {
 			h.writeError(ctx, w, err, logger)
 			return
 		}
 
 		resp := dtos.ListUsersResponse{
-			Users:    make([]dtos.UserResponse, len(users)),
-			PageSize: len(users),
+			TotalCount: totalCount,
+			Users:      make([]dtos.UserResponse, len(users)),
+			PageSize:   len(users),
 		}
 		for i, user := range users {
 			resp.Users[i] = userIDOToDTO(user)

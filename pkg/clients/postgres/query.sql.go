@@ -45,6 +45,19 @@ func (q *Queries) AssignRoleToUserByRoleName(ctx context.Context, arg AssignRole
 	return err
 }
 
+const countFollowees = `-- name: CountFollowees :one
+SELECT COUNT(*) AS followee_count
+FROM followers
+WHERE follower_id = $1
+`
+
+func (q *Queries) CountFollowees(ctx context.Context, followerID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countFollowees, followerID)
+	var followee_count int64
+	err := row.Scan(&followee_count)
+	return followee_count, err
+}
+
 const countFollowers = `-- name: CountFollowers :one
 SELECT COUNT(*) AS follower_count
 FROM followers
@@ -56,19 +69,6 @@ func (q *Queries) CountFollowers(ctx context.Context, followeeID uuid.UUID) (int
 	var follower_count int64
 	err := row.Scan(&follower_count)
 	return follower_count, err
-}
-
-const countFollowing = `-- name: CountFollowing :one
-SELECT COUNT(*) AS following_count
-FROM followers
-WHERE follower_id = $1
-`
-
-func (q *Queries) CountFollowing(ctx context.Context, followerID uuid.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, countFollowing, followerID)
-	var following_count int64
-	err := row.Scan(&following_count)
-	return following_count, err
 }
 
 const createFighter = `-- name: CreateFighter :exec
