@@ -16,6 +16,14 @@ var (
 
 type Level slog.Level
 
+var (
+	LevelDebug Level = Level(slog.LevelDebug)
+	LevelInfo  Level = Level(slog.LevelInfo)
+	LevelWarn  Level = Level(slog.LevelWarn)
+	LevelError Level = Level(slog.LevelError)
+	LevelFatal Level = Level(slog.LevelError) // slog does not have Fatal level
+)
+
 type Logger interface {
 	DebugContext(ctx context.Context, msg string, args ...any)
 	ErrorContext(ctx context.Context, msg string, args ...any)
