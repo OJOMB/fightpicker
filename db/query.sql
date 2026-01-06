@@ -128,6 +128,10 @@ WHERE id > $1
 ORDER BY id
 LIMIT $2;
 
+-- name: CountUsers :one
+SELECT COUNT(*) AS user_count
+FROM users;
+
 -- name: FollowUser :exec
 INSERT INTO followers (id, follower_id, followee_id, created_at, created_by)
 VALUES ($1, $2, $3, $4, $5)
@@ -145,7 +149,7 @@ SELECT EXISTS (
 ) AS is_following;
 
 
--- for first page (i.e. no last_seen_id) the app passes sentinel max value of all Fs for UUID7
+-- for first page (i.e. empty last_seen_id) the app passes sentinel max value for UUID7
 -- name: ListFollowers :many
 SELECT
   u.id, u.email, u.first_name, u.last_name, u.username,
@@ -158,7 +162,7 @@ WHERE f.followee_id = $1
 ORDER BY f.id DESC
 LIMIT $3;
 
--- for first page (i.e. no last_seen_id) the app passes sentinel max value of all Fs for UUID7
+-- for first page (i.e. empty last_seen_id) the app passes sentinel max value for UUID7
 -- name: ListFollowees :many
 SELECT
   u.id, u.email, u.first_name, u.last_name, u.username,

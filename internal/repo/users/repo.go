@@ -33,6 +33,7 @@ type DBClient interface {
 	AssignRoleToUserByRoleName(ctx context.Context, arg postgres.AssignRoleToUserByRoleNameParams) error
 	CountFollowers(ctx context.Context, followeeID uuid.UUID) (int64, error)
 	CountFollowees(ctx context.Context, followerID uuid.UUID) (int64, error)
+	CountUsers(ctx context.Context) (int64, error)
 	CreateFighter(ctx context.Context, arg postgres.CreateFighterParams) error
 	CreateUser(ctx context.Context, arg postgres.CreateUserParams) error
 	DeleteUserByID(ctx context.Context, id uuid.UUID) error

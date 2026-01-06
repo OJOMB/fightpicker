@@ -10,15 +10,15 @@ import (
 
 // UserLister defines the interface for listing users.
 type UserLister interface {
-	ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]User, error)
+	ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]User, int, error)
 }
 
 // ListUsers retrieves a paginated list of users.
 // PI is removed from each user if the requestor is not an admin.
-func (svc *Service) ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]User, error) {
-	users, err := svc.repo.ListUsers(ctx, pageSize, lastSeenID)
+func (svc *Service) ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]User, int, error) {
+	users, totalCount, err := svc.repo.ListUsers(ctx, pageSize, lastSeenID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	if !contextual.ReqSubjectIsAnAdmin(ctx) {
@@ -29,5 +29,5 @@ func (svc *Service) ListUsers(ctx context.Context, pageSize int, lastSeenID *uui
 
 	// we do not inject presigned URLs for list operations to reduce overhead
 
-	return users, nil
+	return users, totalCount, nil
 }

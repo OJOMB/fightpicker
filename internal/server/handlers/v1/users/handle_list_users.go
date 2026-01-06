@@ -15,7 +15,7 @@ import (
 )
 
 type UserLister interface {
-	ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]service.User, error)
+	ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]service.User, int, error)
 }
 
 type UserGetterByEmail interface {
@@ -139,15 +139,16 @@ func (h *Handler) listUsers(svc UserSearcher, logger logs.Logger) http.HandlerFu
 			}
 		}
 
-		users, err := svc.ListUsers(ctx, pageSize, lastSeenID)
+		users, totalCount, err := svc.ListUsers(ctx, pageSize, lastSeenID)
 		if err != nil {
 			h.writeError(ctx, w, err, logger)
 			return
 		}
 
 		resp := dtos.ListUsersResponse{
-			Users:    make([]dtos.UserResponse, len(users)),
-			PageSize: len(users),
+			TotalCount: totalCount,
+			Users:      make([]dtos.UserResponse, len(users)),
+			PageSize:   len(users),
 		}
 		for i, user := range users {
 			resp.Users[i] = userIDOToDTO(user)

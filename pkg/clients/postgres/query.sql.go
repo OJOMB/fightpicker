@@ -71,6 +71,18 @@ func (q *Queries) CountFollowers(ctx context.Context, followeeID uuid.UUID) (int
 	return follower_count, err
 }
 
+const countUsers = `-- name: CountUsers :one
+SELECT COUNT(*) AS user_count
+FROM users
+`
+
+func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countUsers)
+	var user_count int64
+	err := row.Scan(&user_count)
+	return user_count, err
+}
+
 const createFighter = `-- name: CreateFighter :exec
 INSERT INTO fighters (
     id,
@@ -749,7 +761,7 @@ type ListFolloweesRow struct {
 	UpdatedBy      pgtype.UUID
 }
 
-// for first page (i.e. no last_seen_id) the app passes sentinel max value of all Fs for UUID7
+// for first page (i.e. empty last_seen_id) the app passes sentinel max value for UUID7
 func (q *Queries) ListFollowees(ctx context.Context, arg ListFolloweesParams) ([]ListFolloweesRow, error) {
 	rows, err := q.db.Query(ctx, listFollowees, arg.FollowerID, arg.ID, arg.Limit)
 	if err != nil {
@@ -819,7 +831,7 @@ type ListFollowersRow struct {
 	UpdatedBy      pgtype.UUID
 }
 
-// for first page (i.e. no last_seen_id) the app passes sentinel max value of all Fs for UUID7
+// for first page (i.e. empty last_seen_id) the app passes sentinel max value for UUID7
 func (q *Queries) ListFollowers(ctx context.Context, arg ListFollowersParams) ([]ListFollowersRow, error) {
 	rows, err := q.db.Query(ctx, listFollowers, arg.FolloweeID, arg.ID, arg.Limit)
 	if err != nil {
