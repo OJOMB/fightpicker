@@ -2,11 +2,10 @@ package users
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 
 	"github.com/OJOMB/fightpicker/internal/server/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
@@ -44,99 +43,47 @@ func (h *Handler) listUsers(svc UserSearcher, logger logs.Logger) http.HandlerFu
 
 		email := query.Get(v1.QueryParamEmail)
 		username := query.Get(v1.QueryParamUsername)
-		pageSizeStr := query.Get(v1.QueryParamPageSize)
-		lastSeenIDStr := query.Get(v1.QueryParamLastSeenID)
 
-		if email != "" && username != "" || email != "" && pageSizeStr != "" || username != "" && pageSizeStr != "" || email != "" && lastSeenIDStr != "" || username != "" && lastSeenIDStr != "" {
-			logger.DebugContext(ctx, "received both email and username query parameters")
-			h.writeError(ctx, w, ErrIncompatibleQueryParameters, logger)
-			return
-		}
-
-		if email != "" {
-			// get user by email
-			user, err := svc.GetUserByEmail(ctx, email)
-			if err != nil {
-				h.writeError(ctx, w, err, logger)
+		if email != "" || username != "" {
+			if email != "" && username != "" {
+				h.writeError(ctx, w, errors.Wrap(
+					v1.ErrIncompatibleParameters,
+					"you can search by either email or username, not both",
+				), logger)
 				return
 			}
 
-			resp := dtos.ListUsersResponse{
-				Users:    []dtos.UserResponse{userIDOToDTO(user)},
-				PageSize: 1,
-			}
-			respBody, err := json.Marshal(resp)
-			if err != nil {
-				logger.ErrorContext(ctx, "failed to marshal response body", "error", err)
-				http.Error(w, "failed to marshal response body", http.StatusInternalServerError)
-				return
-			}
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write(respBody); err != nil {
-				logger.ErrorContext(ctx, "failed to write response body", "error", err)
-			}
-
-			return
-		}
-
-		if username != "" {
-			// get user by username
-			user, err := svc.GetUserByUsername(ctx, username)
-			if err != nil {
-				h.writeError(ctx, w, err, logger)
-				return
-			}
-
-			resp := dtos.ListUsersResponse{
-				Users:    []dtos.UserResponse{userIDOToDTO(user)},
-				PageSize: 1,
-			}
-			respBody, err := json.Marshal(resp)
-			if err != nil {
-				logger.ErrorContext(ctx, "failed to marshal response body", "error", err)
-				http.Error(w, "failed to marshal response body", http.StatusInternalServerError)
-				return
-			}
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write(respBody); err != nil {
-				logger.ErrorContext(ctx, "failed to write response body", "error", err)
-			}
-
-			return
-		}
-
-		var lastSeenID *uuid.UUID
-		if lastSeenIDStr != "" {
+			var user service.User
 			var err error
-			lsID, err := uuid.FromString(lastSeenIDStr)
+			if email != "" {
+				user, err = svc.GetUserByEmail(ctx, email)
+			} else {
+				user, err = svc.GetUserByUsername(ctx, username)
+			}
 			if err != nil {
-				logger.ErrorContext(ctx, "invalid last_seen_id", "error", err)
-				http.Error(w, "invalid last_seen_id", http.StatusBadRequest)
+				h.writeError(ctx, w, err, logger)
 				return
 			}
 
-			lastSeenID = &lsID
+			resp := dtos.ListUsersResponse{
+				Users:    []dtos.UserResponse{userIDOToDTO(user)},
+				PageSize: 1,
+			}
+
+			h.writeJSON(ctx, w, logger, http.StatusOK, resp)
+			return
 		}
 
-		var pageSize int
-		var err error
-		if pageSizeStr == "" {
-			pageSize = v1.DefaultPageSize
-		} else {
-			pageSize, err = strconv.Atoi(pageSizeStr)
-			if err != nil || pageSize < 0 {
-				logger.ErrorContext(ctx, "invalid page_size", "error", err)
-				http.Error(w, "invalid page_size", http.StatusBadRequest)
-				return
-			}
+		lastSeenID, err := h.parseLastSeenID(r)
+		if err != nil {
+			h.writeError(ctx, w, err, logger)
+			return
+		}
 
-			if pageSize > v1.MaxPageSize {
-				pageSize = v1.MaxPageSize
-			}
+		pageSize, err := h.parsePageSize(r)
+		if err != nil {
+			h.writeError(ctx, w, err, logger)
+			return
 		}
 
 		users, totalCount, err := svc.ListUsers(ctx, pageSize, lastSeenID)
@@ -159,17 +106,6 @@ func (h *Handler) listUsers(svc UserSearcher, logger logs.Logger) http.HandlerFu
 			resp.LastSeenId = &resp.Users[len(resp.Users)-1].Id
 		}
 
-		respBody, err := json.Marshal(resp)
-		if err != nil {
-			logger.ErrorContext(ctx, "failed to marshal response body", "error", err)
-			http.Error(w, "failed to marshal response body", http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(respBody); err != nil {
-			logger.ErrorContext(ctx, "failed to write response body", "error", err)
-		}
+		h.writeJSON(ctx, w, logger, http.StatusOK, resp)
 	}
 }

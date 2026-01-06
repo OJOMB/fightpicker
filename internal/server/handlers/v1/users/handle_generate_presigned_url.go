@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
 	"github.com/OJOMB/fightpicker/internal/server/dtos"
@@ -26,27 +25,25 @@ func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator, logger logs
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		id := mux.Vars(r)[v1.QueryParamUserID]
-		userID, err := uuid.FromString(id)
+		userID, err := h.parseUserID(r)
 		if err != nil {
-			logger.DebugContext(ctx, "invalid user_id parameter", "error", err, "user_id", id)
 			h.writeError(ctx, w, errors.Wrap(v1.ErrInvalidUUID, v1.QueryParamUserID), logger)
 			return
 		}
 
+		defer r.Body.Close()
 		var userUpdateReq dtos.UserProfilePictureUploadURLRequest
 		if err := json.NewDecoder(r.Body).Decode(&userUpdateReq); err != nil {
-			logger.ErrorContext(ctx, "failed to decode request body", "error", err)
+			h.writeError(ctx, w, errors.Wrap(v1.ErrUnreadableRequestBody, v1.QueryParamUserID), logger)
+			return
 		}
 
 		url, headers, err := svc.GeneratePresignedPutURL(ctx, userID, userUpdateReq.ContentType)
 		if err != nil {
-			logger.ErrorContext(ctx, "failed to generate presigned URL", "error", err)
 			h.writeError(ctx, w, err, logger)
 			return
 		}
 
-		// TODO: not sure if we need to even return headers here, but for now we will
 		var signedHeaders = make(map[string]string)
 		for key, values := range headers {
 			if len(values) > 0 {
@@ -59,10 +56,6 @@ func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator, logger logs
 			SignedHeader: signedHeaders,
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			logger.ErrorContext(ctx, "failed to encode error response", "error", err)
-		}
+		h.writeJSON(ctx, w, logger, http.StatusOK, resp)
 	}
 }

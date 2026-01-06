@@ -20,6 +20,7 @@ func (h *Handler) verifyEmail(svc EmailVerifier, logger logs.Logger) http.Handle
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+
 		// extract token from query parameters
 		token := r.URL.Query().Get(v1.QueryParamEmailVerificationToken)
 		if token == "" {
@@ -27,13 +28,11 @@ func (h *Handler) verifyEmail(svc EmailVerifier, logger logs.Logger) http.Handle
 			return
 		}
 
-		err := svc.VerifyEmailByToken(ctx, token)
-		if err != nil {
+		if err := svc.VerifyEmailByToken(ctx, token); err != nil {
 			h.writeError(ctx, w, err, logger)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

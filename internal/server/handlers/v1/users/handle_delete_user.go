@@ -5,8 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 
 	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
 	"github.com/OJOMB/fightpicker/pkg/logs"
@@ -22,16 +20,14 @@ func (h *Handler) deleteUser(svc UserDeleter, logger logs.Logger) http.HandlerFu
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		userIDStr := mux.Vars(r)[v1.QueryParamUserID]
-		userID, err := uuid.FromString(userIDStr)
+
+		userID, err := h.parseUserID(r)
 		if err != nil {
-			logger.DebugContext(ctx, "invalid user_id parameter", "error", err, "user_id", userIDStr)
-			h.writeError(ctx, w, errors.Wrap(v1.ErrInvalidUUID, v1.QueryParamUserID), logger)
+			h.writeError(ctx, w, err, logger)
 			return
 		}
 
 		if err = svc.DeleteUserByID(ctx, userID); err != nil {
-			logger.ErrorContext(ctx, "failed to delete user", "error", err)
 			h.writeError(ctx, w, err, logger)
 			return
 		}

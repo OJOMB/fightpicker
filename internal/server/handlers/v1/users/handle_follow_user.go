@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/mux"
 
 	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
 	"github.com/OJOMB/fightpicker/pkg/logs"
@@ -22,16 +21,13 @@ func (h *Handler) followUser(svc UserFollower, logger logs.Logger) http.HandlerF
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		id := mux.Vars(r)[v1.QueryParamUserID]
-		followeeID, err := uuid.FromString(id)
+		followeeID, err := h.parseUserID(r)
 		if err != nil {
-			logger.DebugContext(ctx, "invalid user_id parameter", "error", err, "followee_id", id)
 			h.writeError(ctx, w, err, logger)
 			return
 		}
 
 		if err := svc.FollowUser(ctx, followeeID); err != nil {
-			logger.ErrorContext(ctx, "failed to follow user", "error", err)
 			h.writeError(ctx, w, err, logger)
 			return
 		}

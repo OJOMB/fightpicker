@@ -1,10 +1,15 @@
 package users
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
@@ -149,4 +154,64 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 		),
 	).Name(v1.EndpointNameV1UsersGeneratePresignedURL).
 		Methods(http.MethodPost)
+}
+
+func (h *Handler) writeJSON(
+	ctx context.Context,
+	w http.ResponseWriter,
+	logger logs.Logger,
+	status int,
+	v any,
+) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		logger.ErrorContext(ctx, "failed to write response body", "error", err)
+	}
+}
+
+// parsePageSize is a pagination helper that parses the page size from the query parameter string.
+func (h *Handler) parsePageSize(r *http.Request) (int, error) {
+	pageSizeStr := r.URL.Query().Get(v1.QueryParamPageSize)
+
+	if pageSizeStr == "" {
+		return v1.DefaultPageSize, nil
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 0 {
+		return 0, errors.Wrap(v1.ErrInvalidPageSize, v1.QueryParamPageSize)
+	}
+
+	if pageSize > v1.MaxPageSize {
+		return v1.MaxPageSize, nil
+	}
+
+	return pageSize, nil
+}
+
+// parseLastSeenID is a pagination helper that parses the last seen ID from the query parameter string.
+func (h *Handler) parseLastSeenID(r *http.Request) (*uuid.UUID, error) {
+	lastSeenIDStr := r.URL.Query().Get(v1.QueryParamLastSeenID)
+	if lastSeenIDStr == "" {
+		return nil, nil
+	}
+
+	id, err := uuid.FromString(lastSeenIDStr)
+	if err != nil {
+		return nil, errors.Wrap(v1.ErrInvalidUUID, v1.QueryParamLastSeenID)
+	}
+
+	return &id, nil
+}
+
+func (h *Handler) parseUserID(r *http.Request) (uuid.UUID, error) {
+	idStr := mux.Vars(r)[v1.QueryParamUserID]
+	userID, err := uuid.FromString(idStr)
+	if err != nil {
+		return uuid.Nil, errors.Wrap(v1.ErrInvalidUUID, v1.QueryParamUserID)
+	}
+
+	return userID, nil
 }

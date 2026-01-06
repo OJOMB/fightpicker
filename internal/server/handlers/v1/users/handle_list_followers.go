@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/mux"
 
 	"github.com/OJOMB/fightpicker/internal/server/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
@@ -26,46 +24,22 @@ func (h *Handler) listFollowers(svc UserFollowerLister, logger logs.Logger) http
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		// parse query parameters for pagination
-		query := r.URL.Query()
-		pageSizeStr := query.Get(v1.QueryParamPageSize)
-		lastSeenIDStr := query.Get(v1.QueryParamLastSeenID)
-
-		userIDStr := mux.Vars(r)[v1.QueryParamUserID]
-		userID, err := uuid.FromString(userIDStr)
+		userID, err := h.parseUserID(r)
 		if err != nil {
-			logger.ErrorContext(ctx, "invalid user_id", "error", err)
-			http.Error(w, "invalid user_id", http.StatusBadRequest)
+			h.writeError(ctx, w, err, logger)
 			return
 		}
 
-		var lastSeenID *uuid.UUID
-		if lastSeenIDStr != "" {
-			var err error
-			lsID, err := uuid.FromString(lastSeenIDStr)
-			if err != nil {
-				logger.ErrorContext(ctx, "invalid last_seen_id", "error", err)
-				http.Error(w, "invalid last_seen_id", http.StatusBadRequest)
-				return
-			}
-
-			lastSeenID = &lsID
+		lastSeenID, err := h.parseLastSeenID(r)
+		if err != nil {
+			h.writeError(ctx, w, err, logger)
+			return
 		}
 
-		var pageSize int
-		if pageSizeStr == "" {
-			pageSize = v1.DefaultPageSize
-		} else {
-			pageSize, err = strconv.Atoi(pageSizeStr)
-			if err != nil || pageSize < 0 {
-				logger.ErrorContext(ctx, "invalid page_size", "error", err)
-				http.Error(w, "invalid page_size", http.StatusBadRequest)
-				return
-			}
-
-			if pageSize > v1.MaxPageSize {
-				pageSize = v1.MaxPageSize
-			}
+		pageSize, err := h.parsePageSize(r)
+		if err != nil {
+			h.writeError(ctx, w, err, logger)
+			return
 		}
 
 		users, totalCount, err := svc.ListFollowers(ctx, userID, pageSize, lastSeenID)
