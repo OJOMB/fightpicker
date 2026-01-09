@@ -1,6 +1,6 @@
 package id
 
-import "github.com/gofrs/uuid"
+import "github.com/gofrs/uuid/v5"
 
 type UUIDV7Generator struct{}
 

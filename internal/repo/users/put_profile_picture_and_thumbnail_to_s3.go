@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"

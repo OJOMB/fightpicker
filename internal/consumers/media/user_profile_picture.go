@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 	"github.com/twmb/franz-go/pkg/kgo"
 
 	"github.com/OJOMB/fightpicker/pkg/logs"

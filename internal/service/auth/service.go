@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 
 	serviceusers "github.com/OJOMB/fightpicker/internal/service/users"
 	"github.com/OJOMB/fightpicker/pkg/id"

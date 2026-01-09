@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 
 	"github.com/OJOMB/fightpicker/internal/server/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"

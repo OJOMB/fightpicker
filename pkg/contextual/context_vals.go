@@ -4,7 +4,7 @@ import (
 	"context"
 	"slices"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 )
 
 // Contextkey is a type for context keys used in this package.

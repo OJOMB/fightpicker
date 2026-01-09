@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 	"github.com/pkg/errors"
 
 	"github.com/OJOMB/fightpicker/internal/server/dtos"

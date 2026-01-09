@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/OJOMB/fightpicker/internal/service"
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 )
 
 type Fighter struct {

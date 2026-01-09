@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/net/context"
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 
 	usermetrics "github.com/OJOMB/fightpicker/internal/metrics/users"
 	"github.com/OJOMB/fightpicker/pkg/datetimes"

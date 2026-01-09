@@ -3,7 +3,7 @@ package fighters
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 )
 
 func (s *Service) GetFighterByID(ctx context.Context, id uuid.UUID) (Fighter, error) {

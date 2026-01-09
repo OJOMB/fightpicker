@@ -3,7 +3,7 @@ package users
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 
 	service "github.com/OJOMB/fightpicker/internal/service/users"
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"

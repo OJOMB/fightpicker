@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 )
 
 func (r *Repo) GeneratePresignedPutURL(ctx context.Context, userID uuid.UUID, contentType string) (string, http.Header, error) {

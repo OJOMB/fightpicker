@@ -6,7 +6,7 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/datetimes"
 	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 )
 
 type Repo interface {

@@ -8,7 +8,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 
-	"github.com/gofrs/uuid"
+	uuid "github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 

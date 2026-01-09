@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gofrs/uuid"
+	"github.com/gofrs/uuid/v5"
 	"github.com/pkg/errors"
 
 	"github.com/OJOMB/fightpicker/internal/server/dtos"
@@ -27,7 +27,7 @@ func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator, logger logs
 
 		userID, err := h.parseUserID(r)
 		if err != nil {
-			h.writeError(ctx, w, errors.Wrap(v1.ErrInvalidUUID, v1.QueryParamUserID), logger)
+			h.writeError(ctx, w, err, logger)
 			return
 		}
 
