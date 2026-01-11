@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package common.types;
+
+import "validate/validate.proto";
+
+option go_package = "github.com/OJOMB/fightpicker/internal/grpc/gen/go/common/types;typespb";
+
+message UUID7 {
+  // We use the 'rules' extension.
+  // 'uuid: true' checks RFC 4122 format.
+  // 'pattern' specifically enforces the "7" in the version bits.
+  string value = 1 [(validate.rules).string = {
+    uuid: true,
+    pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+  }];
+}

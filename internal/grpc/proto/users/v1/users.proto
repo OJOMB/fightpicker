@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+package users.v1;
+
+option go_package = "github.com/OJOMB/fightpicker/internal/grpc/gen/go/users/v1;userspb";
+
+import "google/protobuf/timestamp.proto";
+import "common/types/uuid.proto";
+
+// UsersService defines the gRPC service for user management
+service UsersService {
+  ///////////////////////////////////
+  // Create, Read, Update, Delete //
+  /////////////////////////////////
+
+  // CreateUser registers a new user in the system
+  rpc CreateUser(CreateUserRequest) returns (User);
+    // GetUser retrieves a user's details by their ID
+  rpc GetUser(GetUserRequest) returns (User);
+  // UpdateUser modifies an existing user's details
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+  // DeleteUser removes a user by their ID
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  // ListUsers retrieves a paginated list of users with optional filters
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+
+  // Social graph
+  rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
+  // UnfollowUser allows a user to unfollow another user
+  rpc UnfollowUser(UnfollowUserRequest) returns (UnfollowUserResponse);
+  // ListFollowers lists the followers of a given user
+  rpc ListFollowers(ListFollowersRequest) returns (ListUsersResponse);
+  // ListFollowees lists the users followed by a given user
+  rpc ListFollowees(ListFolloweesRequest) returns (ListUsersResponse);
+}
+
+// Gender enumerates the possible values for a user's gender
+enum Gender {
+  GENDER_OTHER  = 0;
+  GENDER_MALE   = 1;
+  GENDER_FEMALE = 2;
+}
+
+// User represents a user in the system
+message User {
+  common.types.UUID7 id    = 1;
+  string             email = 2;
+
+  string first_name = 3;
+  string last_name  = 4;
+  string username   = 5;
+  Gender gender     = 6;
+  string location   = 7;
+  string bio = 8;
+
+  google.protobuf.Timestamp dob = 9;
+
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+////////////////////////////////////
+// Request and Response Messages //
+///////////////////////////////////
+
+// CreateUserRequest is the request message for creating a new user
+message CreateUserRequest {
+  string email    = 1;
+  string password = 2;
+
+  string first_name = 3;
+  string last_name  = 4;
+  string username   = 5;
+
+  Gender                    gender        = 6;
+  google.protobuf.Timestamp date_of_birth = 7;
+}
+
+// GetUserRequest is the request message for retrieving a user by ID
+message GetUserRequest {
+  common.types.UUID7 user_id = 1;
+}
+
+// DeleteUserRequest is the request message for deleting a user by ID
+message DeleteUserRequest {
+  common.types.UUID7 user_id = 1;
+}
+
+// DeleteUserResponse is the response message for deleting a user
+message DeleteUserResponse {}
+
+// UpdateUserRequest is the request message for updating a user's details
+message UpdateUserRequest {
+  common.types.UUID7 user_id = 1;
+
+  optional string email      = 2;
+  optional string password   = 3;
+  optional string first_name = 4;
+  optional string last_name  = 5;
+  optional string username   = 6;
+  optional Gender gender     = 7;
+  optional string location   = 8;
+  optional string bio        = 9;
+}
+
+// ListUsersRequest is the request message for listing users with pagination and optional filters
+message ListUsersRequest {
+  optional common.types.UUID7 last_seen_id = 1;
+  uint32                      page_size    = 2;
+
+  optional string email    = 3;
+  optional string username = 4;
+}
+
+// ListUsersResponse is the response message for listing users
+message ListUsersResponse {
+  repeated User               users        = 1;
+  optional common.types.UUID7 last_seen_id = 2;
+  uint32                      page_size    = 3;
+  uint64                      total_count  = 4;
+}
+
+// FollowUserRequest is the request message for following a user
+message FollowUserRequest {
+  common.types.UUID7 target_user_id = 1;
+}
+
+// UnfollowUserRequest is the request message for unfollowing a user
+message UnfollowUserRequest {
+  common.types.UUID7 target_user_id = 1;
+}
+
+// FollowUserResponse is the response message for following a user
+message FollowUserResponse {}
+
+// UnfollowUserResponse is the response message for unfollowing a user
+message UnfollowUserResponse {}
+
+// ListFollowersRequest is the request message for listing a user's followers
+message ListFollowersRequest {
+  common.types.UUID7          user_id      = 1;
+  optional common.types.UUID7 last_seen_id = 2;
+  uint32                      page_size    = 3;
+}
+
+// ListFolloweesRequest is the request message for listing the users a user is following
+message ListFolloweesRequest {
+  common.types.UUID7          user_id      = 1;
+  optional common.types.UUID7 last_seen_id = 2;
+  uint32                      page_size    = 3;
+}
