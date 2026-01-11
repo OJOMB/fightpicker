@@ -1,6 +1,6 @@
 package service
 
-type Gender int
+type Gender int32
 
 const (
 	GenderOther Gender = iota
