@@ -10,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 
-	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
+	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	"github.com/OJOMB/fightpicker/internal/service/auth"
 	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/logs"

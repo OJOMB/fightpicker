@@ -1,4 +1,4 @@
-package server
+package http
 
 import (
 	"context"
@@ -59,30 +59,30 @@ func New(domain string, port int, router *mux.Router, jwtValidator jwtValidator,
 	}, nil
 }
 
-func (svr *Server) WithHandlers(handlers []RouteRegistrar) *Server {
-	svr.handlers = handlers
-	return svr
+func (s *Server) WithHandlers(handlers []RouteRegistrar) *Server {
+	s.handlers = handlers
+	return s
 }
 
 // Run starts the HTTP server and listens for incoming requests. It also handles graceful shutdown on receiving termination signals.
-func (svr *Server) Run() error {
-	svr.routes()
+func (s *Server) Run() error {
+	s.routes()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	httpServer := &http.Server{
-		Handler: svr.router,
+		Handler: s.router,
 	}
 
 	// Create listener
-	listener, err := net.Listen("tcp", svr.addr.String())
+	listener, err := net.Listen("tcp", s.addr.String())
 	if err != nil {
 		return err
 	}
 	defer listener.Close()
 
-	svr.logger.InfoContext(ctx, "starting server", "domain", svr.addr.String())
+	s.logger.InfoContext(ctx, "starting server", "domain", s.addr.String())
 
 	// run http server in background
 	errCh := make(chan error, 1)
@@ -93,7 +93,7 @@ func (svr *Server) Run() error {
 	// wait for signal or server error
 	select {
 	case <-ctx.Done():
-		svr.logger.InfoContext(ctx, "shutdown signal received")
+		s.logger.InfoContext(ctx, "shutdown signal received")
 	case err := <-errCh:
 		if err != nil && err != http.ErrServerClosed {
 			return err

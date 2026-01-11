@@ -1,5 +1,5 @@
 all: false
-# Use a non-templated path for the base directory, 
+# Use a non-templated path for the base directory,
 # or a different variable like {{.InterfaceDir}} if available at top level.
 # A common pattern is to keep `dir` simple and use a more specific
 # variable inside the package config.
@@ -14,9 +14,9 @@ recursive: false
 template: testify
 
 packages:
-  github.com/OJOMB/fightpicker/internal/server/handlers/v1/users:
+  github.com/OJOMB/fightpicker/internal/http/handlers/v1/users:
     config:
-      dir: test/mocks/{{.SrcPackageName}} 
+      dir: test/mocks/{{.SrcPackageName}}
     interfaces:
       Service:
   github.com/OJOMB/fightpicker/internal/repo/users:

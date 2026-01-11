@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"log/slog"
@@ -34,13 +35,13 @@ import (
 	"github.com/OJOMB/fightpicker/internal/config"
 	"github.com/OJOMB/fightpicker/internal/consumers/email"
 	mediaconsumer "github.com/OJOMB/fightpicker/internal/consumers/media"
+	"github.com/OJOMB/fightpicker/internal/http"
+	handlersv1auth "github.com/OJOMB/fightpicker/internal/http/handlers/v1/auth"
+	handlersv1fighters "github.com/OJOMB/fightpicker/internal/http/handlers/v1/fighters"
+	handlersv1users "github.com/OJOMB/fightpicker/internal/http/handlers/v1/users"
 	repoauth "github.com/OJOMB/fightpicker/internal/repo/auth"
 	repofighters "github.com/OJOMB/fightpicker/internal/repo/fighters"
 	repousers "github.com/OJOMB/fightpicker/internal/repo/users"
-	"github.com/OJOMB/fightpicker/internal/server"
-	handlersv1auth "github.com/OJOMB/fightpicker/internal/server/handlers/v1/auth"
-	handlersv1fighters "github.com/OJOMB/fightpicker/internal/server/handlers/v1/fighters"
-	handlersv1users "github.com/OJOMB/fightpicker/internal/server/handlers/v1/users"
 	serviceauth "github.com/OJOMB/fightpicker/internal/service/auth"
 	servicefighters "github.com/OJOMB/fightpicker/internal/service/fighters"
 	serviceusers "github.com/OJOMB/fightpicker/internal/service/users"
@@ -58,10 +59,14 @@ const appName = "fightpicker"
 
 var otelShutdown func(ctx context.Context) error
 
+var env string
+
 func main() {
-	env := os.Getenv("ENV")
+	flag.StringVar(&env, "env", "", "runtime environment (local|e2e|staging|prod)")
+	flag.Parse()
+
 	if env == "" {
-		log.Fatalf("env environment variable missing")
+		env = os.Getenv("ENV")
 	}
 
 	//////////////////////////////
@@ -76,7 +81,7 @@ func main() {
 		log.Fatalf("failed to read config file: %v", err)
 	}
 
-	// enable env var for secrets and overrides
+	// enable env vars for secrets and overrides
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
@@ -127,7 +132,7 @@ func main() {
 	// OTel SETUP //
 	///////////////
 
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer stop()
 
 	// set up OpenTelemetry.
@@ -293,7 +298,7 @@ func main() {
 	// SERVICES AND HANDLERS INIT //
 	///////////////////////////////
 
-	var handlers = make([]server.RouteRegistrar, 0)
+	var handlers = make([]http.RouteRegistrar, 0)
 
 	// auth Service + Handler
 	accessTokenTTL := time.Hour * time.Duration(cfg.Auth.AccessTTLHours)
@@ -324,7 +329,16 @@ func main() {
 		baseLogger.InfoContext(ctx, "users API enabled, initializing users service and handler")
 
 		imageProcessor := mediaprocessor.NewImageProcessor()
-		usersService, err := serviceusers.NewService(usersRepo, idGen, dateTimeTool, authTool, imageProcessor, fmt.Sprintf("http://%s:%d", cfg.Domain, cfg.Port), cfg.Email.AddressNoReply, baseLogger)
+		usersService, err := serviceusers.NewService(
+			usersRepo,
+			idGen,
+			dateTimeTool,
+			authTool,
+			imageProcessor,
+			fmt.Sprintf("http://%s:%d", cfg.Domain, cfg.Port),
+			cfg.Email.AddressNoReply,
+			baseLogger,
+		)
 		if err != nil {
 			baseLogger.FatalContext(ctx, "failed to create user service", "error", err)
 		}
@@ -372,14 +386,14 @@ func main() {
 		handlers = append(handlers, fightersHandler)
 	}
 
-	srv, err := server.New(cfg.Domain, cfg.Port, mux.NewRouter(), jwtTool, cfg.Auth.PrivateKey, cfg.Observability.OTel.Enable, env, baseLogger)
+	srv, err := http.New(cfg.Domain, cfg.Port, mux.NewRouter(), jwtTool, cfg.Auth.PrivateKey, cfg.Observability.OTel.Enable, env, baseLogger)
 	if err != nil {
 		baseLogger.FatalContext(ctx, "failed to create server", "error", err)
 	}
 
 	srv.WithHandlers(handlers)
 
-	////////////////////
+	/////////////////////
 	// RUN THE SERVER //
 	///////////////////
 

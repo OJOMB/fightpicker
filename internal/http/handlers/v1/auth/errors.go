@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	repo "github.com/OJOMB/fightpicker/internal/repo/users"
-	"github.com/OJOMB/fightpicker/internal/server/dtos"
 	service "github.com/OJOMB/fightpicker/internal/service/auth"
 	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/logs"
