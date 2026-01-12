@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/OJOMB/fightpicker/internal/server/dtos"
+	"github.com/OJOMB/fightpicker/internal/http/dtos"
 )
 
 func TestV1CreateUser(t *testing.T) {

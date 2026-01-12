@@ -4,7 +4,7 @@ import (
 	"github.com/mikhalytch/eggs/deref"
 	"github.com/oapi-codegen/runtime/types"
 
-	"github.com/OJOMB/fightpicker/internal/server/dtos"
+	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	"github.com/OJOMB/fightpicker/internal/service"
 	usersservice "github.com/OJOMB/fightpicker/internal/service/users"
 )

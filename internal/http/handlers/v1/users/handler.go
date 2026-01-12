@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
+	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 

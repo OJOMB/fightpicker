@@ -67,8 +67,8 @@ type Service struct {
 	logger  logs.Logger
 }
 
-// NewService creates a new instance of the user service.
-func NewService(repo Repo, idGen IDGenerator, now datetimes.Now, authTool AuthTool, imageProcessor ImageProcessor, domain, emailAddressNoReply string, logger logs.Logger) (*Service, error) {
+// New creates a new instance of the user service.
+func New(repo Repo, idGen IDGenerator, now datetimes.Now, authTool AuthTool, imageProcessor ImageProcessor, domain, emailAddressNoReply string, logger logs.Logger) (*Service, error) {
 	if repo == nil {
 		return nil, ErrNilRepo
 	}

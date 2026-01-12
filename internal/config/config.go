@@ -1,10 +1,10 @@
 package config
 
 type Config struct {
-	Env      string `mapstructure:"env"`
-	Domain   string `mapstructure:"domain"`
-	Port     int    `mapstructure:"port"`
-	LogLevel int    `mapstructure:"log_level"`
+	HTTP     HTTPConfig `mapstructure:"http"`
+	GRPC     GRPCConfig `mapstructure:"grpc"`
+	Env      string     `mapstructure:"-"`
+	LogLevel int        `mapstructure:"log_level"`
 
 	API           APIConfig           `mapstructure:"api"`
 	Database      DatabaseConfig      `mapstructure:"database"`
@@ -14,6 +14,16 @@ type Config struct {
 	AWS           AWSConfig           `mapstructure:"aws"`
 	EventBroker   EventBrokerConfig   `mapstructure:"event_broker"`
 	Email         EmailConfig         `mapstructure:"email"`
+}
+
+type HTTPConfig struct {
+	Domain string `mapstructure:"domain"`
+	Port   int    `mapstructure:"port"`
+}
+
+type GRPCConfig struct {
+	Domain string `mapstructure:"domain"`
+	Port   int    `mapstructure:"port"`
 }
 
 type DatabaseConfig struct {

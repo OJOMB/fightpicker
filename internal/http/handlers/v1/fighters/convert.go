@@ -5,7 +5,7 @@ import (
 
 	"github.com/oapi-codegen/runtime/types"
 
-	"github.com/OJOMB/fightpicker/internal/server/dtos"
+	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	service "github.com/OJOMB/fightpicker/internal/service/fighters"
 )
 

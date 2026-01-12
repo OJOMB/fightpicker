@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -27,7 +26,6 @@ import (
 	"github.com/jackc/pgx/v5/tracelog"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
-	"github.com/spf13/viper"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"gopkg.in/mail.v2"
@@ -62,32 +60,12 @@ var otelShutdown func(ctx context.Context) error
 var env string
 
 func main() {
-	flag.StringVar(&env, "env", "", "runtime environment (local|e2e|staging|prod)")
+	flag.StringVar(&env, "env", "local", "runtime environment (local|e2e|staging|prod)")
 	flag.Parse()
 
-	if env == "" {
-		env = os.Getenv("ENV")
-	}
-
-	//////////////////////////////
-	// setup config with viper //
-	////////////////////////////
-
-	viper.SetConfigName(env)
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("config/") // path to look for the config file
-
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("failed to read config file: %v", err)
-	}
-
-	// enable env vars for secrets and overrides
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.AutomaticEnv()
-
-	var cfg config.Config
-	if err := viper.Unmarshal(&cfg); err != nil {
-		log.Fatalf("failed to unmarshal config: %v", err)
+	cfg, err := config.Load(env)
+	if err != nil {
+		log.Fatalf("failed to load configuration: %v", err)
 	}
 
 	//////////////////////
@@ -136,7 +114,6 @@ func main() {
 	defer stop()
 
 	// set up OpenTelemetry.
-	var err error
 	loggerHandlers := []slog.Handler{slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.Level(cfg.LogLevel)})}
 	if !cfg.Observability.OTel.Enable {
 		log.Printf("OTel disabled")
@@ -164,7 +141,7 @@ func main() {
 	// TODO: slogmulti can be removed once we have go 1.26 is released as it includes built-in support for multiple handlers https://tip.golang.org/doc/go1.26
 	baseLogger := logs.NewMultiSlogger(loggerHandlers...)
 
-	baseLogger = baseLogger.With("app", appName, "env", env)
+	baseLogger = baseLogger.With("app", appName, "env", cfg.Env)
 	baseLogger.InfoContext(ctx, "configuration loaded successfully")
 
 	/////////////////////////////////////////////
@@ -273,7 +250,7 @@ func main() {
 
 	usersRepo, err := repousers.New(
 		pool,
-		cfg.Domain,
+		cfg.HTTP.Domain,
 		dbClient,
 		s3Client,
 		dateTimeTool,
@@ -329,13 +306,13 @@ func main() {
 		baseLogger.InfoContext(ctx, "users API enabled, initializing users service and handler")
 
 		imageProcessor := mediaprocessor.NewImageProcessor()
-		usersService, err := serviceusers.NewService(
+		usersService, err := serviceusers.New(
 			usersRepo,
 			idGen,
 			dateTimeTool,
 			authTool,
 			imageProcessor,
-			fmt.Sprintf("http://%s:%d", cfg.Domain, cfg.Port),
+			fmt.Sprintf("http://%s:%d", cfg.HTTP.Domain, cfg.HTTP.Port),
 			cfg.Email.AddressNoReply,
 			baseLogger,
 		)
@@ -386,7 +363,7 @@ func main() {
 		handlers = append(handlers, fightersHandler)
 	}
 
-	srv, err := http.New(cfg.Domain, cfg.Port, mux.NewRouter(), jwtTool, cfg.Auth.PrivateKey, cfg.Observability.OTel.Enable, env, baseLogger)
+	srv, err := http.New(cfg.HTTP.Domain, cfg.HTTP.Port, mux.NewRouter(), jwtTool, cfg.Auth.PrivateKey, cfg.Observability.OTel.Enable, cfg.Env, baseLogger)
 	if err != nil {
 		baseLogger.FatalContext(ctx, "failed to create server", "error", err)
 	}

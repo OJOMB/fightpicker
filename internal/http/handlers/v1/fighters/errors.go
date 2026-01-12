@@ -6,9 +6,9 @@ import (
 	"errors"
 	"net/http"
 
+	dtos "github.com/OJOMB/fightpicker/internal/http/dtos"
+	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	repo "github.com/OJOMB/fightpicker/internal/repo/users"
-	dtos "github.com/OJOMB/fightpicker/internal/server/dtos"
-	v1 "github.com/OJOMB/fightpicker/internal/server/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/users"
 	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/logs"
