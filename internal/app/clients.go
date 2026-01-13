@@ -39,7 +39,7 @@ func (a *App) newClients(ctx context.Context, cfg *config.Config) error {
 
 	emailDialer := a.newEmailDialer(cfg.Email)
 
-	kafkaMediaProfilePicClient, kafkaPostUserCreateClient, err := a.newKafkaClient(ctx, cfg.EventBroker)
+	kafkaMediaProfilePicClient, kafkaPostUserCreateClient, err := a.newKafkaClients(ctx, cfg.EventBroker)
 	if err != nil {
 		a.Logger.ErrorContext(ctx, "failed to create Kafka clients", "error", err)
 		return err
@@ -114,7 +114,7 @@ func (a *App) newEmailDialer(cfg config.EmailConfig) *mail.Dialer {
 	return emailDialer
 }
 
-func (a *App) newKafkaClient(ctx context.Context, cfg config.EventBrokerConfig) (*kgo.Client, *kgo.Client, error) {
+func (a *App) newKafkaClients(ctx context.Context, cfg config.EventBrokerConfig) (*kgo.Client, *kgo.Client, error) {
 	kafkaMediaProfilePicClient, err := kgo.NewClient(
 		kgo.SeedBrokers(cfg.SeedBrokers...),
 		kgo.ConsumeTopics(cfg.TopicProfilePictureUpload),

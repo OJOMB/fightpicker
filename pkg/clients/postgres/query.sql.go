@@ -1064,6 +1064,23 @@ func (q *Queries) UpdateEmailVerificationTokenHashByUserID(ctx context.Context, 
 	return err
 }
 
+const updateLastLoginAtByUserID = `-- name: UpdateLastLoginAtByUserID :exec
+UPDATE users SET
+    last_login_at = $2,
+    updated_at = $2
+WHERE id = $1
+`
+
+type UpdateLastLoginAtByUserIDParams struct {
+	ID          uuid.UUID
+	LastLoginAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateLastLoginAtByUserID(ctx context.Context, arg UpdateLastLoginAtByUserIDParams) error {
+	_, err := q.db.Exec(ctx, updateLastLoginAtByUserID, arg.ID, arg.LastLoginAt)
+	return err
+}
+
 const updateUserByID = `-- name: UpdateUserByID :exec
 UPDATE users SET
     email = $2,

@@ -310,6 +310,12 @@ JOIN permissions p            ON p.id = rp.permission_id
 WHERE u.id = $1
 GROUP BY u.id;
 
+-- name: UpdateLastLoginAtByUserID :exec
+UPDATE users SET
+    last_login_at = $2,
+    updated_at = $2
+WHERE id = $1;
+
 ----------------------------------------
 -- SQL queries for fighter management --
 ----------------------------------------

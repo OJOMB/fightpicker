@@ -11,6 +11,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 
+	"github.com/OJOMB/fightpicker/internal/app"
+	"github.com/OJOMB/fightpicker/internal/config"
+	handlersv1auth "github.com/OJOMB/fightpicker/internal/http/handlers/v1/auth"
+	handlersv1fighters "github.com/OJOMB/fightpicker/internal/http/handlers/v1/fighters"
+	handlersv1users "github.com/OJOMB/fightpicker/internal/http/handlers/v1/users"
 	"github.com/OJOMB/fightpicker/internal/service/auth"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
@@ -35,27 +40,32 @@ type Server struct {
 	env          string
 }
 
-func New(domain string, port int, router *mux.Router, jwtValidator jwtValidator, secretKey string, oTelEnabled bool, env string, logger logs.Logger) (*Server, error) {
-	if router == nil {
-		router = mux.NewRouter()
-	}
+func New(cfg *config.Config, app *app.App) (*Server, error) {
+	router := mux.NewRouter()
 
-	if domain == "" {
+	if cfg.HTTP.Domain == "" {
 		return nil, ErrNoDomainSpecified
 	}
 
-	if port == 0 {
+	if cfg.HTTP.Port == 0 {
 		return nil, ErrPortNotSpecified
 	}
 
+	handlers := []RouteRegistrar{
+		handlersv1auth.New(app.Services.AuthService),
+		handlersv1users.New(app.Services.UsersService),
+		handlersv1fighters.New(app.Services.FightersService),
+	}
+
 	return &Server{
+		handlers:     handlers,
 		router:       router,
-		addr:         &net.TCPAddr{IP: net.ParseIP(domain), Port: port},
-		jwtValidator: jwtValidator,
-		logger:       logger,
-		oTelEnabled:  oTelEnabled,
-		secretKey:    []byte(secretKey),
-		env:          env,
+		addr:         &net.TCPAddr{IP: net.ParseIP(cfg.HTTP.Domain), Port: cfg.HTTP.Port},
+		jwtValidator: app.Utils.JWTTool,
+		logger:       app.Logger,
+		oTelEnabled:  cfg.Observability.OTel.Enable,
+		secretKey:    []byte(cfg.Auth.PrivateKey),
+		env:          cfg.Env,
 	}, nil
 }
 

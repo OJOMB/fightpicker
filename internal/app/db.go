@@ -38,7 +38,7 @@ func (a *App) newDB(ctx context.Context, cfg *config.Config) error {
 
 	// create multitracer for otelsql
 	tracer := multitracer.New(otelpgx.NewTracer(), &tracelog.TraceLog{
-		Logger:   SlogTracer{a.Logger},
+		Logger:   slogTracer{a.Logger},
 		LogLevel: tracelog.LogLevelInfo,
 	})
 
@@ -61,13 +61,13 @@ func (a *App) newDB(ctx context.Context, cfg *config.Config) error {
 	return nil
 }
 
-// SlogTracer implements pgx tracelog.Logger using our slog.Logger
-type SlogTracer struct {
+// slogTracer implements pgx tracelog.Logger using our slog.Logger
+type slogTracer struct {
 	logger logs.Logger
 }
 
 // Log implements pgx tracelog.Logger converting it to a regular slog log
-func (s SlogTracer) Log(ctx context.Context, level tracelog.LogLevel, msg string, data map[string]any) {
+func (s slogTracer) Log(ctx context.Context, level tracelog.LogLevel, msg string, data map[string]any) {
 	// Convert map[string]any → slog style attributes
 	attrs := make([]slog.Attr, 0, len(data))
 	for k, v := range data {

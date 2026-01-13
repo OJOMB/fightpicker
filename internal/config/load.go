@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Load(env string) (Config, error) {
+func Load(env string) (*Config, error) {
 	viper.SetConfigName(env)
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("config/") // path to look for the config file
@@ -22,10 +22,10 @@ func Load(env string) (Config, error) {
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
-		return Config{}, err
+		return nil, err
 	}
 
 	cfg.Env = env
 
-	return cfg, nil
+	return &cfg, nil
 }

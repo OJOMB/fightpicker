@@ -46,7 +46,7 @@ func (h *Handler) login(svc UserLoginner, logger logs.Logger) http.HandlerFunc {
 			return
 		}
 
-		// 🔐 Set refresh token as HttpOnly cookie
+		// set refresh token as HttpOnly cookie
 		refreshCookie := &http.Cookie{
 			Name:     v1.CookieKeyRefreshToken,
 			Value:    refreshToken,

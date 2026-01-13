@@ -1,17 +1,31 @@
-domain: 0.0.0.0
-port: 8080
+app_name: fightpicker
+
+http:
+  domain: localhost
+  port: 8080
+
+grpc:
+  domain: localhost
+  port: 50051
+  enable_reflection: true
 
 api:
   users: true
   fighters: true
 
 database:
-  host: 0.0.0.0
+  host: localhost
   port: 5432
   user: postgres
   password: postgres
   name: fightpicker
   ssl_mode: disable
+
+cache:
+  host: localhost
+  port: 6379
+  password: CACHE_PASSWORD
+  db: 0
 
 auth:
   hashing_cost: 5
@@ -36,9 +50,27 @@ observability:
 
 aws:
   region: eu-west-1
-  s3_media_bucket: fightpicks-media
+  s3_endpoint: http://localhost:9000
+  s3_media_bucket: fightpicker-media
+  s3_media_bucket_raw: fightpicker-media-raw
   access_key_id: AWS_ACCESS_KEY_ID
   secret_access_key: AWS_SECRET_ACCESS_KEY
-  endpoint: http://localhost:9000
   use_path_style: true
-  presign_url_ttl_minutes: 30
+  presigned_put_url_ttl_minutes: 10
+  presigned_get_url_ttl_minutes: 20
+
+event_broker:
+  seed_brokers:
+    - localhost:29092 # kafka:9092 inside the podman fightpicker network
+  group_id: fightpicker-media-processor
+  topic_profile_picture_upload: media-user-profile-picture-uploads
+  topic_post_user_created: users-user-created
+  topic_post_user_verified: users-user-verified
+
+email:
+  smtp_host: localhost
+  smtp_port: 1025
+  smtp_user: fightpicker
+  smtp_password: fightpicker_password
+  address_no_reply: noreply@fightpicker.local
+  skip_tls: true

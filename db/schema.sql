@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     email_verification_token_hash BYTEA,
     email_verification_token_expires_at TIMESTAMPTZ,
 
-    last_login TIMESTAMPTZ,
+    last_login_at TIMESTAMPTZ,
 
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,

@@ -59,6 +59,7 @@ type DBClient interface {
 	UpdateEmailVerificationTokenHashByUserID(ctx context.Context, arg postgres.UpdateEmailVerificationTokenHashByUserIDParams) error
 	UpdateUserByID(ctx context.Context, arg postgres.UpdateUserByIDParams) error
 	UpdateUserProfilePictureByID(ctx context.Context, arg postgres.UpdateUserProfilePictureByIDParams) error
+	UpdateLastLoginAtByUserID(ctx context.Context, arg postgres.UpdateLastLoginAtByUserIDParams) error
 	VerifyUserEmailByTokenHash(ctx context.Context, arg postgres.VerifyUserEmailByTokenHashParams) (uuid.UUID, error)
 	WithTx(tx pgx.Tx) *postgres.Queries
 }

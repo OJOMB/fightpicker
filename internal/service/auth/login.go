@@ -9,7 +9,7 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/contextual"
 )
 
-// Login authenticates a user using their email and password, returning an access and refresh token.
+// Login authenticates a user using their email and password, returning an access, refresh token and its expiration time.
 func (s *Service) Login(ctx context.Context, email, password string) (string, string, time.Time, error) {
 	if email == "" {
 		return "", "", time.Time{}, errors.Wrap(ErrMissingParameter, "email")
@@ -41,8 +41,8 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 		s.idGen.Generate(),
 		user.ID,
 		s.accessTokenTTL,
-		"fightpicker",
-		"fightpicker_users",
+		s.tokenIssuer,
+		s.tokenAudience,
 		map[string]any{
 			"roles": roles, "perms": permissions, "type": "access",
 		},
@@ -54,8 +54,8 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 		s.idGen.Generate(),
 		user.ID,
 		s.refreshTokenTTL,
-		"fightpicker",
-		"fightpicker_users",
+		s.tokenIssuer,
+		s.tokenAudience,
 		map[string]any{"type": "refresh"},
 		s.secretKey,
 	)
@@ -67,15 +67,20 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 	refreshTokenHash := s.jwtGen.HashTokenString(refreshToken.TokenStr)
 	ipAddress, ok := ctx.Value(contextual.KeyRequestRemoteAddr).(string)
 	if !ok {
-		ipAddress = ""
+		s.logger.WarnContext(ctx, "could not get IP address from context")
 	}
 
 	userAgent, ok := ctx.Value(contextual.KeyRequestUserAgent).(string)
 	if !ok {
-		userAgent = ""
+		s.logger.WarnContext(ctx, "could not get User-Agent from context")
 	}
 
 	if err := s.authRepo.StoreRefreshToken(ctx, user.ID, refreshToken.JTI, refreshTokenHash, ipAddress, userAgent, refreshToken.ExpiresAt); err != nil {
+		return "", "", time.Time{}, err
+	}
+
+	// finally update last login time
+	if err := s.userRepo.UpdateLastLoginAtByUserID(ctx, user.ID); err != nil {
 		return "", "", time.Time{}, err
 	}
 

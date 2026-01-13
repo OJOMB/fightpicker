@@ -1,6 +1,7 @@
 package config
 
 type Config struct {
+	AppName  string     `mapstructure:"app_name"`
 	HTTP     HTTPConfig `mapstructure:"http"`
 	GRPC     GRPCConfig `mapstructure:"grpc"`
 	Env      string     `mapstructure:"-"`
@@ -22,8 +23,9 @@ type HTTPConfig struct {
 }
 
 type GRPCConfig struct {
-	Domain string `mapstructure:"domain"`
-	Port   int    `mapstructure:"port"`
+	Domain           string `mapstructure:"domain"`
+	Port             int    `mapstructure:"port"`
+	EnableReflection bool   `mapstructure:"enable_reflection"`
 }
 
 type DatabaseConfig struct {

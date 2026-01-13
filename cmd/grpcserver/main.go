@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os/signal"
-	"syscall"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -16,6 +14,8 @@ import (
 	"github.com/OJOMB/fightpicker/internal/config"
 	userspb "github.com/OJOMB/fightpicker/internal/grpc/gen/go/users/v1"
 	usersgrpc "github.com/OJOMB/fightpicker/internal/grpc/users"
+	"github.com/OJOMB/fightpicker/pkg/contextual"
+	"github.com/OJOMB/fightpicker/pkg/pyroscope"
 )
 
 var env string
@@ -29,10 +29,19 @@ func main() {
 		log.Fatalf("failed to load configuration: %v", err)
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	ctx, stop := contextual.SetupSignals()
 	defer stop()
 
-	app, err := app.New(ctx, &cfg)
+	if cfg.Observability.Pyroscope.Enable {
+		pyroProf, err := pyroscope.Setup(cfg.AppName, cfg.Observability.Pyroscope.Endpoint)
+		if err != nil {
+			log.Fatalf("failed to start pyroscope: %v", err)
+		}
+
+		defer pyroProf.Stop()
+	}
+
+	app, err := app.New(ctx, cfg)
 	if err != nil {
 		log.Fatalf("failed to initialize app: %v", err)
 	}
@@ -44,13 +53,14 @@ func main() {
 
 	usersServer := usersgrpc.NewServer(
 		app.Services.UsersService,
-		&app.Logger, // or app.Logger if you expose it
+		&app.Logger,
 	)
 
 	userspb.RegisterUsersServiceServer(grpcServer, usersServer)
 
-	// Optional but nice in dev
-	reflection.Register(grpcServer)
+	if cfg.GRPC.EnableReflection {
+		reflection.Register(grpcServer)
+	}
 
 	// 6. Listen
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.GRPC.Domain, cfg.GRPC.Port))

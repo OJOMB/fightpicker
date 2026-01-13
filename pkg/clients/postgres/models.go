@@ -452,7 +452,7 @@ type User struct {
 	EmailVerified                   bool
 	EmailVerificationTokenHash      []byte
 	EmailVerificationTokenExpiresAt pgtype.Timestamptz
-	LastLogin                       pgtype.Timestamptz
+	LastLoginAt                     pgtype.Timestamptz
 	CreatedAt                       pgtype.Timestamptz
 	UpdatedAt                       pgtype.Timestamptz
 	UpdatedBy                       pgtype.UUID

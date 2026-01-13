@@ -15,6 +15,7 @@ import (
 // UserRepo defines the interface for user-related operations needed by the auth service.
 type UserRepo interface {
 	GetUserByEmail(ctx context.Context, email string) (serviceusers.User, error)
+	UpdateLastLoginAtByUserID(ctx context.Context, userID uuid.UUID) error
 }
 
 // AuthRepo defines the interface for authentication-related operations needed by the auth service.
