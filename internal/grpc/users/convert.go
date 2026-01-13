@@ -3,16 +3,13 @@ package users
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	typespb "github.com/OJOMB/fightpicker/internal/grpc/gen/go/common/types"
 	userspb "github.com/OJOMB/fightpicker/internal/grpc/gen/go/users/v1"
 	usersservice "github.com/OJOMB/fightpicker/internal/service/users"
 )
 
-func toProtoUser(u usersservice.User) *userspb.User {
+func userIDOtoDTO(u usersservice.User) *userspb.User {
 	return &userspb.User{
-		Id: &typespb.UUID7{
-			Value: u.ID.String(),
-		},
+		Id:        u.ID.String(),
 		Email:     u.Email,
 		Username:  u.Username,
 		Dob:       timestamppb.New(u.DOB),

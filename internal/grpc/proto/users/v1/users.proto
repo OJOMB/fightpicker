@@ -5,7 +5,6 @@ package users.v1;
 option go_package = "github.com/OJOMB/fightpicker/internal/grpc/gen/go/users/v1;userspb";
 
 import "google/protobuf/timestamp.proto";
-import "common/types/uuid.proto";
 
 // UsersService defines the gRPC service for user management
 service UsersService {
@@ -43,15 +42,15 @@ enum Gender {
 
 // User represents a user in the system
 message User {
-  common.types.UUID7 id    = 1;
-  string             email = 2;
+  string id    = 1;
+  string email = 2;
 
   string first_name = 3;
   string last_name  = 4;
   string username   = 5;
   Gender gender     = 6;
   string location   = 7;
-  string bio = 8;
+  string bio        = 8;
 
   google.protobuf.Timestamp dob = 9;
 
@@ -78,12 +77,12 @@ message CreateUserRequest {
 
 // GetUserRequest is the request message for retrieving a user by ID
 message GetUserRequest {
-  common.types.UUID7 user_id = 1;
+  string user_id = 1;
 }
 
 // DeleteUserRequest is the request message for deleting a user by ID
 message DeleteUserRequest {
-  common.types.UUID7 user_id = 1;
+  string user_id = 1;
 }
 
 // DeleteUserResponse is the response message for deleting a user
@@ -91,7 +90,7 @@ message DeleteUserResponse {}
 
 // UpdateUserRequest is the request message for updating a user's details
 message UpdateUserRequest {
-  common.types.UUID7 user_id = 1;
+  string user_id = 1;
 
   optional string email      = 2;
   optional string password   = 3;
@@ -105,29 +104,31 @@ message UpdateUserRequest {
 
 // ListUsersRequest is the request message for listing users with pagination and optional filters
 message ListUsersRequest {
-  optional common.types.UUID7 last_seen_id = 1;
-  uint32                      page_size    = 2;
+  // Pagination fields
+  optional string last_seen_id = 1;
+  optional uint32 page_size    = 2;
 
+  // Filter fields
   optional string email    = 3;
   optional string username = 4;
 }
 
 // ListUsersResponse is the response message for listing users
 message ListUsersResponse {
-  repeated User               users        = 1;
-  optional common.types.UUID7 last_seen_id = 2;
-  uint32                      page_size    = 3;
-  uint64                      total_count  = 4;
+  repeated User   users        = 1;
+  optional string last_seen_id = 2;
+  uint32          page_size    = 3;
+  uint64          total_count  = 4;
 }
 
 // FollowUserRequest is the request message for following a user
 message FollowUserRequest {
-  common.types.UUID7 target_user_id = 1;
+  string target_user_id = 1;
 }
 
 // UnfollowUserRequest is the request message for unfollowing a user
 message UnfollowUserRequest {
-  common.types.UUID7 target_user_id = 1;
+  string target_user_id = 1;
 }
 
 // FollowUserResponse is the response message for following a user
@@ -138,14 +139,14 @@ message UnfollowUserResponse {}
 
 // ListFollowersRequest is the request message for listing a user's followers
 message ListFollowersRequest {
-  common.types.UUID7          user_id      = 1;
-  optional common.types.UUID7 last_seen_id = 2;
-  uint32                      page_size    = 3;
+  string          user_id      = 1;
+  optional string last_seen_id = 2;
+  uint32          page_size    = 3;
 }
 
 // ListFolloweesRequest is the request message for listing the users a user is following
 message ListFolloweesRequest {
-  common.types.UUID7          user_id      = 1;
-  optional common.types.UUID7 last_seen_id = 2;
-  uint32                      page_size    = 3;
+  string          user_id      = 1;
+  optional string last_seen_id = 2;
+  uint32          page_size    = 3;
 }

@@ -29,7 +29,7 @@ func NewServer(service *usersservice.Service, logger *logs.Logger) *Server {
 
 // GetUser retrieves a user by their ID.
 func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
-	userID, err := uuid.FromString(req.UserId.Value)
+	userID, err := uuid.FromString(req.UserId)
 	if err != nil {
 		return nil, s.toStatus(errors.Wrap(usersservice.ErrInvalidParameter, "invalid user ID format"))
 	}
@@ -39,5 +39,5 @@ func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User,
 		return nil, s.toStatus(err)
 	}
 
-	return toProtoUser(user), nil
+	return userIDOtoDTO(user), nil
 }

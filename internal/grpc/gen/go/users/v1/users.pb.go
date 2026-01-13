@@ -7,7 +7,6 @@
 package userspb
 
 import (
-	types "github.com/OJOMB/fightpicker/internal/grpc/gen/go/common/types"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -76,7 +75,7 @@ func (Gender) EnumDescriptor() ([]byte, []int) {
 // User represents a user in the system
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            *types.UUID7           `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	FirstName     string                 `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
 	LastName      string                 `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
@@ -121,11 +120,11 @@ func (*User) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *User) GetId() *types.UUID7 {
+func (x *User) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return nil
+	return ""
 }
 
 func (x *User) GetEmail() string {
@@ -294,7 +293,7 @@ func (x *CreateUserRequest) GetDateOfBirth() *timestamppb.Timestamp {
 // GetUserRequest is the request message for retrieving a user by ID
 type GetUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        *types.UUID7           `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -329,17 +328,17 @@ func (*GetUserRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetUserRequest) GetUserId() *types.UUID7 {
+func (x *GetUserRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return nil
+	return ""
 }
 
 // DeleteUserRequest is the request message for deleting a user by ID
 type DeleteUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        *types.UUID7           `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -374,11 +373,11 @@ func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *DeleteUserRequest) GetUserId() *types.UUID7 {
+func (x *DeleteUserRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return nil
+	return ""
 }
 
 // DeleteUserResponse is the response message for deleting a user
@@ -421,7 +420,7 @@ func (*DeleteUserResponse) Descriptor() ([]byte, []int) {
 // UpdateUserRequest is the request message for updating a user's details
 type UpdateUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        *types.UUID7           `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Email         *string                `protobuf:"bytes,2,opt,name=email,proto3,oneof" json:"email,omitempty"`
 	Password      *string                `protobuf:"bytes,3,opt,name=password,proto3,oneof" json:"password,omitempty"`
 	FirstName     *string                `protobuf:"bytes,4,opt,name=first_name,json=firstName,proto3,oneof" json:"first_name,omitempty"`
@@ -464,11 +463,11 @@ func (*UpdateUserRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *UpdateUserRequest) GetUserId() *types.UUID7 {
+func (x *UpdateUserRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return nil
+	return ""
 }
 
 func (x *UpdateUserRequest) GetEmail() string {
@@ -529,11 +528,13 @@ func (x *UpdateUserRequest) GetBio() string {
 
 // ListUsersRequest is the request message for listing users with pagination and optional filters
 type ListUsersRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	LastSeenId    *types.UUID7           `protobuf:"bytes,1,opt,name=last_seen_id,json=lastSeenId,proto3,oneof" json:"last_seen_id,omitempty"`
-	PageSize      uint32                 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Email         *string                `protobuf:"bytes,3,opt,name=email,proto3,oneof" json:"email,omitempty"`
-	Username      *string                `protobuf:"bytes,4,opt,name=username,proto3,oneof" json:"username,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Pagination fields
+	LastSeenId *string `protobuf:"bytes,1,opt,name=last_seen_id,json=lastSeenId,proto3,oneof" json:"last_seen_id,omitempty"`
+	PageSize   *uint32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3,oneof" json:"page_size,omitempty"`
+	// Filter fields
+	Email         *string `protobuf:"bytes,3,opt,name=email,proto3,oneof" json:"email,omitempty"`
+	Username      *string `protobuf:"bytes,4,opt,name=username,proto3,oneof" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -568,16 +569,16 @@ func (*ListUsersRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *ListUsersRequest) GetLastSeenId() *types.UUID7 {
-	if x != nil {
-		return x.LastSeenId
+func (x *ListUsersRequest) GetLastSeenId() string {
+	if x != nil && x.LastSeenId != nil {
+		return *x.LastSeenId
 	}
-	return nil
+	return ""
 }
 
 func (x *ListUsersRequest) GetPageSize() uint32 {
-	if x != nil {
-		return x.PageSize
+	if x != nil && x.PageSize != nil {
+		return *x.PageSize
 	}
 	return 0
 }
@@ -600,7 +601,7 @@ func (x *ListUsersRequest) GetUsername() string {
 type ListUsersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Users         []*User                `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
-	LastSeenId    *types.UUID7           `protobuf:"bytes,2,opt,name=last_seen_id,json=lastSeenId,proto3,oneof" json:"last_seen_id,omitempty"`
+	LastSeenId    *string                `protobuf:"bytes,2,opt,name=last_seen_id,json=lastSeenId,proto3,oneof" json:"last_seen_id,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	TotalCount    uint64                 `protobuf:"varint,4,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -644,11 +645,11 @@ func (x *ListUsersResponse) GetUsers() []*User {
 	return nil
 }
 
-func (x *ListUsersResponse) GetLastSeenId() *types.UUID7 {
-	if x != nil {
-		return x.LastSeenId
+func (x *ListUsersResponse) GetLastSeenId() string {
+	if x != nil && x.LastSeenId != nil {
+		return *x.LastSeenId
 	}
-	return nil
+	return ""
 }
 
 func (x *ListUsersResponse) GetPageSize() uint32 {
@@ -668,7 +669,7 @@ func (x *ListUsersResponse) GetTotalCount() uint64 {
 // FollowUserRequest is the request message for following a user
 type FollowUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TargetUserId  *types.UUID7           `protobuf:"bytes,1,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
+	TargetUserId  string                 `protobuf:"bytes,1,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -703,17 +704,17 @@ func (*FollowUserRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *FollowUserRequest) GetTargetUserId() *types.UUID7 {
+func (x *FollowUserRequest) GetTargetUserId() string {
 	if x != nil {
 		return x.TargetUserId
 	}
-	return nil
+	return ""
 }
 
 // UnfollowUserRequest is the request message for unfollowing a user
 type UnfollowUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TargetUserId  *types.UUID7           `protobuf:"bytes,1,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
+	TargetUserId  string                 `protobuf:"bytes,1,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -748,11 +749,11 @@ func (*UnfollowUserRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *UnfollowUserRequest) GetTargetUserId() *types.UUID7 {
+func (x *UnfollowUserRequest) GetTargetUserId() string {
 	if x != nil {
 		return x.TargetUserId
 	}
-	return nil
+	return ""
 }
 
 // FollowUserResponse is the response message for following a user
@@ -832,8 +833,8 @@ func (*UnfollowUserResponse) Descriptor() ([]byte, []int) {
 // ListFollowersRequest is the request message for listing a user's followers
 type ListFollowersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        *types.UUID7           `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	LastSeenId    *types.UUID7           `protobuf:"bytes,2,opt,name=last_seen_id,json=lastSeenId,proto3,oneof" json:"last_seen_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	LastSeenId    *string                `protobuf:"bytes,2,opt,name=last_seen_id,json=lastSeenId,proto3,oneof" json:"last_seen_id,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -869,18 +870,18 @@ func (*ListFollowersRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *ListFollowersRequest) GetUserId() *types.UUID7 {
+func (x *ListFollowersRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return nil
+	return ""
 }
 
-func (x *ListFollowersRequest) GetLastSeenId() *types.UUID7 {
-	if x != nil {
-		return x.LastSeenId
+func (x *ListFollowersRequest) GetLastSeenId() string {
+	if x != nil && x.LastSeenId != nil {
+		return *x.LastSeenId
 	}
-	return nil
+	return ""
 }
 
 func (x *ListFollowersRequest) GetPageSize() uint32 {
@@ -893,8 +894,8 @@ func (x *ListFollowersRequest) GetPageSize() uint32 {
 // ListFolloweesRequest is the request message for listing the users a user is following
 type ListFolloweesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        *types.UUID7           `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	LastSeenId    *types.UUID7           `protobuf:"bytes,2,opt,name=last_seen_id,json=lastSeenId,proto3,oneof" json:"last_seen_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	LastSeenId    *string                `protobuf:"bytes,2,opt,name=last_seen_id,json=lastSeenId,proto3,oneof" json:"last_seen_id,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -930,18 +931,18 @@ func (*ListFolloweesRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *ListFolloweesRequest) GetUserId() *types.UUID7 {
+func (x *ListFolloweesRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
-	return nil
+	return ""
 }
 
-func (x *ListFolloweesRequest) GetLastSeenId() *types.UUID7 {
-	if x != nil {
-		return x.LastSeenId
+func (x *ListFolloweesRequest) GetLastSeenId() string {
+	if x != nil && x.LastSeenId != nil {
+		return *x.LastSeenId
 	}
-	return nil
+	return ""
 }
 
 func (x *ListFolloweesRequest) GetPageSize() uint32 {
@@ -955,9 +956,9 @@ var File_users_v1_users_proto protoreflect.FileDescriptor
 
 const file_users_v1_users_proto_rawDesc = "" +
 	"\n" +
-	"\x14users/v1/users.proto\x12\busers.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17common/types/uuid.proto\"\x95\x03\n" +
-	"\x04User\x12#\n" +
-	"\x02id\x18\x01 \x01(\v2\x13.common.types.UUID7R\x02id\x12\x14\n" +
+	"\x14users/v1/users.proto\x12\busers.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x80\x03\n" +
+	"\x04User\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1d\n" +
 	"\n" +
 	"first_name\x18\x03 \x01(\tR\tfirstName\x12\x1b\n" +
@@ -980,14 +981,14 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\tlast_name\x18\x04 \x01(\tR\blastName\x12\x1a\n" +
 	"\busername\x18\x05 \x01(\tR\busername\x12(\n" +
 	"\x06gender\x18\x06 \x01(\x0e2\x10.users.v1.GenderR\x06gender\x12>\n" +
-	"\rdate_of_birth\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vdateOfBirth\">\n" +
-	"\x0eGetUserRequest\x12,\n" +
-	"\auser_id\x18\x01 \x01(\v2\x13.common.types.UUID7R\x06userId\"A\n" +
-	"\x11DeleteUserRequest\x12,\n" +
-	"\auser_id\x18\x01 \x01(\v2\x13.common.types.UUID7R\x06userId\"\x14\n" +
-	"\x12DeleteUserResponse\"\xac\x03\n" +
-	"\x11UpdateUserRequest\x12,\n" +
-	"\auser_id\x18\x01 \x01(\v2\x13.common.types.UUID7R\x06userId\x12\x19\n" +
+	"\rdate_of_birth\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vdateOfBirth\")\n" +
+	"\x0eGetUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\",\n" +
+	"\x11DeleteUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x14\n" +
+	"\x12DeleteUserResponse\"\x97\x03\n" +
+	"\x11UpdateUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\x05email\x18\x02 \x01(\tH\x00R\x05email\x88\x01\x01\x12\x1f\n" +
 	"\bpassword\x18\x03 \x01(\tH\x01R\bpassword\x88\x01\x01\x12\"\n" +
 	"\n" +
@@ -1005,39 +1006,41 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\t_usernameB\t\n" +
 	"\a_genderB\v\n" +
 	"\t_locationB\x06\n" +
-	"\x04_bio\"\xcf\x01\n" +
-	"\x10ListUsersRequest\x12:\n" +
-	"\flast_seen_id\x18\x01 \x01(\v2\x13.common.types.UUID7H\x00R\n" +
-	"lastSeenId\x88\x01\x01\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\rR\bpageSize\x12\x19\n" +
-	"\x05email\x18\x03 \x01(\tH\x01R\x05email\x88\x01\x01\x12\x1f\n" +
-	"\busername\x18\x04 \x01(\tH\x02R\busername\x88\x01\x01B\x0f\n" +
-	"\r_last_seen_idB\b\n" +
+	"\x04_bio\"\xcd\x01\n" +
+	"\x10ListUsersRequest\x12%\n" +
+	"\flast_seen_id\x18\x01 \x01(\tH\x00R\n" +
+	"lastSeenId\x88\x01\x01\x12 \n" +
+	"\tpage_size\x18\x02 \x01(\rH\x01R\bpageSize\x88\x01\x01\x12\x19\n" +
+	"\x05email\x18\x03 \x01(\tH\x02R\x05email\x88\x01\x01\x12\x1f\n" +
+	"\busername\x18\x04 \x01(\tH\x03R\busername\x88\x01\x01B\x0f\n" +
+	"\r_last_seen_idB\f\n" +
+	"\n" +
+	"_page_sizeB\b\n" +
 	"\x06_emailB\v\n" +
-	"\t_username\"\xc4\x01\n" +
+	"\t_username\"\xaf\x01\n" +
 	"\x11ListUsersResponse\x12$\n" +
-	"\x05users\x18\x01 \x03(\v2\x0e.users.v1.UserR\x05users\x12:\n" +
-	"\flast_seen_id\x18\x02 \x01(\v2\x13.common.types.UUID7H\x00R\n" +
+	"\x05users\x18\x01 \x03(\v2\x0e.users.v1.UserR\x05users\x12%\n" +
+	"\flast_seen_id\x18\x02 \x01(\tH\x00R\n" +
 	"lastSeenId\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\rR\bpageSize\x12\x1f\n" +
 	"\vtotal_count\x18\x04 \x01(\x04R\n" +
 	"totalCountB\x0f\n" +
-	"\r_last_seen_id\"N\n" +
-	"\x11FollowUserRequest\x129\n" +
-	"\x0etarget_user_id\x18\x01 \x01(\v2\x13.common.types.UUID7R\ftargetUserId\"P\n" +
-	"\x13UnfollowUserRequest\x129\n" +
-	"\x0etarget_user_id\x18\x01 \x01(\v2\x13.common.types.UUID7R\ftargetUserId\"\x14\n" +
+	"\r_last_seen_id\"9\n" +
+	"\x11FollowUserRequest\x12$\n" +
+	"\x0etarget_user_id\x18\x01 \x01(\tR\ftargetUserId\";\n" +
+	"\x13UnfollowUserRequest\x12$\n" +
+	"\x0etarget_user_id\x18\x01 \x01(\tR\ftargetUserId\"\x14\n" +
 	"\x12FollowUserResponse\"\x16\n" +
-	"\x14UnfollowUserResponse\"\xae\x01\n" +
-	"\x14ListFollowersRequest\x12,\n" +
-	"\auser_id\x18\x01 \x01(\v2\x13.common.types.UUID7R\x06userId\x12:\n" +
-	"\flast_seen_id\x18\x02 \x01(\v2\x13.common.types.UUID7H\x00R\n" +
+	"\x14UnfollowUserResponse\"\x84\x01\n" +
+	"\x14ListFollowersRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12%\n" +
+	"\flast_seen_id\x18\x02 \x01(\tH\x00R\n" +
 	"lastSeenId\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\rR\bpageSizeB\x0f\n" +
-	"\r_last_seen_id\"\xae\x01\n" +
-	"\x14ListFolloweesRequest\x12,\n" +
-	"\auser_id\x18\x01 \x01(\v2\x13.common.types.UUID7R\x06userId\x12:\n" +
-	"\flast_seen_id\x18\x02 \x01(\v2\x13.common.types.UUID7H\x00R\n" +
+	"\r_last_seen_id\"\x84\x01\n" +
+	"\x14ListFolloweesRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12%\n" +
+	"\flast_seen_id\x18\x02 \x01(\tH\x00R\n" +
 	"lastSeenId\x88\x01\x01\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\rR\bpageSizeB\x0f\n" +
 	"\r_last_seen_id*>\n" +
@@ -1090,53 +1093,40 @@ var file_users_v1_users_proto_goTypes = []any{
 	(*UnfollowUserResponse)(nil),  // 12: users.v1.UnfollowUserResponse
 	(*ListFollowersRequest)(nil),  // 13: users.v1.ListFollowersRequest
 	(*ListFolloweesRequest)(nil),  // 14: users.v1.ListFolloweesRequest
-	(*types.UUID7)(nil),           // 15: common.types.UUID7
-	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
+	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
 }
 var file_users_v1_users_proto_depIdxs = []int32{
-	15, // 0: users.v1.User.id:type_name -> common.types.UUID7
-	0,  // 1: users.v1.User.gender:type_name -> users.v1.Gender
-	16, // 2: users.v1.User.dob:type_name -> google.protobuf.Timestamp
-	16, // 3: users.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	16, // 4: users.v1.User.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 5: users.v1.CreateUserRequest.gender:type_name -> users.v1.Gender
-	16, // 6: users.v1.CreateUserRequest.date_of_birth:type_name -> google.protobuf.Timestamp
-	15, // 7: users.v1.GetUserRequest.user_id:type_name -> common.types.UUID7
-	15, // 8: users.v1.DeleteUserRequest.user_id:type_name -> common.types.UUID7
-	15, // 9: users.v1.UpdateUserRequest.user_id:type_name -> common.types.UUID7
-	0,  // 10: users.v1.UpdateUserRequest.gender:type_name -> users.v1.Gender
-	15, // 11: users.v1.ListUsersRequest.last_seen_id:type_name -> common.types.UUID7
-	1,  // 12: users.v1.ListUsersResponse.users:type_name -> users.v1.User
-	15, // 13: users.v1.ListUsersResponse.last_seen_id:type_name -> common.types.UUID7
-	15, // 14: users.v1.FollowUserRequest.target_user_id:type_name -> common.types.UUID7
-	15, // 15: users.v1.UnfollowUserRequest.target_user_id:type_name -> common.types.UUID7
-	15, // 16: users.v1.ListFollowersRequest.user_id:type_name -> common.types.UUID7
-	15, // 17: users.v1.ListFollowersRequest.last_seen_id:type_name -> common.types.UUID7
-	15, // 18: users.v1.ListFolloweesRequest.user_id:type_name -> common.types.UUID7
-	15, // 19: users.v1.ListFolloweesRequest.last_seen_id:type_name -> common.types.UUID7
-	2,  // 20: users.v1.UsersService.CreateUser:input_type -> users.v1.CreateUserRequest
-	3,  // 21: users.v1.UsersService.GetUser:input_type -> users.v1.GetUserRequest
-	6,  // 22: users.v1.UsersService.UpdateUser:input_type -> users.v1.UpdateUserRequest
-	4,  // 23: users.v1.UsersService.DeleteUser:input_type -> users.v1.DeleteUserRequest
-	7,  // 24: users.v1.UsersService.ListUsers:input_type -> users.v1.ListUsersRequest
-	9,  // 25: users.v1.UsersService.FollowUser:input_type -> users.v1.FollowUserRequest
-	10, // 26: users.v1.UsersService.UnfollowUser:input_type -> users.v1.UnfollowUserRequest
-	13, // 27: users.v1.UsersService.ListFollowers:input_type -> users.v1.ListFollowersRequest
-	14, // 28: users.v1.UsersService.ListFollowees:input_type -> users.v1.ListFolloweesRequest
-	1,  // 29: users.v1.UsersService.CreateUser:output_type -> users.v1.User
-	1,  // 30: users.v1.UsersService.GetUser:output_type -> users.v1.User
-	1,  // 31: users.v1.UsersService.UpdateUser:output_type -> users.v1.User
-	5,  // 32: users.v1.UsersService.DeleteUser:output_type -> users.v1.DeleteUserResponse
-	8,  // 33: users.v1.UsersService.ListUsers:output_type -> users.v1.ListUsersResponse
-	11, // 34: users.v1.UsersService.FollowUser:output_type -> users.v1.FollowUserResponse
-	12, // 35: users.v1.UsersService.UnfollowUser:output_type -> users.v1.UnfollowUserResponse
-	8,  // 36: users.v1.UsersService.ListFollowers:output_type -> users.v1.ListUsersResponse
-	8,  // 37: users.v1.UsersService.ListFollowees:output_type -> users.v1.ListUsersResponse
-	29, // [29:38] is the sub-list for method output_type
-	20, // [20:29] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	0,  // 0: users.v1.User.gender:type_name -> users.v1.Gender
+	15, // 1: users.v1.User.dob:type_name -> google.protobuf.Timestamp
+	15, // 2: users.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	15, // 3: users.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 4: users.v1.CreateUserRequest.gender:type_name -> users.v1.Gender
+	15, // 5: users.v1.CreateUserRequest.date_of_birth:type_name -> google.protobuf.Timestamp
+	0,  // 6: users.v1.UpdateUserRequest.gender:type_name -> users.v1.Gender
+	1,  // 7: users.v1.ListUsersResponse.users:type_name -> users.v1.User
+	2,  // 8: users.v1.UsersService.CreateUser:input_type -> users.v1.CreateUserRequest
+	3,  // 9: users.v1.UsersService.GetUser:input_type -> users.v1.GetUserRequest
+	6,  // 10: users.v1.UsersService.UpdateUser:input_type -> users.v1.UpdateUserRequest
+	4,  // 11: users.v1.UsersService.DeleteUser:input_type -> users.v1.DeleteUserRequest
+	7,  // 12: users.v1.UsersService.ListUsers:input_type -> users.v1.ListUsersRequest
+	9,  // 13: users.v1.UsersService.FollowUser:input_type -> users.v1.FollowUserRequest
+	10, // 14: users.v1.UsersService.UnfollowUser:input_type -> users.v1.UnfollowUserRequest
+	13, // 15: users.v1.UsersService.ListFollowers:input_type -> users.v1.ListFollowersRequest
+	14, // 16: users.v1.UsersService.ListFollowees:input_type -> users.v1.ListFolloweesRequest
+	1,  // 17: users.v1.UsersService.CreateUser:output_type -> users.v1.User
+	1,  // 18: users.v1.UsersService.GetUser:output_type -> users.v1.User
+	1,  // 19: users.v1.UsersService.UpdateUser:output_type -> users.v1.User
+	5,  // 20: users.v1.UsersService.DeleteUser:output_type -> users.v1.DeleteUserResponse
+	8,  // 21: users.v1.UsersService.ListUsers:output_type -> users.v1.ListUsersResponse
+	11, // 22: users.v1.UsersService.FollowUser:output_type -> users.v1.FollowUserResponse
+	12, // 23: users.v1.UsersService.UnfollowUser:output_type -> users.v1.UnfollowUserResponse
+	8,  // 24: users.v1.UsersService.ListFollowers:output_type -> users.v1.ListUsersResponse
+	8,  // 25: users.v1.UsersService.ListFollowees:output_type -> users.v1.ListUsersResponse
+	17, // [17:26] is the sub-list for method output_type
+	8,  // [8:17] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_users_v1_users_proto_init() }
