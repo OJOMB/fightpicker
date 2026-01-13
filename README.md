@@ -25,3 +25,22 @@ podman-compose down --v && podman-compose up --build
 ```
 
 run the app in debug mode in your IDE of choice.
+
+## Transport Layers
+
+Fightpicker can expose either a RESTful API or a gRPC API.
+
+```bash
+# RESTful API
+go run ./cmd/httpserver/main.go --env=${ENV}
+# gRPC API
+go run ./cmd/grpcserver/main.go --env=${ENV}
+```
+
+The APIs are consistent in behaviour, but may differ slightly in request and response formats (representation).
+
+- One domain + two API surfaces
+- Shared service and repository layers
+- DTO conversion layers for each transport that respect the conventions of that transport
+
+The principle is essentially that attempting to wrangle ReST and gRPC into identical representations undermines the strengths of each transport. Instead, we embrace the differences and provide idiomatic representations for each transport, while keeping the core business logic consistent.
