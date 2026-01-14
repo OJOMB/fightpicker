@@ -20,6 +20,9 @@ import (
 // the error is intended to be classified and handled by the caller.
 type HandlerFunc func(w http.ResponseWriter, r *http.Request) error
 
+// APIErrClassifier is a function that classifies an error into an apierr.APIError.
+type APIErrClassifier func(error) apierr.APIError
+
 // Handler is the base HTTP handler for v1 endpoints.
 type Handler struct {
 	Logger logs.Logger
@@ -39,7 +42,7 @@ func (h *Handler) WriteJSON(
 	}
 }
 
-func (h *Handler) ToHandler(action HandlerFunc, classifier func(error) apierr.APIError) http.HandlerFunc {
+func (h *Handler) ToHandler(action HandlerFunc, classifier APIErrClassifier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := action(w, r); err != nil {
 			h.WriteError(r.Context(), w, classifier(err))
