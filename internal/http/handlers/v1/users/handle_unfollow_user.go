@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UserUnfollower interface {
@@ -15,23 +14,21 @@ type UserUnfollower interface {
 }
 
 // unfollowUser handles the HTTP DELETE request for the v1 unfollow_user endpoint.
-func (h *Handler) unfollowUser(svc UserUnfollower, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersUnfollow)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) unfollowUser(svc UserUnfollower) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
-		followeeID, err := h.parseUserID(r)
+		followeeID, err := h.ParseID(r, v1.QueryParamUserID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		if err := svc.UnfollowUser(ctx, followeeID); err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+
+		return nil
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UserFollower interface {
@@ -15,23 +14,21 @@ type UserFollower interface {
 }
 
 // followUser handles the HTTP PUT request for the v1 follow_user endpoint.
-func (h *Handler) followUser(svc UserFollower, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersFollow)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) followUser(svc UserFollower) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
-		followeeID, err := h.parseUserID(r)
+		followeeID, err := h.ParseID(r, v1.QueryParamUserID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		if err := svc.FollowUser(ctx, followeeID); err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+
+		return nil
 	}
 }

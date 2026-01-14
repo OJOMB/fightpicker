@@ -27,7 +27,7 @@ func (s *Server) routes() {
 
 	// Register routes from all handlers
 	for _, handler := range s.handlers {
-		handler.RegisterRoutes(s.router, s.logger)
+		handler.RegisterRoutes(s.router)
 	}
 
 	s.router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

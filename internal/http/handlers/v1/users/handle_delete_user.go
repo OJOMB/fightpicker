@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UserDeleter interface {
@@ -15,23 +14,22 @@ type UserDeleter interface {
 }
 
 // deleteUser handles the HTTP DELETE request for the v1 delete_user endpoint.
-func (h *Handler) deleteUser(svc UserDeleter, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersDelete)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) deleteUser(svc UserDeleter) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
-		userID, err := h.parseUserID(r)
+		userID, err := h.ParseID(r, v1.QueryParamUserID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		if err = svc.DeleteUserByID(ctx, userID); err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			h.WriteError(ctx, w, classifyError(err))
+			return err
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+
+		return nil
 	}
 }

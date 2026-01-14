@@ -7,6 +7,7 @@ import (
 	"github.com/OJOMB/fightpicker/internal/consumers/media"
 )
 
+// RunWorkers starts all background worker consumers.
 func (a *App) RunWorkers(ctx context.Context) error {
 	if !a.initialized {
 		return ErrAppNotInitialized

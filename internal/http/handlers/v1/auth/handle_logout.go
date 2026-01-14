@@ -6,7 +6,6 @@ import (
 	"time"
 
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 // UserLogouter defines the interface for logging out users.
@@ -15,23 +14,18 @@ type UserLogouter interface {
 }
 
 // logout handles the logout HTTP request.
-func (h *Handler) logout(svc UserLogouter, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1AuthLogout)
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) logout(svc UserLogouter) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
 		// get refresh token from cookie
 		cookie, err := r.Cookie("refresh_token")
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
-		refreshToken := cookie.Value
-
-		if err := svc.Logout(ctx, refreshToken); err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+		if err := svc.Logout(ctx, cookie.Value); err != nil {
+			return err
 		}
 
 		// Clear the refresh token cookie
@@ -47,5 +41,6 @@ func (h *Handler) logout(svc UserLogouter, logger logs.Logger) http.HandlerFunc 
 		http.SetCookie(w, clearCookie)
 
 		w.WriteHeader(http.StatusNoContent)
+		return nil
 	}
 }

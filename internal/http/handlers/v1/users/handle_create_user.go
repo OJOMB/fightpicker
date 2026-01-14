@@ -8,7 +8,6 @@ import (
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/users"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UserCreator interface {
@@ -16,25 +15,23 @@ type UserCreator interface {
 }
 
 // createUser handles the HTTP POST request for the v1 create_user endpoint.
-func (h *Handler) createUser(svc UserCreator, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersCreate)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) createUser(svc UserCreator) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
 		defer r.Body.Close()
 		var userCreateReq dtos.UserCreateReq
 		if err := json.NewDecoder(r.Body).Decode(&userCreateReq); err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return v1.ErrInvalidJSONRequestBody
 		}
 
 		createdUser, err := svc.CreateUser(ctx, userCreateRequestDTOtoIDO(userCreateReq))
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
-		h.writeJSON(ctx, w, logger, http.StatusCreated, userIDOToDTO(createdUser))
+		h.WriteJSON(ctx, w, http.StatusCreated, userIDOToDTO(createdUser))
+
+		return nil
 	}
 }

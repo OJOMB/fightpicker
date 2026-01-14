@@ -1,15 +1,10 @@
 package users
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
@@ -33,23 +28,31 @@ type Service interface {
 }
 
 type Handler struct {
+	v1.Handler
 	service    Service
 	pathPrefix string
+	logger     logs.Logger
 }
 
-func New(service Service) *Handler {
+func New(service Service, logger logs.Logger) *Handler {
 	return &Handler{
+		Handler: v1.Handler{
+			Logger: logger.With("component", "http_handler_v1_users"),
+		},
 		service:    service,
 		pathPrefix: pathPrefix,
 	}
 }
 
-func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
+func (h *Handler) RegisterRoutes(mux *mux.Router) {
 	// POST /api/v1/users - create a new user
 	mux.Handle(
 		h.pathPrefix,
 		otelhttp.NewHandler(
-			h.createUser(h.service, logger),
+			h.ToHandler(
+				h.createUser(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersCreate,
 		),
 	).Name(v1.EndpointNameV1UsersCreate).
@@ -59,7 +62,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/verify", h.pathPrefix),
 		otelhttp.NewHandler(
-			h.verifyEmail(h.service, logger),
+			h.ToHandler(
+				h.verifyEmail(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersEmailVerification,
 		),
 	).Name(v1.EndpointNameV1UsersEmailVerification).
@@ -69,7 +75,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/{%s}", h.pathPrefix, v1.QueryParamUserID),
 		otelhttp.NewHandler(
-			h.getUser(h.service, logger),
+			h.ToHandler(
+				h.getUser(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersGet,
 		),
 	).Name(v1.EndpointNameV1UsersGet).
@@ -79,7 +88,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		h.pathPrefix,
 		otelhttp.NewHandler(
-			h.listUsers(h.service, logger),
+			h.ToHandler(
+				h.listUsers(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersList,
 		),
 	).Name(v1.EndpointNameV1UsersList).
@@ -89,7 +101,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/{%s}", h.pathPrefix, v1.QueryParamUserID),
 		otelhttp.NewHandler(
-			h.updateUser(h.service, logger),
+			h.ToHandler(
+				h.updateUser(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersUpdate,
 		),
 	).Name(v1.EndpointNameV1UsersUpdate).
@@ -99,7 +114,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/{%s}", h.pathPrefix, v1.QueryParamUserID),
 		otelhttp.NewHandler(
-			h.deleteUser(h.service, logger),
+			h.ToHandler(
+				h.deleteUser(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersDelete,
 		),
 	).Name(v1.EndpointNameV1UsersDelete).
@@ -109,7 +127,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/{%s}/followers", h.pathPrefix, v1.QueryParamUserID),
 		otelhttp.NewHandler(
-			h.listFollowers(h.service, logger),
+			h.ToHandler(
+				h.listFollowers(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersListFollowers,
 		),
 	).Name(v1.EndpointNameV1UsersListFollowers).
@@ -119,7 +140,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/{%s}/followees", h.pathPrefix, v1.QueryParamUserID),
 		otelhttp.NewHandler(
-			h.listFollowees(h.service, logger),
+			h.ToHandler(
+				h.listFollowees(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersListFollowees,
 		),
 	).Name(v1.EndpointNameV1UsersListFollowees).
@@ -129,7 +153,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/{%s}/follow", h.pathPrefix, v1.QueryParamUserID),
 		otelhttp.NewHandler(
-			h.followUser(h.service, logger),
+			h.ToHandler(
+				h.followUser(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersFollow,
 		),
 	).Name(v1.EndpointNameV1UsersFollow).
@@ -139,7 +166,10 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/{%s}/follow", h.pathPrefix, v1.QueryParamUserID),
 		otelhttp.NewHandler(
-			h.unfollowUser(h.service, logger),
+			h.ToHandler(
+				h.unfollowUser(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersUnfollow,
 		),
 	).Name(v1.EndpointNameV1UsersUnfollow).
@@ -149,69 +179,12 @@ func (h *Handler) RegisterRoutes(mux *mux.Router, logger logs.Logger) {
 	mux.Handle(
 		fmt.Sprintf("%s/{%s}/profile-picture/upload-url", h.pathPrefix, v1.QueryParamUserID),
 		otelhttp.NewHandler(
-			h.generatePresignedURL(h.service, logger),
+			h.ToHandler(
+				h.generatePresignedURL(h.service),
+				classifyError,
+			),
 			v1.EndpointNameV1UsersGeneratePresignedURL,
 		),
 	).Name(v1.EndpointNameV1UsersGeneratePresignedURL).
 		Methods(http.MethodPost)
-}
-
-func (h *Handler) writeJSON(
-	ctx context.Context,
-	w http.ResponseWriter,
-	logger logs.Logger,
-	status int,
-	v any,
-) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		logger.ErrorContext(ctx, "failed to write response body", "error", err)
-	}
-}
-
-// parsePageSize is a pagination helper that parses the page size from the query parameter string.
-func (h *Handler) parsePageSize(r *http.Request) (int, error) {
-	pageSizeStr := r.URL.Query().Get(v1.QueryParamPageSize)
-
-	if pageSizeStr == "" {
-		return v1.DefaultPageSize, nil
-	}
-
-	pageSize, err := strconv.Atoi(pageSizeStr)
-	if err != nil || pageSize < 0 {
-		return 0, errors.Wrap(v1.ErrInvalidPageSize, v1.QueryParamPageSize)
-	}
-
-	if pageSize > v1.MaxPageSize {
-		return v1.MaxPageSize, nil
-	}
-
-	return pageSize, nil
-}
-
-// parseLastSeenID is a pagination helper that parses the last seen ID from the query parameter string.
-func (h *Handler) parseLastSeenID(r *http.Request) (*uuid.UUID, error) {
-	lastSeenIDStr := r.URL.Query().Get(v1.QueryParamLastSeenID)
-	if lastSeenIDStr == "" {
-		return nil, nil
-	}
-
-	id, err := uuid.FromString(lastSeenIDStr)
-	if err != nil {
-		return nil, errors.Wrap(v1.ErrInvalidUUID, v1.QueryParamLastSeenID)
-	}
-
-	return &id, nil
-}
-
-func (h *Handler) parseUserID(r *http.Request) (uuid.UUID, error) {
-	idStr := mux.Vars(r)[v1.QueryParamUserID]
-	userID, err := uuid.FromString(idStr)
-	if err != nil {
-		return uuid.Nil, errors.Wrap(v1.ErrInvalidUUID, v1.QueryParamUserID)
-	}
-
-	return userID, nil
 }

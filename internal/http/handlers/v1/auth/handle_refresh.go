@@ -2,13 +2,11 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 // UserAuthenticationRefresher defines the interface for refreshing user authentication tokens.
@@ -17,16 +15,13 @@ type UserAuthenticationRefresher interface {
 }
 
 // refresh handles the token refresh HTTP request.
-func (h *Handler) refresh(svc UserAuthenticationRefresher, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1AuthRefresh)
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) refresh(svc UserAuthenticationRefresher) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
 		c, err := r.Cookie(v1.CookieKeyRefreshToken)
 		if err != nil {
-			logger.DebugContext(ctx, "refresh called with no refresh token in cookie", "error", err)
-			h.writeError(ctx, w, ErrMissingRefreshToken, logger)
-			return
+			return ErrMissingRefreshToken
 		}
 
 		accessToken, refreshToken, refreshTokenExpiresAt, err := svc.Refresh(ctx, c.Value)
@@ -42,29 +37,13 @@ func (h *Handler) refresh(svc UserAuthenticationRefresher, logger logs.Logger) h
 				Secure:   true,
 				SameSite: http.SameSiteLaxMode,
 			})
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
-		// 🔐 Set refresh token as HttpOnly cookie
-		refreshCookie := &http.Cookie{
-			Name:     v1.CookieKeyRefreshToken,
-			Value:    refreshToken,
-			HttpOnly: true,
-			Secure:   true,                 // true in production (HTTPS)
-			Path:     h.pathPrefix,         // restrict where it's sent
-			SameSite: http.SameSiteLaxMode, // or Strict if possible
-			Expires:  refreshTokenExpiresAt,
-		}
+		http.SetCookie(w, h.generateRefreshCookie(refreshToken, refreshTokenExpiresAt))
 
-		http.SetCookie(w, refreshCookie)
+		h.WriteJSON(ctx, w, http.StatusOK, dtos.AuthResponse{AccessToken: accessToken})
 
-		resp := dtos.AuthResponse{AccessToken: accessToken}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			logger.ErrorContext(ctx, "failed to write response body", "error", err)
-		}
+		return nil
 	}
 }

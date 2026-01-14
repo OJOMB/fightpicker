@@ -8,10 +8,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"log/slog"
-	"os"
-
-	"go.opentelemetry.io/contrib/bridges/otelslog"
 
 	"github.com/OJOMB/fightpicker/internal/config"
 	"github.com/OJOMB/fightpicker/pkg/logs"
@@ -40,7 +36,6 @@ func New(ctx context.Context, cfg *config.Config) (*App, error) {
 
 	var a = new(App)
 
-	loggerHandlers := []slog.Handler{slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.Level(cfg.LogLevel)})}
 	if cfg.Observability.OTel.Enable {
 		log.Print("OTel enabled")
 		otelShutdown, err := otel.SetupOTelSDK(ctx, cfg.Observability.OTel.Endpoint, cfg.AppName)
@@ -49,14 +44,9 @@ func New(ctx context.Context, cfg *config.Config) (*App, error) {
 		}
 
 		a.otelShutdown = otelShutdown
-
-		loggerHandlers = append(loggerHandlers, otelslog.NewHandler(cfg.AppName))
 	}
 
-	// TODO: slogmulti can be removed once we have go 1.26 is released as it includes built-in support for multiple handlers https://tip.golang.org/doc/go1.26
-	baseLogger := logs.NewMultiSlogger(loggerHandlers...)
-
-	a.Logger = baseLogger.With("env", cfg.Env)
+	a.Logger = logs.New(cfg.LogLevel, cfg.Observability.OTel.Enable, cfg.AppName, cfg.Env)
 
 	// 1. Initialize DB
 	if err := a.newDB(ctx, cfg); err != nil {

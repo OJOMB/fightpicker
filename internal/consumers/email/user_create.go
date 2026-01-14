@@ -41,7 +41,10 @@ func NewUserCreationEmailConsumer(client *kgo.Client, service UsersService, logg
 	}, nil
 }
 
+// Run starts the consumer loop to process incoming Kafka records.
 func (c *UserCreationEmailConsumer) Run(ctx context.Context) error {
+	c.logger.InfoContext(ctx, "user creation email consumer is running")
+
 	for {
 		fetches := c.client.PollFetches(ctx)
 		if fetches.IsClientClosed() {

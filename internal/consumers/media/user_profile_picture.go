@@ -16,6 +16,7 @@ type UsersService interface {
 	ProcessUploadedUserProfilePicture(ctx context.Context, userID uuid.UUID, bucketName, objectKey string) error
 }
 
+// UserProfilePictureConsumer handles user profile picture upload events.
 type UserProfilePictureConsumer struct {
 	client  *kgo.Client
 	service UsersService
@@ -42,7 +43,10 @@ func NewUserProfilePictureConsumer(client *kgo.Client, service UsersService, log
 	}, nil
 }
 
+// Run starts the consumer loop to process incoming Kafka records.
 func (c *UserProfilePictureConsumer) Run(ctx context.Context) error {
+	c.logger.InfoContext(ctx, "user profile picture consumer is running")
+
 	for {
 		fetches := c.client.PollFetches(ctx)
 		if fetches.IsClientClosed() {

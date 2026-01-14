@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type EmailVerifier interface {
@@ -15,24 +14,21 @@ type EmailVerifier interface {
 }
 
 // verifyEmail handles the HTTP POST request for the v1 create_user endpoint.
-func (h *Handler) verifyEmail(svc EmailVerifier, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersEmailVerification)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) verifyEmail(svc EmailVerifier) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
-		// extract token from query parameters
 		token := r.URL.Query().Get(v1.QueryParamEmailVerificationToken)
 		if token == "" {
-			h.writeError(ctx, w, errors.Wrap(v1.ErrMissingRequiredQueryParameter, "token"), logger)
-			return
+			return errors.Wrap(v1.ErrMissingRequiredQueryParameter, v1.QueryParamEmailVerificationToken)
 		}
 
 		if err := svc.VerifyEmailByToken(ctx, token); err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+
+		return nil
 	}
 }

@@ -1,17 +1,14 @@
 package auth
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/OJOMB/fightpicker/internal/http/dtos"
+	"github.com/OJOMB/fightpicker/internal/http/apierr"
+	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	repo "github.com/OJOMB/fightpicker/internal/repo/users"
 	service "github.com/OJOMB/fightpicker/internal/service/auth"
-	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
@@ -20,38 +17,53 @@ var (
 	ErrMissingRefreshToken = errors.New("missing refresh token")
 )
 
-// writeError is a helper function to create a JSON formatted error from a user service or handler level error.
-func (h *Handler) writeError(ctx context.Context, w http.ResponseWriter, err error, logger logs.Logger) {
-	reqID, ok := ctx.Value(contextual.KeyRequestID).(string)
-	if !ok {
-		logger.WarnContext(ctx, "request ID not found in context")
-		reqID = "unknown"
-	}
+func classifyError(err error) apierr.APIError {
+	var (
+		status    int
+		code      string
+		logLevel  logs.Level
+		logMsg    string
+		publicErr error
+	)
 
-	var status int
-	var resp dtos.ErrorEnvelope
 	switch {
 	case errors.Is(err, service.ErrMissingParameter), errors.Is(err, ErrMissingRefreshToken):
 		status = http.StatusBadRequest
-		resp = dtos.NewErrorEnvelope(err, "MISSING_REQUIRED_PARAMETER", reqID)
+		code = v1.ErrCodeMissingRequiredParameter
+		logLevel = logs.LevelDebug
+		logMsg = "missing required parameter"
+		publicErr = err
 	case strings.Contains(err.Error(), "email: failed to pass regex validation"):
 		status = http.StatusBadRequest
-		resp = dtos.NewErrorEnvelope(err, "INVALID_PARAMETER", reqID)
+		code = v1.ErrCodeInvalidParameter
+		logLevel = logs.LevelDebug
+		logMsg = "invalid parameter(s)"
+		publicErr = err
 	case errors.Is(err, repo.ErrUserNotFound):
 		status = http.StatusNotFound
-		resp = dtos.NewErrorEnvelope(err, "RESOURCE_NOT_FOUND", reqID)
+		code = v1.ErrCodeResourceNotFound
+		logLevel = logs.LevelDebug
+		logMsg = "resource not found"
+		publicErr = repo.ErrUserNotFound
 	case errors.Is(err, service.ErrInvalidCredentials):
 		status = http.StatusUnauthorized
-		resp = dtos.NewErrorEnvelope(err, "INVALID_CREDENTIALS", reqID)
+		code = v1.ErrCodeInvalidCredentials
+		logLevel = logs.LevelDebug
+		logMsg = "invalid credentials provided"
+		publicErr = service.ErrInvalidCredentials
 	default:
 		status = http.StatusInternalServerError
-		logger.ErrorContext(ctx, "internal server error", "error", err)
-		resp = dtos.NewErrorEnvelope(fmt.Errorf("internal server error"), "INTERNAL_SERVER_ERROR", reqID)
+		code = v1.ErrCodeInternalServerError
+		logLevel = logs.LevelError
+		logMsg = "internal server error"
+		publicErr = v1.ErrInternalServerError
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		logger.ErrorContext(ctx, "failed to encode error response", "error", err)
-	}
+	return apierr.NewAPIError(
+		status,
+		code,
+		logLevel,
+		logMsg,
+		publicErr,
+	)
 }

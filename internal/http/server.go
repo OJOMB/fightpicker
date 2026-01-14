@@ -26,7 +26,7 @@ type jwtValidator interface {
 
 // RouteRegistrar defines something that can register routes on a mux.
 type RouteRegistrar interface {
-	RegisterRoutes(mux *mux.Router, logger logs.Logger)
+	RegisterRoutes(mux *mux.Router)
 }
 
 type Server struct {
@@ -52,9 +52,9 @@ func New(cfg *config.Config, app *app.App) (*Server, error) {
 	}
 
 	handlers := []RouteRegistrar{
-		handlersv1auth.New(app.Services.AuthService),
-		handlersv1users.New(app.Services.UsersService),
-		handlersv1fighters.New(app.Services.FightersService),
+		handlersv1auth.New(app.Services.AuthService, app.Logger),
+		handlersv1users.New(app.Services.UsersService, app.Logger),
+		handlersv1fighters.New(app.Services.FightersService, app.Logger),
 	}
 
 	return &Server{

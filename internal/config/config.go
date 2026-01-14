@@ -1,11 +1,13 @@
 package config
 
+import "github.com/OJOMB/fightpicker/pkg/logs"
+
 type Config struct {
 	AppName  string     `mapstructure:"app_name"`
 	HTTP     HTTPConfig `mapstructure:"http"`
 	GRPC     GRPCConfig `mapstructure:"grpc"`
 	Env      string     `mapstructure:"-"`
-	LogLevel int        `mapstructure:"log_level"`
+	LogLevel logs.Level `mapstructure:"log_level"`
 
 	API           APIConfig           `mapstructure:"api"`
 	Database      DatabaseConfig      `mapstructure:"database"`

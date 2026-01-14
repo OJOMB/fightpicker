@@ -25,6 +25,7 @@ var (
 	ErrCodeMissingRequiredParameter = "MISSING_REQUIRED_PARAMETER"
 	ErrCodeInvalidParameter         = "INVALID_PARAMETER"
 	ErrCodeResourceNotFound         = "RESOURCE_NOT_FOUND"
+	ErrCodeInvalidCredentials       = "INVALID_CREDENTIALS"
 	ErrCodeConflictingResources     = "CONFLICTING_RESOURCES"
 	ErrCodeInternalServerError      = "INTERNAL_SERVER_ERROR"
 	ErrCodeMalformedRequestBody     = "MALFORMED_REQUEST_BODY"

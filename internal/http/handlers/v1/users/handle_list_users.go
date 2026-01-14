@@ -10,7 +10,6 @@ import (
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/users"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UserLister interface {
@@ -32,10 +31,8 @@ type UserSearcher interface {
 }
 
 // listUsers handles the HTTP GET request for the v1 list_users endpoint.
-func (h *Handler) listUsers(svc UserSearcher, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersList)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) listUsers(svc UserSearcher) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
 		// parse query parameters for pagination
@@ -46,11 +43,10 @@ func (h *Handler) listUsers(svc UserSearcher, logger logs.Logger) http.HandlerFu
 
 		if email != "" || username != "" {
 			if email != "" && username != "" {
-				h.writeError(ctx, w, errors.Wrap(
+				return errors.Wrap(
 					v1.ErrIncompatibleParameters,
 					"you can search by either email or username, not both",
-				), logger)
-				return
+				)
 			}
 
 			var user service.User
@@ -61,8 +57,7 @@ func (h *Handler) listUsers(svc UserSearcher, logger logs.Logger) http.HandlerFu
 				user, err = svc.GetUserByUsername(ctx, username)
 			}
 			if err != nil {
-				h.writeError(ctx, w, err, logger)
-				return
+				return err
 			}
 
 			resp := dtos.ListUsersResponse{
@@ -70,26 +65,18 @@ func (h *Handler) listUsers(svc UserSearcher, logger logs.Logger) http.HandlerFu
 				PageSize: 1,
 			}
 
-			h.writeJSON(ctx, w, logger, http.StatusOK, resp)
-			return
+			h.WriteJSON(ctx, w, http.StatusOK, resp)
+			return nil
 		}
 
-		lastSeenID, err := h.parseLastSeenID(r)
+		pageSize, lastSeenID, err := h.ParsePaginationParams(r)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
-		}
-
-		pageSize, err := h.parsePageSize(r)
-		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		users, totalCount, err := svc.ListUsers(ctx, pageSize, lastSeenID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		resp := dtos.ListUsersResponse{
@@ -106,6 +93,7 @@ func (h *Handler) listUsers(svc UserSearcher, logger logs.Logger) http.HandlerFu
 			resp.LastSeenId = &resp.Users[len(resp.Users)-1].Id
 		}
 
-		h.writeJSON(ctx, w, logger, http.StatusOK, resp)
+		h.WriteJSON(ctx, w, http.StatusOK, resp)
+		return nil
 	}
 }

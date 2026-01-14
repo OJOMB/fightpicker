@@ -2,7 +2,6 @@ package users
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
@@ -10,7 +9,6 @@ import (
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/users"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UserFollowerLister interface {
@@ -18,34 +16,23 @@ type UserFollowerLister interface {
 }
 
 // listFollowers handles the HTTP GET request for the v1 list_followers endpoint.
-func (h *Handler) listFollowers(svc UserFollowerLister, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersListFollowers)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) listFollowers(svc UserFollowerLister) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
-		userID, err := h.parseUserID(r)
+		userID, err := h.ParseID(r, v1.QueryParamUserID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
-		lastSeenID, err := h.parseLastSeenID(r)
+		pageSize, lastSeenID, err := h.ParsePaginationParams(r)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
-		}
-
-		pageSize, err := h.parsePageSize(r)
-		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		users, totalCount, err := svc.ListFollowers(ctx, userID, pageSize, lastSeenID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		resp := dtos.ListUsersResponse{
@@ -62,17 +49,8 @@ func (h *Handler) listFollowers(svc UserFollowerLister, logger logs.Logger) http
 			resp.LastSeenId = &resp.Users[len(resp.Users)-1].Id
 		}
 
-		respBody, err := json.Marshal(resp)
-		if err != nil {
-			logger.ErrorContext(ctx, "failed to marshal response body", "error", err)
-			http.Error(w, "failed to marshal response body", http.StatusInternalServerError)
-			return
-		}
+		h.WriteJSON(ctx, w, http.StatusOK, resp)
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(respBody); err != nil {
-			logger.ErrorContext(ctx, "failed to write response body", "error", err)
-		}
+		return nil
 	}
 }

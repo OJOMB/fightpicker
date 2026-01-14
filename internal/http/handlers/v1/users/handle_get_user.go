@@ -8,7 +8,6 @@ import (
 
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/users"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UserGetter interface {
@@ -16,24 +15,22 @@ type UserGetter interface {
 }
 
 // getUser handles the HTTP POST request for the v1 create_user endpoint.
-func (h *Handler) getUser(svc UserGetter, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersGet)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getUser(svc UserGetter) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
-		userID, err := h.parseUserID(r)
+		userID, err := h.ParseID(r, v1.QueryParamUserID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		user, err := svc.GetUserByID(ctx, userID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
-		h.writeJSON(ctx, w, logger, http.StatusOK, userIDOToDTO(user))
+		h.WriteJSON(ctx, w, http.StatusOK, userIDOToDTO(user))
+
+		return nil
 	}
 }

@@ -6,11 +6,9 @@ import (
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/pkg/errors"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
-	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 // PresignedPutURLGenerator defines the interface for generating presigned PUT URLs.
@@ -19,29 +17,24 @@ type PresignedPutURLGenerator interface {
 }
 
 // generatePresignedURL handles the HTTP POST request for the v1 generate_presigned_url endpoint.
-func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator, logger logs.Logger) http.HandlerFunc {
-	logger = logger.With(logs.FieldEndpoint, v1.EndpointNameV1UsersUpdate)
-
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator) v1.AppHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
-		userID, err := h.parseUserID(r)
+		userID, err := h.ParseID(r, v1.QueryParamUserID)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		defer r.Body.Close()
 		var userUpdateReq dtos.UserProfilePictureUploadURLRequest
 		if err := json.NewDecoder(r.Body).Decode(&userUpdateReq); err != nil {
-			h.writeError(ctx, w, errors.Wrap(v1.ErrUnreadableRequestBody, v1.QueryParamUserID), logger)
-			return
+			return v1.ErrUnreadableRequestBody
 		}
 
 		url, headers, err := svc.GeneratePresignedPutURL(ctx, userID, userUpdateReq.ContentType)
 		if err != nil {
-			h.writeError(ctx, w, err, logger)
-			return
+			return err
 		}
 
 		var signedHeaders = make(map[string]string)
@@ -56,6 +49,8 @@ func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator, logger logs
 			SignedHeader: signedHeaders,
 		}
 
-		h.writeJSON(ctx, w, logger, http.StatusOK, resp)
+		h.WriteJSON(ctx, w, http.StatusOK, resp)
+
+		return nil
 	}
 }
