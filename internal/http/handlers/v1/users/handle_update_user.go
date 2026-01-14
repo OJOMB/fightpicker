@@ -17,7 +17,7 @@ type UserUpdater interface {
 }
 
 // updateUser handles the HTTP PATCH request for the v1 update_user endpoint.
-func (h *Handler) updateUser(svc UserUpdater) v1.AppHandlerFunc {
+func (h *Handler) updateUser(svc UserUpdater) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

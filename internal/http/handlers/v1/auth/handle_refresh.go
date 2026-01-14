@@ -15,7 +15,7 @@ type UserAuthenticationRefresher interface {
 }
 
 // refresh handles the token refresh HTTP request.
-func (h *Handler) refresh(svc UserAuthenticationRefresher) v1.AppHandlerFunc {
+func (h *Handler) refresh(svc UserAuthenticationRefresher) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

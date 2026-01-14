@@ -14,7 +14,7 @@ type UserDeleter interface {
 }
 
 // deleteUser handles the HTTP DELETE request for the v1 delete_user endpoint.
-func (h *Handler) deleteUser(svc UserDeleter) v1.AppHandlerFunc {
+func (h *Handler) deleteUser(svc UserDeleter) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

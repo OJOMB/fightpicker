@@ -14,7 +14,7 @@ type UserLogouter interface {
 }
 
 // logout handles the logout HTTP request.
-func (h *Handler) logout(svc UserLogouter) v1.AppHandlerFunc {
+func (h *Handler) logout(svc UserLogouter) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

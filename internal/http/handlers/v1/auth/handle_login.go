@@ -16,7 +16,7 @@ type UserLoginner interface {
 }
 
 // login handles the HTTP POST request for the v1 login endpoint.
-func (h *Handler) login(svc UserLoginner) v1.AppHandlerFunc {
+func (h *Handler) login(svc UserLoginner) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

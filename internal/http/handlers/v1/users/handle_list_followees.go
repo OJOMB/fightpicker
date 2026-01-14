@@ -16,7 +16,7 @@ type UserFolloweeLister interface {
 }
 
 // listFollowees handles the HTTP GET request for the v1 list_followees endpoint.
-func (h *Handler) listFollowees(svc UserFolloweeLister) v1.AppHandlerFunc {
+func (h *Handler) listFollowees(svc UserFolloweeLister) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

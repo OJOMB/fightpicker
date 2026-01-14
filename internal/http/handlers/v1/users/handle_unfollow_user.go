@@ -14,7 +14,7 @@ type UserUnfollower interface {
 }
 
 // unfollowUser handles the HTTP DELETE request for the v1 unfollow_user endpoint.
-func (h *Handler) unfollowUser(svc UserUnfollower) v1.AppHandlerFunc {
+func (h *Handler) unfollowUser(svc UserUnfollower) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

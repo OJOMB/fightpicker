@@ -15,7 +15,7 @@ type FighterGetter interface {
 }
 
 // getFighter handles the HTTP POST request for the v1 create_Fighter endpoint.
-func (h *Handler) getFighter(svc FighterGetter) v1.AppHandlerFunc {
+func (h *Handler) getFighter(svc FighterGetter) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

@@ -17,7 +17,7 @@ type PresignedPutURLGenerator interface {
 }
 
 // generatePresignedURL handles the HTTP POST request for the v1 generate_presigned_url endpoint.
-func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator) v1.AppHandlerFunc {
+func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

@@ -16,9 +16,9 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
-// AppHandlerFunc defines a function signature that returns a standard error.
+// HandlerFunc defines a function signature that returns a standard error.
 // the error is intended to be classified and handled by the caller.
-type AppHandlerFunc func(w http.ResponseWriter, r *http.Request) error
+type HandlerFunc func(w http.ResponseWriter, r *http.Request) error
 
 // Handler is the base HTTP handler for v1 endpoints.
 type Handler struct {
@@ -39,7 +39,7 @@ func (h *Handler) WriteJSON(
 	}
 }
 
-func (h *Handler) ToHandler(action AppHandlerFunc, classifier func(error) apierr.APIError) http.HandlerFunc {
+func (h *Handler) ToHandler(action HandlerFunc, classifier func(error) apierr.APIError) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := action(w, r); err != nil {
 			h.WriteError(r.Context(), w, classifier(err))

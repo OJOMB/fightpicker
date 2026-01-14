@@ -14,7 +14,7 @@ type UserFollower interface {
 }
 
 // followUser handles the HTTP PUT request for the v1 follow_user endpoint.
-func (h *Handler) followUser(svc UserFollower) v1.AppHandlerFunc {
+func (h *Handler) followUser(svc UserFollower) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

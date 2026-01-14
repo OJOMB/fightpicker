@@ -15,7 +15,7 @@ type UserGetter interface {
 }
 
 // getUser handles the HTTP POST request for the v1 create_user endpoint.
-func (h *Handler) getUser(svc UserGetter) v1.AppHandlerFunc {
+func (h *Handler) getUser(svc UserGetter) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

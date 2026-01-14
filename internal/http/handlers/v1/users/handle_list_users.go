@@ -31,7 +31,7 @@ type UserSearcher interface {
 }
 
 // listUsers handles the HTTP GET request for the v1 list_users endpoint.
-func (h *Handler) listUsers(svc UserSearcher) v1.AppHandlerFunc {
+func (h *Handler) listUsers(svc UserSearcher) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

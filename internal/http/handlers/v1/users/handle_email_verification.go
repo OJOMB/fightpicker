@@ -14,7 +14,7 @@ type EmailVerifier interface {
 }
 
 // verifyEmail handles the HTTP POST request for the v1 create_user endpoint.
-func (h *Handler) verifyEmail(svc EmailVerifier) v1.AppHandlerFunc {
+func (h *Handler) verifyEmail(svc EmailVerifier) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 
