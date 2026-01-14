@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -47,9 +48,7 @@ func main() {
 	}
 	defer app.Shutdown(context.Background())
 
-	grpcServer := grpc.NewServer(
-	// interceptors go here later
-	)
+	grpcServer := grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))
 
 	usersServer := usersgrpc.NewServer(
 		app.Services.UsersService,
@@ -62,7 +61,6 @@ func main() {
 		reflection.Register(grpcServer)
 	}
 
-	// 6. Listen
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.GRPC.Domain, cfg.GRPC.Port))
 	if err != nil {
 		panic(err)
@@ -70,7 +68,6 @@ func main() {
 
 	app.Logger.InfoContext(ctx, "gRPC server listening", "addr", fmt.Sprintf("%s:%d", cfg.GRPC.Domain, cfg.GRPC.Port))
 
-	// 7. Serve (blocking)
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}
