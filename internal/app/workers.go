@@ -26,6 +26,7 @@ func (a *App) RunWorkers(ctx context.Context) error {
 	emailConsumer, err := email.NewUserCreationEmailConsumer(
 		a.Clients.KafkaPostUserCreateClient,
 		a.Services.UsersService,
+		a.Utils.IDTool,
 		a.Logger,
 	)
 	if err != nil {

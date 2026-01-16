@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"html/template"
 
-	"github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/pkg/errors"
 	"gopkg.in/mail.v2"
 )
@@ -73,11 +73,11 @@ const verificationEmailBody = `
 `
 
 type VerificationEmailSender interface {
-	SendVerificationEmail(ctx context.Context, userID uuid.UUID, hashedToken []byte, msg *mail.Message) error
+	SendVerificationEmail(ctx context.Context, userID id.UUID7, hashedToken []byte, msg *mail.Message) error
 }
 
-func (s *Service) SendVerificationEmail(ctx context.Context, userID uuid.UUID, firstName, email string) error {
-	if userID == uuid.Nil {
+func (s *Service) SendVerificationEmail(ctx context.Context, userID id.UUID7, firstName, email string) error {
+	if userID == id.UUID7Nil {
 		s.logger.ErrorContext(ctx, "invalid user id: nil UUID")
 		return errors.Wrap(ErrInvalidParameter, "user_id")
 	}

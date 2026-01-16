@@ -4,14 +4,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
-
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/users"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type UserGetter interface {
-	GetUserByID(ctx context.Context, id uuid.UUID) (service.User, error)
+	GetUserByID(ctx context.Context, id id.UUID7) (service.User, error)
 }
 
 // getUser handles the HTTP POST request for the v1 create_user endpoint.

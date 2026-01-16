@@ -4,21 +4,21 @@ import (
 	"context"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // RotateRefreshTokens revokes the old refresh token identified by oldTokenHash and
 // creates a new refresh token with the provided parameters in a single transaction.
-func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, userID uuid.UUID, ipAddress, userAgent string, newExpiresAt time.Time) error {
-	if newJTI == uuid.Nil {
+func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, userID id.UUID7, ipAddress, userAgent string, newExpiresAt time.Time) error {
+	if newJTI == id.UUID7Nil {
 		return ErrInvalidJTI
 	}
 
-	if userID == uuid.Nil {
+	if userID == id.UUID7Nil {
 		return ErrInvalidUserID
 	}
 
@@ -32,7 +32,7 @@ func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHa
 
 	qs := r.client.WithTx(tx)
 
-	newID := r.idGen.Generate()
+	newID := r.id.Generate()
 
 	// store the new refresh token
 	params := postgres.StoreRefreshTokenParams{

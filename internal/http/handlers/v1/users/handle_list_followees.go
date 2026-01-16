@@ -4,15 +4,14 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
-
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/users"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type UserFolloweeLister interface {
-	ListFollowees(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]service.User, int, error)
+	ListFollowees(ctx context.Context, userID id.UUID7, pageSize int, lastSeenID *id.UUID7) ([]service.User, int, error)
 }
 
 // listFollowees handles the HTTP GET request for the v1 list_followees endpoint.

@@ -1,15 +1,15 @@
 package middlewares
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
 	"go.opentelemetry.io/otel/trace"
-	"golang.org/x/net/context"
 
 	"github.com/OJOMB/fightpicker/pkg/contextual"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
@@ -38,13 +38,15 @@ func (w *responseWriterRecorder) Write(bs []byte) (int, error) {
 
 type RequestResponseLogger struct {
 	logger          logs.Logger
+	id              id.UUID7GeneratorParser
 	logResponseBody bool
 	oTelEnabled     bool
 }
 
-func NewRequestResponseLogger(l logs.Logger, logRespBody, oTelEnabled bool) *RequestResponseLogger {
+func NewRequestResponseLogger(l logs.Logger, idTool id.UUID7GeneratorParser, logRespBody, oTelEnabled bool) *RequestResponseLogger {
 	return &RequestResponseLogger{
 		logger:          l.With("middleware", "RequestResponseLogger"),
+		id:              idTool,
 		logResponseBody: logRespBody,
 		oTelEnabled:     oTelEnabled,
 	}
@@ -54,7 +56,7 @@ func (rrl *RequestResponseLogger) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := r.Header.Get("X-Request-ID")
 		if reqID == "" {
-			reqID = uuid.Must(uuid.NewV4()).String()
+			reqID = rrl.id.Generate().String()
 			r.Header.Set(reqIDHeader, reqID)
 		}
 

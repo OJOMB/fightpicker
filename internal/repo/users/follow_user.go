@@ -4,16 +4,16 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // FollowUser creates a follow relationship between the follower and followee in the database.
 // the followID is a unique identifier for the follow relationship used for pagination consistency and simplicity.
-func (r *Repo) FollowUser(ctx context.Context, followID, followerID, followeeID uuid.UUID) error {
+func (r *Repo) FollowUser(ctx context.Context, followID, followerID, followeeID id.UUID7) error {
 	params := postgres.FollowUserParams{
 		ID:         followID,
 		FollowerID: followerID,

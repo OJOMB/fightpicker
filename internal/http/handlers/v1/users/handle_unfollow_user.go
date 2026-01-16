@@ -4,13 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
-
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type UserUnfollower interface {
-	UnfollowUser(ctx context.Context, followeeID uuid.UUID) error
+	UnfollowUser(ctx context.Context, followeeID id.UUID7) error
 }
 
 // unfollowUser handles the HTTP DELETE request for the v1 unfollow_user endpoint.

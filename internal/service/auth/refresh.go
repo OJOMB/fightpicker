@@ -42,7 +42,7 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 
 	// generate new Access JWT token
 	accessToken, err := s.jwtGen.GenerateToken(
-		s.idGen.Generate(),
+		s.id.Generate(),
 		userID,
 		s.accessTokenTTL,
 		s.tokenIssuer,
@@ -58,7 +58,7 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 
 	// generate new Refresh JWT token
 	refreshTokenNew, err := s.jwtGen.GenerateToken(
-		s.idGen.Generate(),
+		s.id.Generate(),
 		userID,
 		s.refreshTokenTTL,
 		s.tokenIssuer,

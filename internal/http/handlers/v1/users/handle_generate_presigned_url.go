@@ -5,15 +5,14 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
-
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // PresignedPutURLGenerator defines the interface for generating presigned PUT URLs.
 type PresignedPutURLGenerator interface {
-	GeneratePresignedPutURL(ctx context.Context, userID uuid.UUID, contentType string) (string, http.Header, error)
+	GeneratePresignedPutURL(ctx context.Context, userID id.UUID7, contentType string) (string, http.Header, error)
 }
 
 // generatePresignedURL handles the HTTP POST request for the v1 generate_presigned_url endpoint.

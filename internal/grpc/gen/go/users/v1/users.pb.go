@@ -205,8 +205,10 @@ type CreateUserRequest struct {
 	FirstName     string                 `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
 	LastName      string                 `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
 	Username      string                 `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`
-	Gender        Gender                 `protobuf:"varint,6,opt,name=gender,proto3,enum=users.v1.Gender" json:"gender,omitempty"`
-	DateOfBirth   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=date_of_birth,json=dateOfBirth,proto3" json:"date_of_birth,omitempty"`
+	Location      *string                `protobuf:"bytes,6,opt,name=location,proto3,oneof" json:"location,omitempty"`
+	Bio           *string                `protobuf:"bytes,7,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
+	Gender        Gender                 `protobuf:"varint,8,opt,name=gender,proto3,enum=users.v1.Gender" json:"gender,omitempty"`
+	Dob           *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=dob,proto3" json:"dob,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -276,6 +278,20 @@ func (x *CreateUserRequest) GetUsername() string {
 	return ""
 }
 
+func (x *CreateUserRequest) GetLocation() string {
+	if x != nil && x.Location != nil {
+		return *x.Location
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetBio() string {
+	if x != nil && x.Bio != nil {
+		return *x.Bio
+	}
+	return ""
+}
+
 func (x *CreateUserRequest) GetGender() Gender {
 	if x != nil {
 		return x.Gender
@@ -283,9 +299,9 @@ func (x *CreateUserRequest) GetGender() Gender {
 	return Gender_GENDER_OTHER
 }
 
-func (x *CreateUserRequest) GetDateOfBirth() *timestamppb.Timestamp {
+func (x *CreateUserRequest) GetDob() *timestamppb.Timestamp {
 	if x != nil {
-		return x.DateOfBirth
+		return x.Dob
 	}
 	return nil
 }
@@ -429,6 +445,7 @@ type UpdateUserRequest struct {
 	Gender        *Gender                `protobuf:"varint,7,opt,name=gender,proto3,enum=users.v1.Gender,oneof" json:"gender,omitempty"`
 	Location      *string                `protobuf:"bytes,8,opt,name=location,proto3,oneof" json:"location,omitempty"`
 	Bio           *string                `protobuf:"bytes,9,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
+	Dob           *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=dob,proto3,oneof" json:"dob,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -524,6 +541,13 @@ func (x *UpdateUserRequest) GetBio() string {
 		return *x.Bio
 	}
 	return ""
+}
+
+func (x *UpdateUserRequest) GetDob() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Dob
+	}
+	return nil
 }
 
 // ListUsersRequest is the request message for listing users with pagination and optional filters
@@ -972,21 +996,25 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x87\x02\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xc2\x02\n" +
 	"\x11CreateUserRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1d\n" +
 	"\n" +
 	"first_name\x18\x03 \x01(\tR\tfirstName\x12\x1b\n" +
 	"\tlast_name\x18\x04 \x01(\tR\blastName\x12\x1a\n" +
-	"\busername\x18\x05 \x01(\tR\busername\x12(\n" +
-	"\x06gender\x18\x06 \x01(\x0e2\x10.users.v1.GenderR\x06gender\x12>\n" +
-	"\rdate_of_birth\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vdateOfBirth\")\n" +
+	"\busername\x18\x05 \x01(\tR\busername\x12\x1f\n" +
+	"\blocation\x18\x06 \x01(\tH\x00R\blocation\x88\x01\x01\x12\x15\n" +
+	"\x03bio\x18\a \x01(\tH\x01R\x03bio\x88\x01\x01\x12(\n" +
+	"\x06gender\x18\b \x01(\x0e2\x10.users.v1.GenderR\x06gender\x12,\n" +
+	"\x03dob\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\x03dobB\v\n" +
+	"\t_locationB\x06\n" +
+	"\x04_bio\")\n" +
 	"\x0eGetUserRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\",\n" +
 	"\x11DeleteUserRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x14\n" +
-	"\x12DeleteUserResponse\"\x97\x03\n" +
+	"\x12DeleteUserResponse\"\xd2\x03\n" +
 	"\x11UpdateUserRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\x05email\x18\x02 \x01(\tH\x00R\x05email\x88\x01\x01\x12\x1f\n" +
@@ -997,7 +1025,9 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\busername\x18\x06 \x01(\tH\x04R\busername\x88\x01\x01\x12-\n" +
 	"\x06gender\x18\a \x01(\x0e2\x10.users.v1.GenderH\x05R\x06gender\x88\x01\x01\x12\x1f\n" +
 	"\blocation\x18\b \x01(\tH\x06R\blocation\x88\x01\x01\x12\x15\n" +
-	"\x03bio\x18\t \x01(\tH\aR\x03bio\x88\x01\x01B\b\n" +
+	"\x03bio\x18\t \x01(\tH\aR\x03bio\x88\x01\x01\x121\n" +
+	"\x03dob\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampH\bR\x03dob\x88\x01\x01B\b\n" +
 	"\x06_emailB\v\n" +
 	"\t_passwordB\r\n" +
 	"\v_first_nameB\f\n" +
@@ -1006,7 +1036,8 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\t_usernameB\t\n" +
 	"\a_genderB\v\n" +
 	"\t_locationB\x06\n" +
-	"\x04_bio\"\xcd\x01\n" +
+	"\x04_bioB\x06\n" +
+	"\x04_dob\"\xcd\x01\n" +
 	"\x10ListUsersRequest\x12%\n" +
 	"\flast_seen_id\x18\x01 \x01(\tH\x00R\n" +
 	"lastSeenId\x88\x01\x01\x12 \n" +
@@ -1101,32 +1132,33 @@ var file_users_v1_users_proto_depIdxs = []int32{
 	15, // 2: users.v1.User.created_at:type_name -> google.protobuf.Timestamp
 	15, // 3: users.v1.User.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 4: users.v1.CreateUserRequest.gender:type_name -> users.v1.Gender
-	15, // 5: users.v1.CreateUserRequest.date_of_birth:type_name -> google.protobuf.Timestamp
+	15, // 5: users.v1.CreateUserRequest.dob:type_name -> google.protobuf.Timestamp
 	0,  // 6: users.v1.UpdateUserRequest.gender:type_name -> users.v1.Gender
-	1,  // 7: users.v1.ListUsersResponse.users:type_name -> users.v1.User
-	2,  // 8: users.v1.UsersService.CreateUser:input_type -> users.v1.CreateUserRequest
-	3,  // 9: users.v1.UsersService.GetUser:input_type -> users.v1.GetUserRequest
-	6,  // 10: users.v1.UsersService.UpdateUser:input_type -> users.v1.UpdateUserRequest
-	4,  // 11: users.v1.UsersService.DeleteUser:input_type -> users.v1.DeleteUserRequest
-	7,  // 12: users.v1.UsersService.ListUsers:input_type -> users.v1.ListUsersRequest
-	9,  // 13: users.v1.UsersService.FollowUser:input_type -> users.v1.FollowUserRequest
-	10, // 14: users.v1.UsersService.UnfollowUser:input_type -> users.v1.UnfollowUserRequest
-	13, // 15: users.v1.UsersService.ListFollowers:input_type -> users.v1.ListFollowersRequest
-	14, // 16: users.v1.UsersService.ListFollowees:input_type -> users.v1.ListFolloweesRequest
-	1,  // 17: users.v1.UsersService.CreateUser:output_type -> users.v1.User
-	1,  // 18: users.v1.UsersService.GetUser:output_type -> users.v1.User
-	1,  // 19: users.v1.UsersService.UpdateUser:output_type -> users.v1.User
-	5,  // 20: users.v1.UsersService.DeleteUser:output_type -> users.v1.DeleteUserResponse
-	8,  // 21: users.v1.UsersService.ListUsers:output_type -> users.v1.ListUsersResponse
-	11, // 22: users.v1.UsersService.FollowUser:output_type -> users.v1.FollowUserResponse
-	12, // 23: users.v1.UsersService.UnfollowUser:output_type -> users.v1.UnfollowUserResponse
-	8,  // 24: users.v1.UsersService.ListFollowers:output_type -> users.v1.ListUsersResponse
-	8,  // 25: users.v1.UsersService.ListFollowees:output_type -> users.v1.ListUsersResponse
-	17, // [17:26] is the sub-list for method output_type
-	8,  // [8:17] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	15, // 7: users.v1.UpdateUserRequest.dob:type_name -> google.protobuf.Timestamp
+	1,  // 8: users.v1.ListUsersResponse.users:type_name -> users.v1.User
+	2,  // 9: users.v1.UsersService.CreateUser:input_type -> users.v1.CreateUserRequest
+	3,  // 10: users.v1.UsersService.GetUser:input_type -> users.v1.GetUserRequest
+	6,  // 11: users.v1.UsersService.UpdateUser:input_type -> users.v1.UpdateUserRequest
+	4,  // 12: users.v1.UsersService.DeleteUser:input_type -> users.v1.DeleteUserRequest
+	7,  // 13: users.v1.UsersService.ListUsers:input_type -> users.v1.ListUsersRequest
+	9,  // 14: users.v1.UsersService.FollowUser:input_type -> users.v1.FollowUserRequest
+	10, // 15: users.v1.UsersService.UnfollowUser:input_type -> users.v1.UnfollowUserRequest
+	13, // 16: users.v1.UsersService.ListFollowers:input_type -> users.v1.ListFollowersRequest
+	14, // 17: users.v1.UsersService.ListFollowees:input_type -> users.v1.ListFolloweesRequest
+	1,  // 18: users.v1.UsersService.CreateUser:output_type -> users.v1.User
+	1,  // 19: users.v1.UsersService.GetUser:output_type -> users.v1.User
+	1,  // 20: users.v1.UsersService.UpdateUser:output_type -> users.v1.User
+	5,  // 21: users.v1.UsersService.DeleteUser:output_type -> users.v1.DeleteUserResponse
+	8,  // 22: users.v1.UsersService.ListUsers:output_type -> users.v1.ListUsersResponse
+	11, // 23: users.v1.UsersService.FollowUser:output_type -> users.v1.FollowUserResponse
+	12, // 24: users.v1.UsersService.UnfollowUser:output_type -> users.v1.UnfollowUserResponse
+	8,  // 25: users.v1.UsersService.ListFollowers:output_type -> users.v1.ListUsersResponse
+	8,  // 26: users.v1.UsersService.ListFollowees:output_type -> users.v1.ListUsersResponse
+	18, // [18:27] is the sub-list for method output_type
+	9,  // [9:18] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_users_v1_users_proto_init() }
@@ -1134,6 +1166,7 @@ func file_users_v1_users_proto_init() {
 	if File_users_v1_users_proto != nil {
 		return
 	}
+	file_users_v1_users_proto_msgTypes[1].OneofWrappers = []any{}
 	file_users_v1_users_proto_msgTypes[5].OneofWrappers = []any{}
 	file_users_v1_users_proto_msgTypes[6].OneofWrappers = []any{}
 	file_users_v1_users_proto_msgTypes[7].OneofWrappers = []any{}

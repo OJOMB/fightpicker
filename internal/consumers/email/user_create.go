@@ -5,29 +5,34 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/twmb/franz-go/pkg/kgo"
 
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UsersService interface {
-	SendVerificationEmail(ctx context.Context, userID uuid.UUID, firstName, email string) error
+	SendVerificationEmail(ctx context.Context, userID id.UUID7, firstName, email string) error
 }
 
 type UserCreationEmailConsumer struct {
 	client  *kgo.Client
 	service UsersService
+	id      id.UUID7Parser
 	logger  logs.Logger
 }
 
-func NewUserCreationEmailConsumer(client *kgo.Client, service UsersService, logger logs.Logger) (*UserCreationEmailConsumer, error) {
+func NewUserCreationEmailConsumer(client *kgo.Client, service UsersService, idTool id.UUID7Parser, logger logs.Logger) (*UserCreationEmailConsumer, error) {
 	if client == nil {
 		return nil, ErrNilKafkaClient
 	}
 
 	if service == nil {
 		return nil, ErrNilUsersService
+	}
+
+	if idTool == nil {
+		return nil, ErrNilIDTool
 	}
 
 	if logger == nil {
@@ -37,6 +42,7 @@ func NewUserCreationEmailConsumer(client *kgo.Client, service UsersService, logg
 	return &UserCreationEmailConsumer{
 		client:  client,
 		service: service,
+		id:      idTool,
 		logger:  logger.With("component", "user_profile_picture_consumer"),
 	}, nil
 }
@@ -66,7 +72,7 @@ func (c *UserCreationEmailConsumer) Run(ctx context.Context) error {
 }
 
 func (c *UserCreationEmailConsumer) handleRecord(ctx context.Context, record *kgo.Record) error {
-	userID, err := uuid.FromBytes(record.Key)
+	userID, err := c.id.ParseBytes(record.Key)
 	if err != nil {
 		return fmt.Errorf("invalid user ID in record key: %w", err)
 	}

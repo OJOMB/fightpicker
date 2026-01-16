@@ -6,20 +6,21 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/twmb/franz-go/pkg/kgo"
 
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type UsersService interface {
-	ProcessUploadedUserProfilePicture(ctx context.Context, userID uuid.UUID, bucketName, objectKey string) error
+	ProcessUploadedUserProfilePicture(ctx context.Context, userID id.UUID7, bucketName, objectKey string) error
 }
 
 // UserProfilePictureConsumer handles user profile picture upload events.
 type UserProfilePictureConsumer struct {
 	client  *kgo.Client
 	service UsersService
+	id      id.UUID7Parser
 	logger  logs.Logger
 }
 
@@ -77,7 +78,7 @@ func (c *UserProfilePictureConsumer) handleRecord(ctx context.Context, record *k
 	}
 
 	userIDStr := pathComponents[2]
-	userUUID, err := uuid.FromString(userIDStr)
+	userUUID, err := c.id.ParseString(userIDStr)
 	if err != nil {
 		c.logger.ErrorContext(ctx, "invalid user ID in record key", "user_id", userIDStr, "err", err)
 		return ErrInvalidRecordKeyFormat

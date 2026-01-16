@@ -16,7 +16,9 @@ import (
 	handlersv1auth "github.com/OJOMB/fightpicker/internal/http/handlers/v1/auth"
 	handlersv1fighters "github.com/OJOMB/fightpicker/internal/http/handlers/v1/fighters"
 	handlersv1users "github.com/OJOMB/fightpicker/internal/http/handlers/v1/users"
+	"github.com/OJOMB/fightpicker/internal/http/middlewares"
 	"github.com/OJOMB/fightpicker/internal/service/auth"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
@@ -31,8 +33,10 @@ type RouteRegistrar interface {
 
 type Server struct {
 	handlers     []RouteRegistrar
+	middlewares  []mux.MiddlewareFunc
 	router       *mux.Router
 	addr         net.Addr
+	id           id.UUID7GeneratorParser
 	jwtValidator jwtValidator
 	secretKey    []byte
 	logger       logs.Logger
@@ -52,16 +56,26 @@ func New(cfg *config.Config, app *app.App) (*Server, error) {
 	}
 
 	handlers := []RouteRegistrar{
-		handlersv1auth.New(app.Services.AuthService, app.Logger),
-		handlersv1users.New(app.Services.UsersService, app.Logger),
-		handlersv1fighters.New(app.Services.FightersService, app.Logger),
+		handlersv1auth.New(app.Services.AuthService, app.Utils.IDTool, app.Logger),
+		handlersv1users.New(app.Services.UsersService, app.Utils.IDTool, app.Logger),
+		handlersv1fighters.New(app.Services.FightersService, app.Utils.IDTool, app.Logger),
+	}
+
+	logRespBody := cfg.Env != "production"
+	middlewares := []mux.MiddlewareFunc{
+		middlewares.NewRequestResponseLogger(app.Logger, app.Utils.IDTool, logRespBody, cfg.Observability.OTel.Enable).Middleware,
+		middlewares.NewAuthPermissionsChecker([]byte(cfg.Auth.PrivateKey), app.Utils.JWTTool, app.Logger).Middleware,
+		middlewares.NewContextLoader(app.Utils.ContextTool, app.Logger).Middleware,
+		middlewares.NewPyroProfiler(map[string]string{"component": "server"}).Middleware,
 	}
 
 	return &Server{
 		handlers:     handlers,
+		middlewares:  middlewares,
 		router:       router,
 		addr:         &net.TCPAddr{IP: net.ParseIP(cfg.HTTP.Domain), Port: cfg.HTTP.Port},
 		jwtValidator: app.Utils.JWTTool,
+		id:           app.Utils.IDTool,
 		logger:       app.Logger,
 		oTelEnabled:  cfg.Observability.OTel.Enable,
 		secretKey:    []byte(cfg.Auth.PrivateKey),

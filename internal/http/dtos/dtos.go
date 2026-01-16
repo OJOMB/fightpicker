@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
@@ -73,7 +73,7 @@ type FighterResponse struct {
 	Bio               string                `json:"bio"`
 	Country           string                `json:"country"`
 	CreatedAt         time.Time             `json:"created_at"`
-	CreatedBy         uuid.UUID             `json:"created_by"`
+	CreatedBy         id.UUID7              `json:"created_by"`
 	Disqualifications int                   `json:"disqualifications"`
 	Dob               SimpleDate            `json:"dob"`
 	Draws             int                   `json:"draws"`
@@ -81,7 +81,7 @@ type FighterResponse struct {
 	FirstName         string                `json:"first_name"`
 	Gender            FighterResponseGender `json:"gender"`
 	Height            float64               `json:"height"`
-	Id                uuid.UUID             `json:"id"`
+	Id                id.UUID7              `json:"id"`
 	LastName          string                `json:"last_name"`
 	Losses            int                   `json:"losses"`
 	Nickname          string                `json:"nickname"`
@@ -90,7 +90,7 @@ type FighterResponse struct {
 	Reach             float64               `json:"reach"`
 	Stance            string                `json:"stance"`
 	UpdatedAt         time.Time             `json:"updated_at"`
-	UpdatedBy         uuid.UUID             `json:"updated_by"`
+	UpdatedBy         id.UUID7              `json:"updated_by"`
 	Weight            float64               `json:"weight"`
 	Wins              int                   `json:"wins"`
 }
@@ -101,8 +101,8 @@ type FighterResponseGender string
 // ListUsersResponse Paginated list of users.
 // presigned profile picture URLs are ommitted in this response for performance reasons.
 type ListUsersResponse struct {
-	LastSeenId *uuid.UUID `json:"last_seen_id"`
-	PageSize   int        `json:"page_size"`
+	LastSeenId *id.UUID7 `json:"last_seen_id"`
+	PageSize   int       `json:"page_size"`
 
 	// TotalCount Total number of users available (ignoring pagination). Useful for clients to understand the size of the dataset.
 	// if filtering by email or username is used, this will be either 0 or 1.
@@ -156,7 +156,7 @@ type UserResponse struct {
 	EmailVerified *bool                `json:"email_verified,omitempty"`
 	FirstName     *string              `json:"first_name,omitempty"`
 	Gender        UserResponseGender   `json:"gender"`
-	Id            uuid.UUID            `json:"id"`
+	Id            id.UUID7             `json:"id"`
 	LastLogin     *time.Time           `json:"last_login"`
 	LastName      *string              `json:"last_name,omitempty"`
 	Location      *string              `json:"location,omitempty"`
@@ -213,8 +213,8 @@ type UserUpdateReq7 = interface{}
 
 // V1UsersGetListParams defines parameters for V1UsersGetList.
 type V1UsersGetListParams struct {
-	LastSeenId *uuid.UUID `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
-	PageSize   *int       `form:"page_size,omitempty" json:"page_size,omitempty"`
+	LastSeenId *id.UUID7 `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
+	PageSize   *int      `form:"page_size,omitempty" json:"page_size,omitempty"`
 
 	// Email will return a user matching the email exactly or empty array if none found (admin only)
 	// cannot be used in combination with the pagination parameters (last_seen_id, page_size)
@@ -232,14 +232,14 @@ type V1UsersGetVerifyEmailParams struct {
 
 // V1UsersGetFollowingParams defines parameters for V1UsersGetFollowing.
 type V1UsersGetFollowingParams struct {
-	LastSeenId *uuid.UUID `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
-	PageSize   *int       `form:"page_size,omitempty" json:"page_size,omitempty"`
+	LastSeenId *id.UUID7 `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
+	PageSize   *int      `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
 
 // V1UsersGetFollowersParams defines parameters for V1UsersGetFollowers.
 type V1UsersGetFollowersParams struct {
-	LastSeenId *uuid.UUID `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
-	PageSize   *int       `form:"page_size,omitempty" json:"page_size,omitempty"`
+	LastSeenId *id.UUID7 `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
+	PageSize   *int      `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
 
 // V1AuthPostLoginJSONRequestBody defines body for V1AuthPostLogin for application/json ContentType.

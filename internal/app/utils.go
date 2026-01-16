@@ -6,6 +6,7 @@ import (
 	"github.com/OJOMB/fightpicker/internal/config"
 	serviceauth "github.com/OJOMB/fightpicker/internal/service/auth"
 	"github.com/OJOMB/fightpicker/pkg/auth"
+	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/datetimes"
 	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/jsonwebtokens"
@@ -13,15 +14,16 @@ import (
 )
 
 type utils struct {
-	IDTool         id.Generator
+	IDTool         id.UUID7GeneratorParser
 	DateTimeTool   datetimes.Now
 	AuthTool       *auth.AuthTool
 	ImageProcessor *media.ImageProcessor
 	JWTTool        *jsonwebtokens.JWTTool[serviceauth.AuthClaims]
+	ContextTool    contextual.ContextProvider
 }
 
 func (a *App) newUtils(cfg *config.Config) error {
-	idTool := id.NewUUIDV7Generator()
+	idTool := id.NewUUIDV7Tool()
 	dateTimeTool := datetimes.NewUTCNow()
 
 	if cfg.Auth.HashingCost <= 0 {
@@ -33,12 +35,15 @@ func (a *App) newUtils(cfg *config.Config) error {
 
 	jwtTool := jsonwebtokens.NewJWTTool[serviceauth.AuthClaims]()
 
+	ctxTool := contextual.NewContextTool(idTool)
+
 	a.Utils = &utils{
 		IDTool:         idTool,
 		DateTimeTool:   dateTimeTool,
 		AuthTool:       authTool,
 		ImageProcessor: imageProcessor,
 		JWTTool:        jwtTool,
+		ContextTool:    ctxTool,
 	}
 
 	return nil

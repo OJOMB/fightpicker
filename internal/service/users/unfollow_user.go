@@ -3,25 +3,23 @@ package users
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
-
-	"github.com/OJOMB/fightpicker/pkg/contextual"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // UserUnfollower defines the interface for unfollowing users.
 type UserUnfollower interface {
-	UnfollowUser(ctx context.Context, followerID, followeeID uuid.UUID) error
+	UnfollowUser(ctx context.Context, followerID, followeeID id.UUID7) error
 }
 
 // UnfollowUser allows a user to unfollow another user by their ID.
-func (svc *Service) UnfollowUser(ctx context.Context, followeeID uuid.UUID) error {
-	reqSubject := contextual.GetReqSubjectFromContext(ctx)
-	if reqSubject == uuid.Nil {
-		svc.logger.ErrorContext(ctx, "unable to get request subject from context")
+func (s *Service) UnfollowUser(ctx context.Context, followeeID id.UUID7) error {
+	reqSubject := s.ctxTool.GetReqSubjectFromContext(ctx)
+	if reqSubject == id.UUID7Nil {
+		s.logger.ErrorContext(ctx, "unable to get request subject from context")
 		return ErrInternalError
 	}
 
-	if err := svc.repo.UnfollowUser(ctx, reqSubject, followeeID); err != nil {
+	if err := s.repo.UnfollowUser(ctx, reqSubject, followeeID); err != nil {
 		return err
 	}
 

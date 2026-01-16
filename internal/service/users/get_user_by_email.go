@@ -2,8 +2,6 @@ package users
 
 import (
 	"context"
-
-	"github.com/OJOMB/fightpicker/pkg/contextual"
 )
 
 // UserByEmailGetter defines the interface for retrieving a user by email.
@@ -12,18 +10,18 @@ type UserByEmailGetter interface {
 }
 
 // GetUserByEmail retrieves a user by their email address.
-func (svc *Service) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	user, err := svc.repo.GetUserByEmail(ctx, email)
+func (s *Service) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return User{}, err
 	}
 
-	reqSubjectID := contextual.GetReqSubjectFromContext(ctx)
-	if reqSubjectID != user.ID && !contextual.ReqSubjectIsAnAdmin(ctx) {
+	reqSubjectID := s.ctxTool.GetReqSubjectFromContext(ctx)
+	if reqSubjectID != user.ID && !s.ctxTool.ReqSubjectIsAnAdmin(ctx) {
 		user.removePI()
 	}
 
-	svc.injectPresignedGetURLIfNeeded(ctx, &user)
+	s.injectPresignedGetURLIfNeeded(ctx, &user)
 
 	return user, nil
 }

@@ -4,14 +4,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
-
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/fighters"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type FighterGetter interface {
-	GetFighterByID(ctx context.Context, id uuid.UUID) (service.Fighter, error)
+	GetFighterByID(ctx context.Context, id id.UUID7) (service.Fighter, error)
 }
 
 // getFighter handles the HTTP POST request for the v1 create_Fighter endpoint.

@@ -9,11 +9,14 @@ var (
 	// ErrNilLogger is returned when a nil logger is provided.
 	ErrNilLogger = fmt.Errorf("logger cannot be nil")
 
+	// ErrNilContextTool is returned when a nil context tool is provided.
+	ErrNilContextTool = fmt.Errorf("context tool cannot be nil")
+
 	// ErrEmailRegexCompile is returned when the email regex fails to compile.
 	ErrEmailRegexCompile = fmt.Errorf("failed to compile email regex")
 
-	// ErrNilIDGenerator is returned when a nil ID generator function is provided.
-	ErrNilIDGenerator = fmt.Errorf("ID generator function cannot be nil")
+	// ErrNilIDTool is returned when a nil ID generator function is provided.
+	ErrNilIDTool = fmt.Errorf("ID tool cannot be nil")
 
 	// ErrNilNowFunc is returned when a nil time function is provided.
 	ErrNilNowFunc = fmt.Errorf("now function cannot be nil")

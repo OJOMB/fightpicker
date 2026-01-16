@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/gofrs/uuid/v5"
 )
 
-func (r *Repo) GeneratePresignedPutURL(ctx context.Context, userID uuid.UUID, contentType string) (string, http.Header, error) {
+func (r *Repo) GeneratePresignedPutURL(ctx context.Context, userID id.UUID7, contentType string) (string, http.Header, error) {
 	objectKey := "users/" + userID.String() + "/media/profile_image.jpeg"
 
 	// tags := "Key1=Value1&Key2=Value2" // Example tags; modify as needed
@@ -31,7 +31,7 @@ func (r *Repo) GeneratePresignedPutURL(ctx context.Context, userID uuid.UUID, co
 	return request.URL, request.SignedHeader, err
 }
 
-func (r *Repo) GeneratePresignedGetURL(ctx context.Context, userID uuid.UUID) (string, http.Header, error) {
+func (r *Repo) GeneratePresignedGetURL(ctx context.Context, userID id.UUID7) (string, http.Header, error) {
 	objectKey := "users/" + userID.String() + "/media/profile_image.jpeg"
 
 	// tags := "Key1=Value1&Key2=Value2" // Example tags; modify as needed

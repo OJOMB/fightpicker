@@ -67,12 +67,14 @@ message CreateUserRequest {
   string email    = 1;
   string password = 2;
 
-  string first_name = 3;
-  string last_name  = 4;
-  string username   = 5;
+  string          first_name = 3;
+  string          last_name  = 4;
+  string          username   = 5;
+  optional string location   = 6;
+  optional string bio        = 7;
 
-  Gender                    gender        = 6;
-  google.protobuf.Timestamp date_of_birth = 7;
+  Gender                    gender = 8;
+  google.protobuf.Timestamp dob    = 9;
 }
 
 // GetUserRequest is the request message for retrieving a user by ID
@@ -100,6 +102,7 @@ message UpdateUserRequest {
   optional Gender gender     = 7;
   optional string location   = 8;
   optional string bio        = 9;
+  optional google.protobuf.Timestamp dob = 10;
 }
 
 // ListUsersRequest is the request message for listing users with pagination and optional filters

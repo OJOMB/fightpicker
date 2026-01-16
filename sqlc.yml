@@ -12,5 +12,5 @@ sql:
           - db_type: "uuid"
             nullable: false
             go_type:
-              import: "github.com/gofrs/uuid/v5"
-              type: "UUID"
+              import: "github.com/OJOMB/fightpicker/pkg/id"
+              type: "UUID7"

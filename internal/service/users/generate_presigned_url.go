@@ -4,17 +4,15 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
-
-	"github.com/OJOMB/fightpicker/pkg/contextual"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type PresignedPutURLGenerator interface {
-	GeneratePresignedPutURL(ctx context.Context, userID uuid.UUID, contentType string) (string, http.Header, error)
+	GeneratePresignedPutURL(ctx context.Context, userID id.UUID7, contentType string) (string, http.Header, error)
 }
 
-func (s *Service) GeneratePresignedPutURL(ctx context.Context, userID uuid.UUID, contentType string) (string, http.Header, error) {
-	if reqSubject := contextual.GetReqSubjectFromContext(ctx); reqSubject != userID {
+func (s *Service) GeneratePresignedPutURL(ctx context.Context, userID id.UUID7, contentType string) (string, http.Header, error) {
+	if reqSubject := s.ctxTool.GetReqSubjectFromContext(ctx); reqSubject != userID {
 		return "", nil, ErrUnauthorized
 	}
 

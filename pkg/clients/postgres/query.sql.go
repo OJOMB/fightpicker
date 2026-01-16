@@ -8,8 +8,9 @@ package postgres
 import (
 	"context"
 
-	uuid "github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 const assignRoleToUserByRoleName = `-- name: AssignRoleToUserByRoleName :exec
@@ -25,7 +26,7 @@ VALUES (
 `
 
 type AssignRoleToUserByRoleNameParams struct {
-	UserID    uuid.UUID
+	UserID    id.UUID7
 	Name      string
 	CreatedAt pgtype.Timestamptz
 	CreatedBy pgtype.UUID
@@ -51,7 +52,7 @@ FROM followers
 WHERE follower_id = $1
 `
 
-func (q *Queries) CountFollowees(ctx context.Context, followerID uuid.UUID) (int64, error) {
+func (q *Queries) CountFollowees(ctx context.Context, followerID id.UUID7) (int64, error) {
 	row := q.db.QueryRow(ctx, countFollowees, followerID)
 	var followee_count int64
 	err := row.Scan(&followee_count)
@@ -64,7 +65,7 @@ FROM followers
 WHERE followee_id = $1
 `
 
-func (q *Queries) CountFollowers(ctx context.Context, followeeID uuid.UUID) (int64, error) {
+func (q *Queries) CountFollowers(ctx context.Context, followeeID id.UUID7) (int64, error) {
 	row := q.db.QueryRow(ctx, countFollowers, followeeID)
 	var follower_count int64
 	err := row.Scan(&follower_count)
@@ -118,7 +119,7 @@ INSERT INTO fighters (
 `
 
 type CreateFighterParams struct {
-	ID                uuid.UUID
+	ID                id.UUID7
 	FirstName         string
 	LastName          string
 	Nickname          pgtype.Text
@@ -197,7 +198,7 @@ INSERT INTO users (
 `
 
 type CreateUserParams struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -241,8 +242,8 @@ DELETE FROM users
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUserByID(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteUserByID, id)
+func (q *Queries) DeleteUserByID(ctx context.Context, argID id.UUID7) error {
+	_, err := q.db.Exec(ctx, deleteUserByID, argID)
 	return err
 }
 
@@ -253,9 +254,9 @@ ON CONFLICT (follower_id, followee_id) DO NOTHING
 `
 
 type FollowUserParams struct {
-	ID         uuid.UUID
-	FollowerID uuid.UUID
-	FolloweeID uuid.UUID
+	ID         id.UUID7
+	FollowerID id.UUID7
+	FolloweeID id.UUID7
 	CreatedAt  pgtype.Timestamptz
 	CreatedBy  pgtype.UUID
 }
@@ -304,8 +305,8 @@ WHERE id = $1
 // --------------------------------------
 // SQL queries for fighter management --
 // --------------------------------------
-func (q *Queries) GetFighterByID(ctx context.Context, id uuid.UUID) (Fighter, error) {
-	row := q.db.QueryRow(ctx, getFighterByID, id)
+func (q *Queries) GetFighterByID(ctx context.Context, argID id.UUID7) (Fighter, error) {
+	row := q.db.QueryRow(ctx, getFighterByID, argID)
 	var i Fighter
 	err := row.Scan(
 		&i.ID,
@@ -381,7 +382,7 @@ WHERE email = $1
 `
 
 type GetUserByEmailRow struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -440,7 +441,7 @@ WHERE id = $1
 `
 
 type GetUserByIDRow struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -456,8 +457,8 @@ type GetUserByIDRow struct {
 	UpdatedBy      pgtype.UUID
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
-	row := q.db.QueryRow(ctx, getUserByID, id)
+func (q *Queries) GetUserByID(ctx context.Context, argID id.UUID7) (GetUserByIDRow, error) {
+	row := q.db.QueryRow(ctx, getUserByID, argID)
 	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
@@ -499,7 +500,7 @@ WHERE username = $1
 `
 
 type GetUserByUsernameRow struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -561,8 +562,8 @@ type GetUserPermissionsAndRolesByIDRow struct {
 	Operation      string
 }
 
-func (q *Queries) GetUserPermissionsAndRolesByID(ctx context.Context, id uuid.UUID) ([]GetUserPermissionsAndRolesByIDRow, error) {
-	rows, err := q.db.Query(ctx, getUserPermissionsAndRolesByID, id)
+func (q *Queries) GetUserPermissionsAndRolesByID(ctx context.Context, argID id.UUID7) ([]GetUserPermissionsAndRolesByIDRow, error) {
+	rows, err := q.db.Query(ctx, getUserPermissionsAndRolesByID, argID)
 	if err != nil {
 		return nil, err
 	}
@@ -605,8 +606,8 @@ type GetUserPermissionsByIDRow struct {
 	Operation string
 }
 
-func (q *Queries) GetUserPermissionsByID(ctx context.Context, id uuid.UUID) ([]GetUserPermissionsByIDRow, error) {
-	rows, err := q.db.Query(ctx, getUserPermissionsByID, id)
+func (q *Queries) GetUserPermissionsByID(ctx context.Context, argID id.UUID7) ([]GetUserPermissionsByIDRow, error) {
+	rows, err := q.db.Query(ctx, getUserPermissionsByID, argID)
 	if err != nil {
 		return nil, err
 	}
@@ -653,13 +654,13 @@ GROUP BY u.id
 `
 
 type GetUserRBACRow struct {
-	UserID      uuid.UUID
+	UserID      id.UUID7
 	Roles       []byte
 	Permissions []byte
 }
 
-func (q *Queries) GetUserRBAC(ctx context.Context, id uuid.UUID) (GetUserRBACRow, error) {
-	row := q.db.QueryRow(ctx, getUserRBAC, id)
+func (q *Queries) GetUserRBAC(ctx context.Context, argID id.UUID7) (GetUserRBACRow, error) {
+	row := q.db.QueryRow(ctx, getUserRBAC, argID)
 	var i GetUserRBACRow
 	err := row.Scan(&i.UserID, &i.Roles, &i.Permissions)
 	return i, err
@@ -673,7 +674,7 @@ WHERE ur.user_id = $1
 ORDER BY r.name
 `
 
-func (q *Queries) GetUserRolesByID(ctx context.Context, userID uuid.UUID) ([]string, error) {
+func (q *Queries) GetUserRolesByID(ctx context.Context, userID id.UUID7) ([]string, error) {
 	rows, err := q.db.Query(ctx, getUserRolesByID, userID)
 	if err != nil {
 		return nil, err
@@ -702,8 +703,8 @@ SELECT EXISTS (
 `
 
 type IsFollowingParams struct {
-	FollowerID uuid.UUID
-	FolloweeID uuid.UUID
+	FollowerID id.UUID7
+	FolloweeID id.UUID7
 }
 
 func (q *Queries) IsFollowing(ctx context.Context, arg IsFollowingParams) (bool, error) {
@@ -719,8 +720,8 @@ FROM users
 WHERE id = $1
 `
 
-func (q *Queries) IsUserEmailVerifiedByID(ctx context.Context, id uuid.UUID) (bool, error) {
-	row := q.db.QueryRow(ctx, isUserEmailVerifiedByID, id)
+func (q *Queries) IsUserEmailVerifiedByID(ctx context.Context, argID id.UUID7) (bool, error) {
+	row := q.db.QueryRow(ctx, isUserEmailVerifiedByID, argID)
 	var email_verified bool
 	err := row.Scan(&email_verified)
 	return email_verified, err
@@ -740,13 +741,13 @@ LIMIT $3
 `
 
 type ListFolloweesParams struct {
-	FollowerID uuid.UUID
-	ID         uuid.UUID
+	FollowerID id.UUID7
+	ID         id.UUID7
 	Limit      int32
 }
 
 type ListFolloweesRow struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -810,13 +811,13 @@ LIMIT $3
 `
 
 type ListFollowersParams struct {
-	FolloweeID uuid.UUID
-	ID         uuid.UUID
+	FolloweeID id.UUID7
+	ID         id.UUID7
 	Limit      int32
 }
 
 type ListFollowersRow struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -888,12 +889,12 @@ LIMIT $2
 `
 
 type ListUsersParams struct {
-	ID    uuid.UUID
+	ID    id.UUID7
 	Limit int32
 }
 
 type ListUsersRow struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -995,10 +996,10 @@ VALUES ($1,$2,$3,$4,$5,$6, $7, $8, $9)
 `
 
 type StoreRefreshTokenParams struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
+	ID        id.UUID7
+	UserID    id.UUID7
 	TokenHash string
-	Jti       uuid.UUID
+	Jti       id.UUID7
 	ExpiresAt pgtype.Timestamptz
 	IpAddress pgtype.Text
 	UserAgent pgtype.Text
@@ -1030,8 +1031,8 @@ WHERE follower_id = $1 AND followee_id = $2
 `
 
 type UnfollowUserParams struct {
-	FollowerID uuid.UUID
-	FolloweeID uuid.UUID
+	FollowerID id.UUID7
+	FolloweeID id.UUID7
 }
 
 func (q *Queries) UnfollowUser(ctx context.Context, arg UnfollowUserParams) error {
@@ -1048,7 +1049,7 @@ WHERE id = $1
 `
 
 type UpdateEmailVerificationTokenHashByUserIDParams struct {
-	ID                              uuid.UUID
+	ID                              id.UUID7
 	EmailVerificationTokenHash      []byte
 	EmailVerificationTokenExpiresAt pgtype.Timestamptz
 	UpdatedAt                       pgtype.Timestamptz
@@ -1072,7 +1073,7 @@ WHERE id = $1
 `
 
 type UpdateLastLoginAtByUserIDParams struct {
-	ID          uuid.UUID
+	ID          id.UUID7
 	LastLoginAt pgtype.Timestamptz
 }
 
@@ -1099,7 +1100,7 @@ WHERE id = $1
 `
 
 type UpdateUserByIDParams struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -1171,9 +1172,9 @@ type VerifyUserEmailByTokenHashParams struct {
 	UpdatedAt                  pgtype.Timestamptz
 }
 
-func (q *Queries) VerifyUserEmailByTokenHash(ctx context.Context, arg VerifyUserEmailByTokenHashParams) (uuid.UUID, error) {
+func (q *Queries) VerifyUserEmailByTokenHash(ctx context.Context, arg VerifyUserEmailByTokenHashParams) (id.UUID7, error) {
 	row := q.db.QueryRow(ctx, verifyUserEmailByTokenHash, arg.EmailVerificationTokenHash, arg.UpdatedAt)
-	var id uuid.UUID
+	var id id.UUID7
 	err := row.Scan(&id)
 	return id, err
 }

@@ -4,13 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/gofrs/uuid/v5"
-
 	service "github.com/OJOMB/fightpicker/internal/service/fighters"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // GetFighterByID retrieves a fighter by their ID.
-func (r *Repo) GetFighterByID(ctx context.Context, id uuid.UUID) (service.Fighter, error) {
+func (r *Repo) GetFighterByID(ctx context.Context, id id.UUID7) (service.Fighter, error) {
 	cacheKey := fighterCacheKey(id)
 	if r.cachingEnabled {
 		cached, err := r.cache.Get(ctx, cacheKey).Result()

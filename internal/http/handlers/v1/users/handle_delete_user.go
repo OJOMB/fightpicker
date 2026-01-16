@@ -4,13 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
-
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type UserDeleter interface {
-	DeleteUserByID(ctx context.Context, id uuid.UUID) error
+	DeleteUserByID(ctx context.Context, id id.UUID7) error
 }
 
 // deleteUser handles the HTTP DELETE request for the v1 delete_user endpoint.

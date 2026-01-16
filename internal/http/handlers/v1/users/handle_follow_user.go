@@ -4,13 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
-
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type UserFollower interface {
-	FollowUser(ctx context.Context, followeeID uuid.UUID) error
+	FollowUser(ctx context.Context, followeeID id.UUID7) error
 }
 
 // followUser handles the HTTP PUT request for the v1 follow_user endpoint.

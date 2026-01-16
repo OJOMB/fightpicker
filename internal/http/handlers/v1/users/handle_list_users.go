@@ -4,16 +4,16 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/pkg/errors"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	service "github.com/OJOMB/fightpicker/internal/service/users"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type UserLister interface {
-	ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]service.User, int, error)
+	ListUsers(ctx context.Context, pageSize int, lastSeenID *id.UUID7) ([]service.User, int, error)
 }
 
 type UserGetterByEmail interface {

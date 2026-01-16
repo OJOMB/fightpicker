@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 
 	"github.com/OJOMB/fightpicker/internal/http/apierr"
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	"github.com/OJOMB/fightpicker/pkg/contextual"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
@@ -25,7 +25,15 @@ type APIErrClassifier func(error) apierr.APIError
 
 // Handler is the base HTTP handler for v1 endpoints.
 type Handler struct {
+	id     id.UUID7Parser
 	Logger logs.Logger
+}
+
+func NewHandler(idTool id.UUID7Parser, logger logs.Logger) *Handler {
+	return &Handler{
+		id:     idTool,
+		Logger: logger,
+	}
 }
 
 func (h *Handler) WriteJSON(
@@ -73,7 +81,7 @@ func (h *Handler) WriteError(ctx context.Context, w http.ResponseWriter, err api
 }
 
 // ParsePaginationParams is a helper that parses pagination parameters from the HTTP request.
-func (h *Handler) ParsePaginationParams(r *http.Request) (pageSize int, lastSeenID *uuid.UUID, err error) {
+func (h *Handler) ParsePaginationParams(r *http.Request) (pageSize int, lastSeenID *id.UUID7, err error) {
 	pageSize, err = h.parsePageSize(r)
 	if err != nil {
 		return 0, nil, err
@@ -108,26 +116,26 @@ func (h *Handler) parsePageSize(r *http.Request) (int, error) {
 }
 
 // parseLastSeenID is a pagination helper that parses the last seen ID from the query parameter string.
-func (h *Handler) parseLastSeenID(r *http.Request) (*uuid.UUID, error) {
+func (h *Handler) parseLastSeenID(r *http.Request) (*id.UUID7, error) {
 	lastSeenIDStr := r.URL.Query().Get(QueryParamLastSeenID)
 	if lastSeenIDStr == "" {
 		return nil, nil
 	}
 
-	id, err := uuid.FromString(lastSeenIDStr)
+	lastSeenID, err := h.id.ParseString(lastSeenIDStr)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidUUID, QueryParamLastSeenID)
 	}
 
-	return &id, nil
+	return &lastSeenID, nil
 }
 
 // ParseID is a helper that parses a UUID from the request URL path variables.
-func (h *Handler) ParseID(r *http.Request, queryParam string) (uuid.UUID, error) {
+func (h *Handler) ParseID(r *http.Request, queryParam string) (id.UUID7, error) {
 	idStr := mux.Vars(r)[queryParam]
-	userID, err := uuid.FromString(idStr)
+	userID, err := h.id.ParseString(idStr)
 	if err != nil {
-		return uuid.Nil, errors.Wrap(ErrInvalidUUID, queryParam)
+		return id.UUID7Nil, errors.Wrap(ErrInvalidUUID, queryParam)
 	}
 
 	return userID, nil

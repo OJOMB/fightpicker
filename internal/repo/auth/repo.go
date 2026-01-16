@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -13,8 +12,8 @@ import (
 )
 
 type DBClient interface {
-	GetUserRolesByID(ctx context.Context, userID uuid.UUID) ([]string, error)
-	GetUserPermissionsByID(ctx context.Context, id uuid.UUID) ([]postgres.GetUserPermissionsByIDRow, error)
+	GetUserRolesByID(ctx context.Context, userID id.UUID7) ([]string, error)
+	GetUserPermissionsByID(ctx context.Context, id id.UUID7) ([]postgres.GetUserPermissionsByIDRow, error)
 	StoreRefreshToken(ctx context.Context, arg postgres.StoreRefreshTokenParams) error
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (postgres.RefreshToken, error)
 	RevokeRefreshTokenByHash(ctx context.Context, arg postgres.RevokeRefreshTokenByHashParams) error
@@ -26,14 +25,14 @@ type Repo struct {
 	pool   *pgxpool.Pool
 	client DBClient
 	logger logs.Logger
-	idGen  id.Generator
+	id     id.UUID7GeneratorParser
 }
 
-func New(pool *pgxpool.Pool, client DBClient, idGen id.Generator, logger logs.Logger) *Repo {
+func New(pool *pgxpool.Pool, client DBClient, idTool id.UUID7GeneratorParser, logger logs.Logger) *Repo {
 	return &Repo{
 		pool:   pool,
 		client: client,
-		idGen:  idGen,
+		id:     idTool,
 		logger: logger.With("component", "auth_repo"),
 	}
 }

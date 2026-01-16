@@ -7,7 +7,6 @@ package app
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/OJOMB/fightpicker/internal/config"
 	"github.com/OJOMB/fightpicker/pkg/logs"
@@ -36,8 +35,15 @@ func New(ctx context.Context, cfg *config.Config) (*App, error) {
 
 	var a = new(App)
 
+	// 1. Initialize common utilities -- must be done first as logger depends on it
+	if err := a.newUtils(cfg); err != nil {
+		return nil, err
+	}
+
+	a.Logger = logs.New(cfg.LogLevel, a.Utils.ContextTool, cfg.Observability.OTel.Enable, cfg.AppName, cfg.Env)
+
 	if cfg.Observability.OTel.Enable {
-		log.Print("OTel enabled")
+		a.Logger.InfoContext(ctx, "setting up OpenTelemetry SDK", "endpoint", cfg.Observability.OTel.Endpoint)
 		otelShutdown, err := otel.SetupOTelSDK(ctx, cfg.Observability.OTel.Endpoint, cfg.AppName)
 		if err != nil {
 			return nil, err
@@ -46,15 +52,8 @@ func New(ctx context.Context, cfg *config.Config) (*App, error) {
 		a.otelShutdown = otelShutdown
 	}
 
-	a.Logger = logs.New(cfg.LogLevel, cfg.Observability.OTel.Enable, cfg.AppName, cfg.Env)
-
-	// 1. Initialize DB
+	// 2. Initialize DB
 	if err := a.newDB(ctx, cfg); err != nil {
-		return nil, err
-	}
-
-	// 2. Initialize common utilities
-	if err := a.newUtils(cfg); err != nil {
 		return nil, err
 	}
 

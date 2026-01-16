@@ -25,7 +25,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 		return "", "", time.Time{}, ErrUserNotFound
 	}
 
-	if ok, err := s.pwordVerifier.Verify(user.PasswordHash, password); err != nil {
+	if ok, err := s.passwordVerifier.Verify(user.PasswordHash, password); err != nil {
 		return "", "", time.Time{}, err
 	} else if !ok {
 		return "", "", time.Time{}, ErrInvalidCredentials
@@ -38,7 +38,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 
 	// generate Access JWT token
 	accessToken, err := s.jwtGen.GenerateToken(
-		s.idGen.Generate(),
+		s.id.Generate(),
 		user.ID,
 		s.accessTokenTTL,
 		s.tokenIssuer,
@@ -51,7 +51,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 
 	// generate Refresh JWT token
 	refreshToken, err := s.jwtGen.GenerateToken(
-		s.idGen.Generate(),
+		s.id.Generate(),
 		user.ID,
 		s.refreshTokenTTL,
 		s.tokenIssuer,

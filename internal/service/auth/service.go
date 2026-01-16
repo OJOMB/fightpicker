@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
-
 	serviceusers "github.com/OJOMB/fightpicker/internal/service/users"
 	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/jsonwebtokens"
@@ -15,15 +13,15 @@ import (
 // UserRepo defines the interface for user-related operations needed by the auth service.
 type UserRepo interface {
 	GetUserByEmail(ctx context.Context, email string) (serviceusers.User, error)
-	UpdateLastLoginAtByUserID(ctx context.Context, userID uuid.UUID) error
+	UpdateLastLoginAtByUserID(ctx context.Context, userID id.UUID7) error
 }
 
 // AuthRepo defines the interface for authentication-related operations needed by the auth service.
 type AuthRepo interface {
-	GetUserPermissions(ctx context.Context, userID uuid.UUID) ([]string, Permissions, error)
-	StoreRefreshToken(ctx context.Context, userID, jti uuid.UUID, tokenHash, ipAddress, userAgent string, expiresAt time.Time) error
+	GetUserPermissions(ctx context.Context, userID id.UUID7) ([]string, Permissions, error)
+	StoreRefreshToken(ctx context.Context, userID, jti id.UUID7, tokenHash, ipAddress, userAgent string, expiresAt time.Time) error
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
-	RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, userID uuid.UUID, ipAddress, userAgent string, newExpiresAt time.Time) error
+	RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, userID id.UUID7, ipAddress, userAgent string, newExpiresAt time.Time) error
 	RevokeRefreshTokenByHash(ctx context.Context, tokenHash string) error
 }
 
@@ -34,27 +32,27 @@ type PasswordVerifier interface {
 
 // JWTGenerator defines the interface for generating and hashing JWT tokens.
 type JWTGenerator interface {
-	GenerateToken(jti, userID uuid.UUID, duration time.Duration, iss, aud string, customClaims map[string]any, secretKey []byte) (jsonwebtokens.Token, error)
+	GenerateToken(jti, userID id.UUID7, duration time.Duration, iss, aud string, customClaims map[string]any, secretKey []byte) (jsonwebtokens.Token, error)
 	HashTokenString(tokenStr string) string
 }
 
 // Service provides authentication services.
 type Service struct {
-	userRepo        UserRepo
-	authRepo        AuthRepo
-	idGen           id.Generator
-	pwordVerifier   PasswordVerifier
-	jwtGen          JWTGenerator
-	accessTokenTTL  time.Duration
-	refreshTokenTTL time.Duration
-	secretKey       []byte
-	tokenAudience   string
-	tokenIssuer     string
-	logger          logs.Logger
+	userRepo         UserRepo
+	authRepo         AuthRepo
+	id               id.UUID7GeneratorParser
+	passwordVerifier PasswordVerifier
+	jwtGen           JWTGenerator
+	accessTokenTTL   time.Duration
+	refreshTokenTTL  time.Duration
+	secretKey        []byte
+	tokenAudience    string
+	tokenIssuer      string
+	logger           logs.Logger
 }
 
 // New creates a new instance of the auth Service.
-func New(userRepo UserRepo, authRepo AuthRepo, pwordVerifier PasswordVerifier, idGen id.Generator, jwtGen JWTGenerator, accessTokenTTL, refreshTokenTTL time.Duration, secretKey string, tokenAudience string, tokenIssuer string, logger logs.Logger) (*Service, error) {
+func New(userRepo UserRepo, authRepo AuthRepo, passwordVerifier PasswordVerifier, idTool id.UUID7GeneratorParser, jwtGen JWTGenerator, accessTokenTTL, refreshTokenTTL time.Duration, secretKey string, tokenAudience string, tokenIssuer string, logger logs.Logger) (*Service, error) {
 	if userRepo == nil {
 		return nil, ErrNilUserRepo
 	}
@@ -63,11 +61,11 @@ func New(userRepo UserRepo, authRepo AuthRepo, pwordVerifier PasswordVerifier, i
 		return nil, ErrNilAuthRepo
 	}
 
-	if pwordVerifier == nil {
+	if passwordVerifier == nil {
 		return nil, ErrNilPasswordVerifier
 	}
 
-	if idGen == nil {
+	if idTool == nil {
 		return nil, ErrNilIDGenerator
 	}
 
@@ -88,16 +86,16 @@ func New(userRepo UserRepo, authRepo AuthRepo, pwordVerifier PasswordVerifier, i
 	}
 
 	return &Service{
-		userRepo:        userRepo,
-		authRepo:        authRepo,
-		idGen:           idGen,
-		pwordVerifier:   pwordVerifier,
-		jwtGen:          jwtGen,
-		accessTokenTTL:  accessTokenTTL,
-		refreshTokenTTL: refreshTokenTTL,
-		secretKey:       []byte(secretKey),
-		tokenAudience:   tokenAudience,
-		tokenIssuer:     tokenIssuer,
-		logger:          logger.With("component", "auth_service"),
+		userRepo:         userRepo,
+		authRepo:         authRepo,
+		id:               idTool,
+		passwordVerifier: passwordVerifier,
+		jwtGen:           jwtGen,
+		accessTokenTTL:   accessTokenTTL,
+		refreshTokenTTL:  refreshTokenTTL,
+		secretKey:        []byte(secretKey),
+		tokenAudience:    tokenAudience,
+		tokenIssuer:      tokenIssuer,
+		logger:           logger.With("component", "auth_service"),
 	}, nil
 }

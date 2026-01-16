@@ -15,7 +15,7 @@ var KeyRequestRouteName Contextkey = "request_route_name"
 var KeyRequestParamUserID Contextkey = "user_id"
 var KeyRequestParamFighterID Contextkey = "fighter_id"
 
-func WithRequestValues(ctx context.Context, r *http.Request) context.Context {
+func (c *ContextTool) WithRequestValues(ctx context.Context, r *http.Request) context.Context {
 	// get User-Agent header
 	userAgent := r.Header.Get("User-Agent")
 	ctx = context.WithValue(ctx, KeyRequestUserAgent, userAgent)
@@ -42,7 +42,7 @@ func WithRequestValues(ctx context.Context, r *http.Request) context.Context {
 	return ctx
 }
 
-func GetRequestValues(ctx context.Context) map[string]string {
+func (c *ContextTool) GetRequestValues(ctx context.Context) map[string]string {
 	values := make(map[string]string)
 
 	if v, ok := ctx.Value(KeyRequestUserAgent).(string); ok {

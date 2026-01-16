@@ -3,25 +3,23 @@ package users
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
-
-	"github.com/OJOMB/fightpicker/pkg/contextual"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // UserLister defines the interface for listing users.
 type UserLister interface {
-	ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]User, int, error)
+	ListUsers(ctx context.Context, pageSize int, lastSeenID *id.UUID7) ([]User, int, error)
 }
 
 // ListUsers retrieves a paginated list of users.
 // PI is removed from each user if the requestor is not an admin.
-func (svc *Service) ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]User, int, error) {
-	users, totalCount, err := svc.repo.ListUsers(ctx, pageSize, lastSeenID)
+func (s *Service) ListUsers(ctx context.Context, pageSize int, lastSeenID *id.UUID7) ([]User, int, error) {
+	users, totalCount, err := s.repo.ListUsers(ctx, pageSize, lastSeenID)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	if !contextual.ReqSubjectIsAnAdmin(ctx) {
+	if !s.ctxTool.ReqSubjectIsAnAdmin(ctx) {
 		for i := range users {
 			users[i].removePI()
 		}

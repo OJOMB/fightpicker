@@ -3,14 +3,14 @@ package jsonwebtokens
 import (
 	"time"
 
-	"github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type Token struct {
 	TokenStr  string
-	JTI       uuid.UUID
-	UserID    uuid.UUID
+	JTI       id.UUID7
+	UserID    id.UUID7
 	Issuer    string
 	Audience  string
 	IssuedAt  time.Time

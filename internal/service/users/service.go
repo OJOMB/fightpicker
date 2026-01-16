@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/gofrs/uuid/v5"
-
 	usermetrics "github.com/OJOMB/fightpicker/internal/metrics/users"
+	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/datetimes"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
@@ -43,11 +43,6 @@ type Repo interface {
 	EmailByTokenVerifier
 }
 
-// IDGenerator defines the interface for the ID generator used in the service.
-type IDGenerator interface {
-	Generate() uuid.UUID
-}
-
 type ImageProcessor interface {
 	ProcessUserProfilePicture(imageBytes []byte) ([]byte, []byte, error)
 }
@@ -58,7 +53,8 @@ type Service struct {
 	domain              string
 	authTool            AuthTool
 	regexEmail          *regexp.Regexp
-	idGen               IDGenerator
+	idTool              id.UUID7GeneratorParser
+	ctxTool             contextual.ContextProvider
 	dateTimeTool        datetimes.Now
 	imageProcessor      ImageProcessor
 	emailAddressNoReply string
@@ -68,17 +64,31 @@ type Service struct {
 }
 
 // New creates a new instance of the user service.
-func New(repo Repo, idGen IDGenerator, now datetimes.Now, authTool AuthTool, imageProcessor ImageProcessor, domain, emailAddressNoReply string, logger logs.Logger) (*Service, error) {
+func New(
+	repo Repo,
+	idTool id.UUID7GeneratorParser,
+	now datetimes.Now,
+	ctxTool contextual.ContextProvider,
+	authTool AuthTool,
+	imageProcessor ImageProcessor,
+	domain,
+	emailAddressNoReply string,
+	logger logs.Logger,
+) (*Service, error) {
 	if repo == nil {
 		return nil, ErrNilRepo
+	}
+
+	if ctxTool == nil {
+		return nil, ErrNilContextTool
 	}
 
 	if logger == nil {
 		return nil, ErrNilLogger
 	}
 
-	if idGen == nil {
-		return nil, ErrNilIDGenerator
+	if idTool == nil {
+		return nil, ErrNilIDTool
 	}
 
 	if now == nil {
@@ -106,7 +116,8 @@ func New(repo Repo, idGen IDGenerator, now datetimes.Now, authTool AuthTool, ima
 	return &Service{
 		repo:                repo,
 		regexEmail:          emailRegex,
-		idGen:               idGen,
+		idTool:              idTool,
+		ctxTool:             ctxTool,
 		dateTimeTool:        now,
 		imageProcessor:      imageProcessor,
 		authTool:            authTool,
@@ -135,5 +146,5 @@ func (s *Service) injectPresignedGetURLIfNeeded(ctx context.Context, user *User)
 }
 
 func (s *Service) getDefaultProfilePictureURL(user *User) string {
-	return fmt.Sprintf("%s/static/images/default-profile-picture-%s.webp", s.domain, user.Gender.String())
+	return fmt.Sprintf("%s/static/users/default-profile-picture-%s.webp", s.domain, user.Gender.String())
 }

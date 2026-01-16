@@ -148,9 +148,9 @@ paths:
           required: false
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
         - name: page_size
           in: query
           required: false
@@ -279,9 +279,9 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
       responses:
         '200':
           description: User found
@@ -318,9 +318,9 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
       requestBody:
         required: true
         content:
@@ -381,9 +381,9 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
       responses:
         '204':
           description: User successfully deleted
@@ -424,9 +424,9 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
       responses:
         '204':
           description: Successfully followed user
@@ -466,9 +466,9 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
       responses:
         '204':
           description: Successfully unfollowed user
@@ -508,17 +508,17 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
         - name: last_seen_id
           in: query
           required: false
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
         - name: page_size
           in: query
           required: false
@@ -570,17 +570,17 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
         - name: last_seen_id
           in: query
           required: false
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
         - name: page_size
           in: query
           required: false
@@ -632,9 +632,9 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
       requestBody:
         required: true
         content:
@@ -689,9 +689,9 @@ paths:
           required: true
           schema:
             type: string
-            x-go-type: uuid.UUID
+            x-go-type: id.UUID7
             x-go-import:
-              path: github.com/gofrs/uuid
+              path: github.com/OJOMB/fightpicker/pkg/id
       responses:
         '200':
           description: Fighter found
@@ -815,9 +815,9 @@ components:
       properties:
         id:
           type: string
-          x-go-type: uuid.UUID
+          x-go-type: id.UUID7
           x-go-import:
-            path: github.com/gofrs/uuid
+            path: github.com/OJOMB/fightpicker/pkg/id
         email:
           type: string
           format: email
@@ -898,9 +898,9 @@ components:
             $ref: '#/components/schemas/UserResponse'
         last_seen_id:
           type: string
-          x-go-type: uuid.UUID
+          x-go-type: id.UUID7
           x-go-import:
-            path: github.com/gofrs/uuid
+            path: github.com/OJOMB/fightpicker/pkg/id
           nullable: true
         page_size:
           type: integer
@@ -961,9 +961,9 @@ components:
       properties:
         id:
           type: string
-          x-go-type: uuid.UUID
+          x-go-type: id.UUID7
           x-go-import:
-            path: github.com/gofrs/uuid
+            path: github.com/OJOMB/fightpicker/pkg/id
         first_name:
           type: string
         last_name:
@@ -1013,17 +1013,17 @@ components:
           format: date-time
         created_by:
           type: string
-          x-go-type: uuid.UUID
+          x-go-type: id.UUID7
           x-go-import:
-            path: github.com/gofrs/uuid
+            path: github.com/OJOMB/fightpicker/pkg/id
         updated_at:
           type: string
           format: date-time
         updated_by:
           type: string
-          x-go-type: uuid.UUID
+          x-go-type: id.UUID7
           x-go-import:
-            path: github.com/gofrs/uuid
+            path: github.com/OJOMB/fightpicker/pkg/id
       required:
         - id
         - first_name

@@ -4,7 +4,7 @@ import (
 	"context"
 	"slices"
 
-	"github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // Contextkey is a type for context keys used in this package.
@@ -20,29 +20,29 @@ var KeyRequestSubject Contextkey = "request_subject"
 var KeyUserRoles Contextkey = "user_roles"
 
 // GetReqSubjectFromContext retrieves the user ID (subject) of the user making the request from the context.
-func GetReqSubjectFromContext(ctx context.Context) uuid.UUID {
+func (c *ContextTool) GetReqSubjectFromContext(ctx context.Context) id.UUID7 {
 	subjectID, ok := ctx.Value(KeyRequestSubject).(string)
 	if !ok {
-		return uuid.UUID{}
+		return id.UUID7{}
 	}
 
-	id, err := uuid.FromString(subjectID)
+	uid, err := c.id.ParseString(subjectID)
 	if err != nil {
-		return uuid.UUID{}
+		return id.UUID7{}
 	}
 
-	return id
+	return uid
 }
 
 // GetUserRolesFromContext retrieves the roles of the user making the request from the context.
-func GetUserRolesFromContext(ctx context.Context) ([]string, bool) {
+func (c *ContextTool) GetUserRolesFromContext(ctx context.Context) ([]string, bool) {
 	roles, ok := ctx.Value(KeyUserRoles).([]string)
 	return roles, ok
 }
 
 // ReqSubjectIsAnAdmin checks if the user making the request has the "admin" role.
-func ReqSubjectIsAnAdmin(ctx context.Context) bool {
-	roles, ok := GetUserRolesFromContext(ctx)
+func (c *ContextTool) ReqSubjectIsAnAdmin(ctx context.Context) bool {
+	roles, ok := c.GetUserRolesFromContext(ctx)
 	if !ok {
 		return false
 	}

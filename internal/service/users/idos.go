@@ -3,14 +3,13 @@ package users
 import (
 	"time"
 
-	"github.com/gofrs/uuid/v5"
-
 	"github.com/OJOMB/fightpicker/internal/service"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // User represents a user in the system.
 type User struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Email          string
 	FirstName      string
 	LastName       string
@@ -23,7 +22,7 @@ type User struct {
 	PasswordHash   string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
-	UpdatedBy      uuid.UUID
+	UpdatedBy      id.UUID7
 }
 
 // removePI removes personally identifiable information from the User struct.
@@ -36,7 +35,7 @@ func (u *User) removePI() {
 
 // IsZero checks if the User struct is its zero value.
 func (u User) IsZero() bool {
-	return u.ID == uuid.Nil
+	return u.ID == id.UUID7Nil
 }
 
 // Equals checks if two User structs are equal.
@@ -101,7 +100,7 @@ type UserUpdate struct {
 	Gender    *service.Gender
 	Password  *string
 	UpdatedAt time.Time
-	UpdatedBy uuid.UUID
+	UpdatedBy id.UUID7
 }
 
 // IsZero checks if the UserUpdate struct has no effective fields set.

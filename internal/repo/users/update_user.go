@@ -5,15 +5,15 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 
 	service "github.com/OJOMB/fightpicker/internal/service/users"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // CreateUser converts a User IDO to a DBO and calls the repo to create the user in the database
 // It also assigns the default "user" role to the newly created user.
-func (r *Repo) UpdateUser(ctx context.Context, id uuid.UUID, updates service.UserUpdate) (service.User, error) {
+func (r *Repo) UpdateUser(ctx context.Context, userID id.UUID7, updates service.UserUpdate) (service.User, error) {
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return service.User{}, err
@@ -24,7 +24,7 @@ func (r *Repo) UpdateUser(ctx context.Context, id uuid.UUID, updates service.Use
 
 	qs := r.dbClient.WithTx(tx)
 
-	dbUser, err := qs.GetUserByID(ctx, id)
+	dbUser, err := qs.GetUserByID(ctx, userID)
 	if err != nil {
 		return service.User{}, dbErrorToServiceError(err)
 	}
@@ -49,7 +49,7 @@ func (r *Repo) UpdateUser(ctx context.Context, id uuid.UUID, updates service.Use
 			return service.User{}, ErrInternalError
 		}
 
-		if user.ID != uuid.Nil {
+		if user.ID != id.UUID7Nil {
 			return service.User{}, ErrUsernameTaken
 		}
 	}
@@ -61,7 +61,7 @@ func (r *Repo) UpdateUser(ctx context.Context, id uuid.UUID, updates service.Use
 			return service.User{}, ErrInternalError
 		}
 
-		if user.ID != uuid.Nil {
+		if user.ID != id.UUID7Nil {
 			return service.User{}, ErrEmailTaken
 		}
 	}

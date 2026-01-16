@@ -3,13 +3,13 @@ package fighters
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
 	"github.com/OJOMB/fightpicker/pkg/datetimes"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
@@ -18,7 +18,7 @@ type CacheClient interface {
 }
 
 type Client interface {
-	GetFighterByID(ctx context.Context, id uuid.UUID) (postgres.Fighter, error)
+	GetFighterByID(ctx context.Context, id id.UUID7) (postgres.Fighter, error)
 	WithTx(tx pgx.Tx) *postgres.Queries
 }
 

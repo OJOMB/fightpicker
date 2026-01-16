@@ -3,16 +3,21 @@ package logs
 import (
 	"context"
 	"log/slog"
-
-	"github.com/OJOMB/fightpicker/pkg/contextual"
+	"net/http"
 )
 
-type ContextHandler struct {
-	next slog.Handler
+type ContextRequestProvider interface {
+	WithRequestValues(ctx context.Context, r *http.Request) context.Context
+	GetRequestValues(ctx context.Context) map[string]string
 }
 
-func NewContextHandler(next slog.Handler) slog.Handler {
-	return &ContextHandler{next: next}
+type ContextHandler struct {
+	ctxTool ContextRequestProvider
+	next    slog.Handler
+}
+
+func NewContextHandler(ctxTool ContextRequestProvider, next slog.Handler) slog.Handler {
+	return &ContextHandler{ctxTool: ctxTool, next: next}
 }
 
 func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
@@ -21,7 +26,7 @@ func (h *ContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
 	// Pull values from context
-	reqValues := contextual.GetRequestValues(ctx)
+	reqValues := h.ctxTool.GetRequestValues(ctx)
 	attrs := make([]slog.Attr, 0, len(reqValues))
 	for k, v := range reqValues {
 		attrs = append(attrs, slog.String(k, v))
@@ -34,9 +39,9 @@ func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
 }
 
 func (h *ContextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return &ContextHandler{next: h.next.WithAttrs(attrs)}
+	return &ContextHandler{ctxTool: h.ctxTool, next: h.next.WithAttrs(attrs)}
 }
 
 func (h *ContextHandler) WithGroup(name string) slog.Handler {
-	return &ContextHandler{next: h.next.WithGroup(name)}
+	return &ContextHandler{ctxTool: h.ctxTool, next: h.next.WithGroup(name)}
 }

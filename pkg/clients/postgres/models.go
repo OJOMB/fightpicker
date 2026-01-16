@@ -8,7 +8,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 
-	uuid "github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -277,7 +277,7 @@ func (ns NullWinMethod) Value() (driver.Value, error) {
 }
 
 type Card struct {
-	ID        uuid.UUID
+	ID        id.UUID7
 	Name      string
 	Location  string
 	Date      pgtype.Timestamptz
@@ -289,9 +289,9 @@ type Card struct {
 }
 
 type CardFight struct {
-	ID          uuid.UUID
-	CardID      uuid.UUID
-	FightID     uuid.UUID
+	ID          id.UUID7
+	CardID      id.UUID7
+	FightID     id.UUID7
 	Stage       CardStage
 	OrderInCard int32
 	CreatedAt   pgtype.Timestamptz
@@ -301,7 +301,7 @@ type CardFight struct {
 }
 
 type Fight struct {
-	ID             uuid.UUID
+	ID             id.UUID7
 	Date           pgtype.Timestamptz
 	NoOfRounds     int32
 	WeightClass    string
@@ -316,9 +316,9 @@ type Fight struct {
 }
 
 type FightParticipant struct {
-	ID        uuid.UUID
-	FightID   uuid.UUID
-	FighterID uuid.UUID
+	ID        id.UUID7
+	FightID   id.UUID7
+	FighterID id.UUID7
 	Corner    Corner
 	CreatedAt pgtype.Timestamptz
 	CreatedBy pgtype.UUID
@@ -327,8 +327,8 @@ type FightParticipant struct {
 }
 
 type FightResult struct {
-	ID              uuid.UUID
-	FightID         uuid.UUID
+	ID              id.UUID7
+	FightID         id.UUID7
 	IsDraw          bool
 	IsNoContest     bool
 	WinnerID        pgtype.UUID
@@ -345,7 +345,7 @@ type FightResult struct {
 }
 
 type Fighter struct {
-	ID                uuid.UUID
+	ID                id.UUID7
 	FirstName         string
 	LastName          string
 	Nickname          pgtype.Text
@@ -371,15 +371,15 @@ type Fighter struct {
 }
 
 type Follower struct {
-	ID         uuid.UUID
-	FollowerID uuid.UUID
-	FolloweeID uuid.UUID
+	ID         id.UUID7
+	FollowerID id.UUID7
+	FolloweeID id.UUID7
 	CreatedAt  pgtype.Timestamptz
 	CreatedBy  pgtype.UUID
 }
 
 type Permission struct {
-	ID          uuid.UUID
+	ID          id.UUID7
 	Name        string
 	Version     string
 	Resource    ResourceType
@@ -392,10 +392,10 @@ type Permission struct {
 }
 
 type Pick struct {
-	ID                 uuid.UUID
-	FightID            uuid.UUID
-	UserID             uuid.UUID
-	FightParticipantID uuid.UUID
+	ID                 id.UUID7
+	FightID            id.UUID7
+	UserID             id.UUID7
+	FightParticipantID id.UUID7
 	Method             NullWinMethod
 	Round              pgtype.Int4
 	CreatedAt          pgtype.Timestamptz
@@ -405,10 +405,10 @@ type Pick struct {
 }
 
 type RefreshToken struct {
-	ID         uuid.UUID
-	UserID     uuid.UUID
+	ID         id.UUID7
+	UserID     id.UUID7
 	TokenHash  string
-	Jti        uuid.UUID
+	Jti        id.UUID7
 	ExpiresAt  pgtype.Timestamptz
 	Revoked    bool
 	ReplacedBy pgtype.UUID
@@ -419,7 +419,7 @@ type RefreshToken struct {
 }
 
 type Role struct {
-	ID          uuid.UUID
+	ID          id.UUID7
 	Name        string
 	Description string
 	CreatedAt   pgtype.Timestamptz
@@ -429,8 +429,8 @@ type Role struct {
 }
 
 type RolePermission struct {
-	RoleID       uuid.UUID
-	PermissionID uuid.UUID
+	RoleID       id.UUID7
+	PermissionID id.UUID7
 	CreatedAt    pgtype.Timestamptz
 	CreatedBy    pgtype.UUID
 	UpdatedAt    pgtype.Timestamptz
@@ -438,7 +438,7 @@ type RolePermission struct {
 }
 
 type User struct {
-	ID                              uuid.UUID
+	ID                              id.UUID7
 	Email                           string
 	Username                        string
 	FirstName                       string
@@ -459,8 +459,8 @@ type User struct {
 }
 
 type UserRole struct {
-	UserID    uuid.UUID
-	RoleID    uuid.UUID
+	UserID    id.UUID7
+	RoleID    id.UUID7
 	CreatedAt pgtype.Timestamptz
 	CreatedBy pgtype.UUID
 	UpdatedAt pgtype.Timestamptz

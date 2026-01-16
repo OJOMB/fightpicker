@@ -6,11 +6,10 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/datetimes"
 	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
-	"github.com/gofrs/uuid/v5"
 )
 
 type Repo interface {
-	GetFighterByID(ctx context.Context, id uuid.UUID) (Fighter, error)
+	GetFighterByID(ctx context.Context, id id.UUID7) (Fighter, error)
 }
 
 type Service struct {
@@ -18,7 +17,7 @@ type Service struct {
 	logger logs.Logger
 }
 
-func New(repo Repo, idGen id.Generator, now datetimes.Now, logger logs.Logger) (*Service, error) {
+func New(repo Repo, idGen id.UUID7GeneratorParser, now datetimes.Now, logger logs.Logger) (*Service, error) {
 	if repo == nil {
 		return nil, ErrNilRepo
 	}

@@ -3,24 +3,22 @@ package users
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
-
-	"github.com/OJOMB/fightpicker/pkg/contextual"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type UserFollowerLister interface {
-	ListFollowers(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]User, int, error)
+	ListFollowers(ctx context.Context, userID id.UUID7, pageSize int, lastSeenID *id.UUID7) ([]User, int, error)
 }
 
 // ListFollowers retrieves a paginated list of followers for a given user
 // PI is removed from each follower if the requestor is not an admin.
-func (s *Service) ListFollowers(ctx context.Context, userID uuid.UUID, pageSize int, lastSeenID *uuid.UUID) ([]User, int, error) {
+func (s *Service) ListFollowers(ctx context.Context, userID id.UUID7, pageSize int, lastSeenID *id.UUID7) ([]User, int, error) {
 	followers, totalCount, err := s.repo.ListFollowers(ctx, userID, pageSize, lastSeenID)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	if !contextual.ReqSubjectIsAnAdmin(ctx) {
+	if !s.ctxTool.ReqSubjectIsAnAdmin(ctx) {
 		for i := range followers {
 			followers[i].removePI()
 		}

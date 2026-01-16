@@ -44,6 +44,7 @@ func (a *App) newServices(ctx context.Context, cfg *config.Config) error {
 		a.Repos.UsersRepo,
 		a.Utils.IDTool,
 		a.Utils.DateTimeTool,
+		a.Utils.ContextTool,
 		a.Utils.AuthTool,
 		a.Utils.ImageProcessor,
 		fmt.Sprintf("http://%s:%d", cfg.HTTP.Domain, cfg.HTTP.Port),

@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/OJOMB/fightpicker/internal/service"
-	"github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type Fighter struct {
-	ID                uuid.UUID
+	ID                id.UUID7
 	FirstName         string
 	LastName          string
 	Nickname          string
@@ -28,9 +28,9 @@ type Fighter struct {
 	Disqualifications int
 	NoContests        int
 	CreatedAt         time.Time
-	CreatedBy         uuid.UUID
+	CreatedBy         id.UUID7
 	UpdatedAt         time.Time
-	UpdatedBy         uuid.UUID
+	UpdatedBy         id.UUID7
 }
 
 // DOB is a custom type for handling date of birth with special JSON unmarshalling.

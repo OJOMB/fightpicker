@@ -8,6 +8,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
@@ -28,17 +29,15 @@ type Service interface {
 }
 
 type Handler struct {
-	v1.Handler
+	*v1.Handler
 	service    Service
 	pathPrefix string
 	logger     logs.Logger
 }
 
-func New(service Service, logger logs.Logger) *Handler {
+func New(service Service, idTool id.UUID7Parser, logger logs.Logger) *Handler {
 	return &Handler{
-		Handler: v1.Handler{
-			Logger: logger.With("component", "http_handler_v1_users"),
-		},
+		Handler:    v1.NewHandler(idTool, logger.With("component", "http_handler_v1_users")),
 		service:    service,
 		pathPrefix: pathPrefix,
 	}

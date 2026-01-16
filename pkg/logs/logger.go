@@ -42,13 +42,14 @@ type Slogger struct {
 // New creates a new Logger instance with the specified log level.
 // If otelEnabled is true, an OTel slog handler is added for exporting logs to OpenTelemetry on top of the standard output JSON handler.
 // Each handler is wrapped with ContextHandler to enrich logging calls with request-scoped context values.
-func New(level Level, otelEnabled bool, appName, env string) Logger {
+func New(level Level, ctxTool ContextRequestProvider, otelEnabled bool, appName, env string) Logger {
 	loggerHandlers := []slog.Handler{NewContextHandler(
+		ctxTool,
 		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.Level(level)}),
 	)}
 
 	if otelEnabled {
-		loggerHandlers = append(loggerHandlers, NewContextHandler(otelslog.NewHandler(appName)))
+		loggerHandlers = append(loggerHandlers, NewContextHandler(ctxTool, otelslog.NewHandler(appName)))
 	}
 
 	// TODO: slogmulti can be removed once we have go 1.26 is released as it includes built-in support for multiple handlers https://tip.golang.org/doc/go1.26
@@ -86,6 +87,10 @@ func (sl *Slogger) Log(ctx context.Context, level Level, msg string, args ...any
 }
 
 func (sl *Slogger) FatalContext(ctx context.Context, msg string, args ...any) {
-	sl.Logger.ErrorContext(ctx, msg, args...)
+	sl.Logger.Log(ctx, slog.LevelError, msg, args...)
+
+	// TODO: slog does not have Fatal level, so we exit the application here
+	// I'm not certain this gives enough time for the logs on both handlers to be flushed?
+
 	os.Exit(1)
 }

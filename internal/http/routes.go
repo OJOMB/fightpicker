@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
-
-	"github.com/OJOMB/fightpicker/internal/http/middlewares"
 )
 
 // routes sets up all the HTTP routes for the server.
@@ -18,12 +16,9 @@ func (s *Server) routes() {
 		s.router.Use(otelmux.Middleware("fightpicker-server"))
 	}
 
-	// add request logger middleware
-	logRespBody := s.env == "development" || s.env == "local"
-	s.router.Use(middlewares.NewRequestResponseLogger(s.logger, logRespBody, s.oTelEnabled).Middleware)
-	s.router.Use(middlewares.NewAuthPermissionsChecker(s.secretKey, s.jwtValidator, s.logger).Middleware)
-	s.router.Use(middlewares.NewContextLoader(s.logger).Middleware)
-	s.router.Use(middlewares.NewPyroProfiler(map[string]string{"component": "server"}).Middleware)
+	for _, mw := range s.middlewares {
+		s.router.Use(mw)
+	}
 
 	// Register routes from all handlers
 	for _, handler := range s.handlers {

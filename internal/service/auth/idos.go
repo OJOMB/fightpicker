@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 const (
@@ -49,15 +49,15 @@ type AuthClaims struct {
 
 // RefreshToken represents a stored refresh token.
 type RefreshToken struct {
-	ID         uuid.UUID  `json:"id"`
-	UserID     uuid.UUID  `json:"user_id"`
-	TokenHash  string     `json:"token_hash"`
-	JTI        uuid.UUID  `json:"jti"`
-	Revoked    bool       `json:"revoked"`
-	ExpiresAt  time.Time  `json:"expires_at"`
-	ReplacedBy *uuid.UUID `json:"replaced_by"`
-	IPAddress  string     `json:"ip_address"`
-	UserAgent  string     `json:"user_agent"`
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
+	ID         id.UUID7  `json:"id"`
+	UserID     id.UUID7  `json:"user_id"`
+	TokenHash  string    `json:"token_hash"`
+	JTI        id.UUID7  `json:"jti"`
+	Revoked    bool      `json:"revoked"`
+	ExpiresAt  time.Time `json:"expires_at"`
+	ReplacedBy *id.UUID7 `json:"replaced_by"`
+	IPAddress  string    `json:"ip_address"`
+	UserAgent  string    `json:"user_agent"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }

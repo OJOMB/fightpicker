@@ -3,13 +3,13 @@ package auth
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 
 	service "github.com/OJOMB/fightpicker/internal/service/auth"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
-func (r *Repo) GetUserPermissions(ctx context.Context, userID uuid.UUID) ([]string, service.Permissions, error) {
+func (r *Repo) GetUserPermissions(ctx context.Context, userID id.UUID7) ([]string, service.Permissions, error) {
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return nil, nil, err

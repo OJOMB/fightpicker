@@ -5,14 +5,14 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // PutProfilePictureAndThumbnailToS3 updates the users profile picture in the DB and uploads the processed profile picture and thumbnail to S3.
-func (r *Repo) PutProfilePictureAndThumbnailToS3(ctx context.Context, userID uuid.UUID, profilePicBytes, thumbnailBytes []byte) error {
+func (r *Repo) PutProfilePictureAndThumbnailToS3(ctx context.Context, userID id.UUID7, profilePicBytes, thumbnailBytes []byte) error {
 	objKeyRoot := "users/" + userID.String()
 
 	// first attempt to update the user's profile picture in the database - if this fails, we shouldn't upload the images to S3

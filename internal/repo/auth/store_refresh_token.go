@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
-func (r *Repo) StoreRefreshToken(ctx context.Context, userID uuid.UUID, jti uuid.UUID, tokenHash, ipAddress, userAgent string, expiresAt time.Time) error {
+func (r *Repo) StoreRefreshToken(ctx context.Context, userID id.UUID7, jti id.UUID7, tokenHash, ipAddress, userAgent string, expiresAt time.Time) error {
 	params := postgres.StoreRefreshTokenParams{
-		ID:        r.idGen.Generate(),
+		ID:        r.id.Generate(),
 		UserID:    userID,
 		TokenHash: tokenHash,
 		Jti:       jti,

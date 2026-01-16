@@ -3,18 +3,17 @@ package users
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
-
 	service "github.com/OJOMB/fightpicker/internal/service/users"
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
-func (r *Repo) ListUsers(ctx context.Context, pageSize int, lastSeenID *uuid.UUID) ([]service.User, int, error) {
+func (r *Repo) ListUsers(ctx context.Context, pageSize int, lastSeenID *id.UUID7) ([]service.User, int, error) {
 	if lastSeenID == nil {
-		// Use uuid.Nil to represent the starting point when no lastSeenID is provided
+		// Use id.UUID7Nil to represent the starting point when no lastSeenID is provided
 		// this means we don't need a special case in the query for the first page
-		// we're using UUID7 which sorts lexicographically, so uuid.Nil is less than any valid UUID7
-		zeroUUID := uuid.Nil
+		// we're using UUID7 which sorts lexicographically, so id.UUID7Nil is less than any valid UUID7
+		zeroUUID := id.UUID7Nil
 		lastSeenID = &zeroUUID
 	}
 

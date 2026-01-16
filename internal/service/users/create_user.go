@@ -15,7 +15,7 @@ func (svc *Service) CreateUser(ctx context.Context, user User) (User, error) {
 		return User{}, err
 	}
 
-	user.ID = svc.idGen.Generate()
+	user.ID = svc.idTool.Generate()
 	now := svc.dateTimeTool.Now()
 	user.CreatedAt = now
 	user.UpdatedAt = now

@@ -3,11 +3,11 @@ package jsonwebtokens
 import (
 	"time"
 
-	"github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func (jwtt *JWTTool[T]) GenerateToken(jti, userID uuid.UUID, duration time.Duration, iss, aud string, customClaims map[string]any, secretKey []byte) (Token, error) {
+func (jwtt *JWTTool[T]) GenerateToken(jti, userID id.UUID7, duration time.Duration, iss, aud string, customClaims map[string]any, secretKey []byte) (Token, error) {
 	now := time.Now().UTC()
 	expiresAt := now.Add(duration)
 

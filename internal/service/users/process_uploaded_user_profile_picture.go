@@ -3,7 +3,7 @@ package users
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 type Objects3Getter interface {
@@ -11,10 +11,10 @@ type Objects3Getter interface {
 }
 
 type ProfilePictureAndThumbnailerS3Putter interface {
-	PutProfilePictureAndThumbnailToS3(ctx context.Context, userID uuid.UUID, profilePicBytes, thumbnailBytes []byte) error
+	PutProfilePictureAndThumbnailToS3(ctx context.Context, userID id.UUID7, profilePicBytes, thumbnailBytes []byte) error
 }
 
-func (s *Service) ProcessUploadedUserProfilePicture(ctx context.Context, userID uuid.UUID, bucketName, objectKey string) error {
+func (s *Service) ProcessUploadedUserProfilePicture(ctx context.Context, userID id.UUID7, bucketName, objectKey string) error {
 	// fetch the object from S3
 	objBytes, err := s.repo.GetS3Object(ctx, bucketName, objectKey)
 	if err != nil {

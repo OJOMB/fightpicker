@@ -5,13 +5,12 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/gofrs/uuid/v5"
-
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 // UnfollowUser deletes a follow relationship between the follower and followee in the database.
-func (r *Repo) UnfollowUser(ctx context.Context, followerID, followeeID uuid.UUID) error {
+func (r *Repo) UnfollowUser(ctx context.Context, followerID, followeeID id.UUID7) error {
 	params := postgres.UnfollowUserParams{
 		FollowerID: followerID,
 		FolloweeID: followeeID,
