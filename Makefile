@@ -1,7 +1,7 @@
 PROTO_SRC_DIR := internal/grpc/proto
 PROTO_OUT_DIR := internal/grpc/gen/go
 
-DTO_OUT_DIR := internal/server/dtos
+DTO_OUT_DIR := internal/http/dtos
 OPENAPI_SPEC := api/swagger.yaml
 
 PROTO_FILES := $(shell find $(PROTO_SRC_DIR) -name "*.proto")
