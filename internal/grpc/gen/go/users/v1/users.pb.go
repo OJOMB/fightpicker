@@ -9,6 +9,7 @@ package userspb
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -980,7 +981,7 @@ var File_users_v1_users_proto protoreflect.FileDescriptor
 
 const file_users_v1_users_proto_rawDesc = "" +
 	"\n" +
-	"\x14users/v1/users.proto\x12\busers.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x80\x03\n" +
+	"\x14users/v1/users.proto\x12\busers.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"\x80\x03\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1d\n" +
@@ -1078,15 +1079,15 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\x06Gender\x12\x10\n" +
 	"\fGENDER_OTHER\x10\x00\x12\x0f\n" +
 	"\vGENDER_MALE\x10\x01\x12\x11\n" +
-	"\rGENDER_FEMALE\x10\x022\xfc\x04\n" +
+	"\rGENDER_FEMALE\x10\x022\xf6\x04\n" +
 	"\fUsersService\x129\n" +
 	"\n" +
 	"CreateUser\x12\x1b.users.v1.CreateUserRequest\x1a\x0e.users.v1.User\x123\n" +
 	"\aGetUser\x12\x18.users.v1.GetUserRequest\x1a\x0e.users.v1.User\x129\n" +
 	"\n" +
-	"UpdateUser\x12\x1b.users.v1.UpdateUserRequest\x1a\x0e.users.v1.User\x12G\n" +
+	"UpdateUser\x12\x1b.users.v1.UpdateUserRequest\x1a\x0e.users.v1.User\x12A\n" +
 	"\n" +
-	"DeleteUser\x12\x1b.users.v1.DeleteUserRequest\x1a\x1c.users.v1.DeleteUserResponse\x12D\n" +
+	"DeleteUser\x12\x1b.users.v1.DeleteUserRequest\x1a\x16.google.protobuf.Empty\x12D\n" +
 	"\tListUsers\x12\x1a.users.v1.ListUsersRequest\x1a\x1b.users.v1.ListUsersResponse\x12G\n" +
 	"\n" +
 	"FollowUser\x12\x1b.users.v1.FollowUserRequest\x1a\x1c.users.v1.FollowUserResponse\x12M\n" +
@@ -1125,6 +1126,7 @@ var file_users_v1_users_proto_goTypes = []any{
 	(*ListFollowersRequest)(nil),  // 13: users.v1.ListFollowersRequest
 	(*ListFolloweesRequest)(nil),  // 14: users.v1.ListFolloweesRequest
 	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),         // 16: google.protobuf.Empty
 }
 var file_users_v1_users_proto_depIdxs = []int32{
 	0,  // 0: users.v1.User.gender:type_name -> users.v1.Gender
@@ -1148,7 +1150,7 @@ var file_users_v1_users_proto_depIdxs = []int32{
 	1,  // 18: users.v1.UsersService.CreateUser:output_type -> users.v1.User
 	1,  // 19: users.v1.UsersService.GetUser:output_type -> users.v1.User
 	1,  // 20: users.v1.UsersService.UpdateUser:output_type -> users.v1.User
-	5,  // 21: users.v1.UsersService.DeleteUser:output_type -> users.v1.DeleteUserResponse
+	16, // 21: users.v1.UsersService.DeleteUser:output_type -> google.protobuf.Empty
 	8,  // 22: users.v1.UsersService.ListUsers:output_type -> users.v1.ListUsersResponse
 	11, // 23: users.v1.UsersService.FollowUser:output_type -> users.v1.FollowUserResponse
 	12, // 24: users.v1.UsersService.UnfollowUser:output_type -> users.v1.UnfollowUserResponse

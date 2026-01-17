@@ -5,6 +5,7 @@ package users.v1;
 option go_package = "github.com/OJOMB/fightpicker/internal/grpc/gen/go/users/v1;userspb";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 // UsersService defines the gRPC service for user management
 service UsersService {
@@ -19,7 +20,7 @@ service UsersService {
   // UpdateUser modifies an existing user's details
   rpc UpdateUser(UpdateUserRequest) returns (User);
   // DeleteUser removes a user by their ID
-  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
   // ListUsers retrieves a paginated list of users with optional filters
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
 

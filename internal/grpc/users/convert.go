@@ -25,6 +25,15 @@ func userIDOtoDTO(u usersservice.User) *userspb.User {
 	}
 }
 
+func usersIDOtoDTOs(users []usersservice.User) []*userspb.User {
+	dtos := make([]*userspb.User, len(users))
+	for i, u := range users {
+		dtos[i] = userIDOtoDTO(u)
+	}
+
+	return dtos
+}
+
 func createUserRequestDTOtoIDO(req *userspb.CreateUserRequest) usersservice.User {
 	return usersservice.User{
 		Email:        req.Email,
