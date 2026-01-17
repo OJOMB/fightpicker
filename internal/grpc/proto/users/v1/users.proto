@@ -16,7 +16,11 @@ service UsersService {
   // CreateUser registers a new user in the system
   rpc CreateUser(CreateUserRequest) returns (User);
     // GetUser retrieves a user's details by their ID
-  rpc GetUser(GetUserRequest) returns (User);
+  rpc GetUserByID(GetUserByIDRequest) returns (User);
+  // GetUserByEmail retrieves a user's details by their email
+  rpc GetUserByEmail(GetUserByEmailRequest) returns (User);
+  // GetUserByUsername retrieves a user's details by their username
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (User);
   // UpdateUser modifies an existing user's details
   rpc UpdateUser(UpdateUserRequest) returns (User);
   // DeleteUser removes a user by their ID
@@ -78,9 +82,19 @@ message CreateUserRequest {
   google.protobuf.Timestamp dob    = 9;
 }
 
-// GetUserRequest is the request message for retrieving a user by ID
-message GetUserRequest {
+// GetUserByIDRequest is the request message for retrieving a user by ID
+message GetUserByIDRequest {
   string user_id = 1;
+}
+
+// GetUserByEmailRequest is the request message for retrieving a user by email
+message GetUserByEmailRequest {
+  string email = 1;
+}
+
+// GetUserByUsernameRequest is the request message for retrieving a user by username
+message GetUserByUsernameRequest {
+  string username = 1;
 }
 
 // DeleteUserRequest is the request message for deleting a user by ID
@@ -106,15 +120,11 @@ message UpdateUserRequest {
   optional google.protobuf.Timestamp dob = 10;
 }
 
-// ListUsersRequest is the request message for listing users with pagination and optional filters
+// ListUsersRequest is the request message for listing users with pagination
 message ListUsersRequest {
   // Pagination fields
   optional string last_seen_id = 1;
   optional uint32 page_size    = 2;
-
-  // Filter fields
-  optional string email    = 3;
-  optional string username = 4;
 }
 
 // ListUsersResponse is the response message for listing users

@@ -20,15 +20,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UsersService_CreateUser_FullMethodName    = "/users.v1.UsersService/CreateUser"
-	UsersService_GetUser_FullMethodName       = "/users.v1.UsersService/GetUser"
-	UsersService_UpdateUser_FullMethodName    = "/users.v1.UsersService/UpdateUser"
-	UsersService_DeleteUser_FullMethodName    = "/users.v1.UsersService/DeleteUser"
-	UsersService_ListUsers_FullMethodName     = "/users.v1.UsersService/ListUsers"
-	UsersService_FollowUser_FullMethodName    = "/users.v1.UsersService/FollowUser"
-	UsersService_UnfollowUser_FullMethodName  = "/users.v1.UsersService/UnfollowUser"
-	UsersService_ListFollowers_FullMethodName = "/users.v1.UsersService/ListFollowers"
-	UsersService_ListFollowees_FullMethodName = "/users.v1.UsersService/ListFollowees"
+	UsersService_CreateUser_FullMethodName        = "/users.v1.UsersService/CreateUser"
+	UsersService_GetUserByID_FullMethodName       = "/users.v1.UsersService/GetUserByID"
+	UsersService_GetUserByEmail_FullMethodName    = "/users.v1.UsersService/GetUserByEmail"
+	UsersService_GetUserByUsername_FullMethodName = "/users.v1.UsersService/GetUserByUsername"
+	UsersService_UpdateUser_FullMethodName        = "/users.v1.UsersService/UpdateUser"
+	UsersService_DeleteUser_FullMethodName        = "/users.v1.UsersService/DeleteUser"
+	UsersService_ListUsers_FullMethodName         = "/users.v1.UsersService/ListUsers"
+	UsersService_FollowUser_FullMethodName        = "/users.v1.UsersService/FollowUser"
+	UsersService_UnfollowUser_FullMethodName      = "/users.v1.UsersService/UnfollowUser"
+	UsersService_ListFollowers_FullMethodName     = "/users.v1.UsersService/ListFollowers"
+	UsersService_ListFollowees_FullMethodName     = "/users.v1.UsersService/ListFollowees"
 )
 
 // UsersServiceClient is the client API for UsersService service.
@@ -40,7 +42,11 @@ type UsersServiceClient interface {
 	// CreateUser registers a new user in the system
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*User, error)
 	// GetUser retrieves a user's details by their ID
-	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
+	GetUserByID(ctx context.Context, in *GetUserByIDRequest, opts ...grpc.CallOption) (*User, error)
+	// GetUserByEmail retrieves a user's details by their email
+	GetUserByEmail(ctx context.Context, in *GetUserByEmailRequest, opts ...grpc.CallOption) (*User, error)
+	// GetUserByUsername retrieves a user's details by their username
+	GetUserByUsername(ctx context.Context, in *GetUserByUsernameRequest, opts ...grpc.CallOption) (*User, error)
 	// UpdateUser modifies an existing user's details
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*User, error)
 	// DeleteUser removes a user by their ID
@@ -75,10 +81,30 @@ func (c *usersServiceClient) CreateUser(ctx context.Context, in *CreateUserReque
 	return out, nil
 }
 
-func (c *usersServiceClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error) {
+func (c *usersServiceClient) GetUserByID(ctx context.Context, in *GetUserByIDRequest, opts ...grpc.CallOption) (*User, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(User)
-	err := c.cc.Invoke(ctx, UsersService_GetUser_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, UsersService_GetUserByID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersServiceClient) GetUserByEmail(ctx context.Context, in *GetUserByEmailRequest, opts ...grpc.CallOption) (*User, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(User)
+	err := c.cc.Invoke(ctx, UsersService_GetUserByEmail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersServiceClient) GetUserByUsername(ctx context.Context, in *GetUserByUsernameRequest, opts ...grpc.CallOption) (*User, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(User)
+	err := c.cc.Invoke(ctx, UsersService_GetUserByUsername_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +190,11 @@ type UsersServiceServer interface {
 	// CreateUser registers a new user in the system
 	CreateUser(context.Context, *CreateUserRequest) (*User, error)
 	// GetUser retrieves a user's details by their ID
-	GetUser(context.Context, *GetUserRequest) (*User, error)
+	GetUserByID(context.Context, *GetUserByIDRequest) (*User, error)
+	// GetUserByEmail retrieves a user's details by their email
+	GetUserByEmail(context.Context, *GetUserByEmailRequest) (*User, error)
+	// GetUserByUsername retrieves a user's details by their username
+	GetUserByUsername(context.Context, *GetUserByUsernameRequest) (*User, error)
 	// UpdateUser modifies an existing user's details
 	UpdateUser(context.Context, *UpdateUserRequest) (*User, error)
 	// DeleteUser removes a user by their ID
@@ -192,8 +222,14 @@ type UnimplementedUsersServiceServer struct{}
 func (UnimplementedUsersServiceServer) CreateUser(context.Context, *CreateUserRequest) (*User, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedUsersServiceServer) GetUser(context.Context, *GetUserRequest) (*User, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetUser not implemented")
+func (UnimplementedUsersServiceServer) GetUserByID(context.Context, *GetUserByIDRequest) (*User, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserByID not implemented")
+}
+func (UnimplementedUsersServiceServer) GetUserByEmail(context.Context, *GetUserByEmailRequest) (*User, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserByEmail not implemented")
+}
+func (UnimplementedUsersServiceServer) GetUserByUsername(context.Context, *GetUserByUsernameRequest) (*User, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserByUsername not implemented")
 }
 func (UnimplementedUsersServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*User, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateUser not implemented")
@@ -255,20 +291,56 @@ func _UsersService_CreateUser_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UsersService_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserRequest)
+func _UsersService_GetUserByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UsersServiceServer).GetUser(ctx, in)
+		return srv.(UsersServiceServer).GetUserByID(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UsersService_GetUser_FullMethodName,
+		FullMethod: UsersService_GetUserByID_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServiceServer).GetUser(ctx, req.(*GetUserRequest))
+		return srv.(UsersServiceServer).GetUserByID(ctx, req.(*GetUserByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UsersService_GetUserByEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).GetUserByEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UsersService_GetUserByEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).GetUserByEmail(ctx, req.(*GetUserByEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UsersService_GetUserByUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByUsernameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).GetUserByUsername(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UsersService_GetUserByUsername_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).GetUserByUsername(ctx, req.(*GetUserByUsernameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -411,8 +483,16 @@ var UsersService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UsersService_CreateUser_Handler,
 		},
 		{
-			MethodName: "GetUser",
-			Handler:    _UsersService_GetUser_Handler,
+			MethodName: "GetUserByID",
+			Handler:    _UsersService_GetUserByID_Handler,
+		},
+		{
+			MethodName: "GetUserByEmail",
+			Handler:    _UsersService_GetUserByEmail_Handler,
+		},
+		{
+			MethodName: "GetUserByUsername",
+			Handler:    _UsersService_GetUserByUsername_Handler,
 		},
 		{
 			MethodName: "UpdateUser",

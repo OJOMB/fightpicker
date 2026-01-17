@@ -99,14 +99,34 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 	return userIDOtoDTO(user), nil
 }
 
-// GetUser retrieves a user by their ID.
-func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
+// GetUserByID retrieves a user by their ID.
+func (s *Server) GetUserByID(ctx context.Context, req *pb.GetUserByIDRequest) (*pb.User, error) {
 	userID, err := s.id.ParseString(req.GetUserId())
 	if err != nil {
 		return nil, s.toStatus(errors.Wrap(usersservice.ErrInvalidParameter, "user_id"))
 	}
 
 	user, err := s.service.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, s.toStatus(err)
+	}
+
+	return userIDOtoDTO(user), nil
+}
+
+// GetUserByEmail retrieves a user by their email.
+func (s *Server) GetUserByEmail(ctx context.Context, req *pb.GetUserByEmailRequest) (*pb.User, error) {
+	user, err := s.service.GetUserByEmail(ctx, req.GetEmail())
+	if err != nil {
+		return nil, s.toStatus(err)
+	}
+
+	return userIDOtoDTO(user), nil
+}
+
+// GetUserByUsername retrieves a user by their username.
+func (s *Server) GetUserByUsername(ctx context.Context, req *pb.GetUserByUsernameRequest) (*pb.User, error) {
+	user, err := s.service.GetUserByUsername(ctx, req.GetUsername())
 	if err != nil {
 		return nil, s.toStatus(err)
 	}
@@ -143,28 +163,6 @@ func (s *Server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*em
 }
 
 func (s *Server) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
-	if req.GetEmail() != "" {
-		user, err := s.service.GetUserByEmail(ctx, req.GetEmail())
-		if err != nil {
-			return nil, s.toStatus(err)
-		}
-
-		return &pb.ListUsersResponse{
-			Users: []*pb.User{userIDOtoDTO(user)},
-		}, nil
-	}
-
-	if req.GetUsername() != "" {
-		user, err := s.service.GetUserByUsername(ctx, req.GetUsername())
-		if err != nil {
-			return nil, s.toStatus(err)
-		}
-
-		return &pb.ListUsersResponse{
-			Users: []*pb.User{userIDOtoDTO(user)},
-		}, nil
-	}
-
 	pageSize, lastSeenId, err := s.ParsePaginationParams(req)
 	if err != nil {
 		return nil, s.toStatus(err)
@@ -180,5 +178,4 @@ func (s *Server) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.L
 		Users:      usersIDOtoDTOs(users),
 		TotalCount: uint64(totalCount),
 	}, nil
-
 }
