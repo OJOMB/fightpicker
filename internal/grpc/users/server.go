@@ -154,6 +154,17 @@ func (s *Server) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.L
 		}, nil
 	}
 
+	if req.GetUsername() != "" {
+		user, err := s.service.GetUserByUsername(ctx, req.GetUsername())
+		if err != nil {
+			return nil, s.toStatus(err)
+		}
+
+		return &pb.ListUsersResponse{
+			Users: []*pb.User{userIDOtoDTO(user)},
+		}, nil
+	}
+
 	pageSize, lastSeenId, err := s.ParsePaginationParams(req)
 	if err != nil {
 		return nil, s.toStatus(err)
