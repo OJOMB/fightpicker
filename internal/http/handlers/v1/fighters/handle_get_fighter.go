@@ -28,7 +28,7 @@ func (h *Handler) getFighter(svc FighterGetter) v1.HandlerFunc {
 			return err
 		}
 
-		h.WriteJSON(ctx, w, http.StatusOK, fighterIDOToDTO(createdFighter))
+		h.Write(ctx, w, http.StatusOK, fighterIDOToDTO(createdFighter))
 
 		return nil
 	}

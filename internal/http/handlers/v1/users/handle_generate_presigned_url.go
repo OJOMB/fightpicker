@@ -48,7 +48,7 @@ func (h *Handler) generatePresignedURL(svc PresignedPutURLGenerator) v1.HandlerF
 			SignedHeader: signedHeaders,
 		}
 
-		h.WriteJSON(ctx, w, http.StatusOK, resp)
+		h.Write(ctx, w, http.StatusOK, resp)
 
 		return nil
 	}

@@ -55,16 +55,33 @@ func New(cfg *config.Config, app *app.App) (*Server, error) {
 		return nil, ErrPortNotSpecified
 	}
 
-	handlers := []RouteRegistrar{
-		handlersv1auth.New(app.Services.AuthService, app.Utils.IDTool, app.Logger),
-		handlersv1users.New(app.Services.UsersService, app.Utils.IDTool, app.Logger),
-		handlersv1fighters.New(app.Services.FightersService, app.Utils.IDTool, app.Logger),
+	handlerAuth, err := handlersv1auth.New(app.Services.AuthService, app.Utils.IDTool, app.Utils.ContextTool, app.Logger)
+	if err != nil {
+		return nil, err
 	}
+
+	handlerUsers, err := handlersv1users.New(app.Services.UsersService, app.Utils.IDTool, app.Utils.ContextTool, app.Logger)
+	if err != nil {
+		return nil, err
+	}
+
+	handlerFighters, err := handlersv1fighters.New(app.Services.FightersService, app.Utils.IDTool, app.Utils.ContextTool, app.Logger)
+	if err != nil {
+		return nil, err
+	}
+
+	handlers := []RouteRegistrar{
+		handlerAuth,
+		handlerUsers,
+		handlerFighters,
+	}
+
+	authMW, err := middlewares.NewAuthPermissionsChecker([]byte(cfg.Auth.PrivateKey), app.Utils.JWTTool, app.Utils.ContextTool, app.Logger)
 
 	logRespBody := cfg.Env != "production"
 	middlewares := []mux.MiddlewareFunc{
 		middlewares.NewRequestResponseLogger(app.Logger, app.Utils.IDTool, logRespBody, cfg.Observability.OTel.Enable).Middleware,
-		middlewares.NewAuthPermissionsChecker([]byte(cfg.Auth.PrivateKey), app.Utils.JWTTool, app.Logger).Middleware,
+		authMW.Middleware,
 		middlewares.NewContextLoader(app.Utils.ContextTool, app.Logger).Middleware,
 		middlewares.NewPyroProfiler(map[string]string{"component": "server"}).Middleware,
 	}
@@ -81,11 +98,6 @@ func New(cfg *config.Config, app *app.App) (*Server, error) {
 		secretKey:    []byte(cfg.Auth.PrivateKey),
 		env:          cfg.Env,
 	}, nil
-}
-
-func (s *Server) WithHandlers(handlers []RouteRegistrar) *Server {
-	s.handlers = handlers
-	return s
 }
 
 // Run starts the HTTP server and listens for incoming requests. It also handles graceful shutdown on receiving termination signals.

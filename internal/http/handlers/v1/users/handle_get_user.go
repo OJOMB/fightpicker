@@ -28,7 +28,7 @@ func (h *Handler) getUser(svc UserGetter) v1.HandlerFunc {
 			return err
 		}
 
-		h.WriteJSON(ctx, w, http.StatusOK, userIDOToDTO(user))
+		h.Write(ctx, w, http.StatusOK, userIDOToDTO(user))
 
 		return nil
 	}

@@ -162,6 +162,7 @@ func (s *Server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*em
 	return &emptypb.Empty{}, nil
 }
 
+// ListUsers retrieves a paginated list of users.
 func (s *Server) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
 	pageSize, lastSeenId, err := s.ParsePaginationParams(req)
 	if err != nil {
@@ -179,3 +180,22 @@ func (s *Server) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.L
 		TotalCount: uint64(totalCount),
 	}, nil
 }
+
+// // FollowUser allows one user to follow another user.
+// func (s *Server) FollowUser(ctx context.Context, req *pb.FollowUserRequest) (*emptypb.Empty, error) {
+// 	followerID, err := s.id.ParseString(req.GetTargetUserId())
+// 	if err != nil {
+// 		return nil, s.toStatus(errors.Wrap(usersservice.ErrInvalidParameter, "follower_id"))
+// 	}
+
+// 	followeeID, err := s.id.ParseString(req.GetFolloweeId())
+// 	if err != nil {
+// 		return nil, s.toStatus(errors.Wrap(usersservice.ErrInvalidParameter, "followee_id"))
+// 	}
+
+// 	if err := s.service.FollowUser(ctx, followerID, followeeID); err != nil {
+// 		return nil, s.toStatus(err)
+// 	}
+
+// 	return &emptypb.Empty{}, nil
+// }

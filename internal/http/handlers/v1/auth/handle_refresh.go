@@ -42,7 +42,7 @@ func (h *Handler) refresh(svc UserAuthenticationRefresher) v1.HandlerFunc {
 
 		http.SetCookie(w, h.generateRefreshCookie(refreshToken, refreshTokenExpiresAt))
 
-		h.WriteJSON(ctx, w, http.StatusOK, dtos.AuthResponse{AccessToken: accessToken})
+		h.Write(ctx, w, http.StatusOK, dtos.AuthResponse{AccessToken: accessToken})
 
 		return nil
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
-func classifyError(err error) apierr.APIError {
+func classifyError(err error) *apierr.APIError {
 	var (
 		status    int
 		code      string

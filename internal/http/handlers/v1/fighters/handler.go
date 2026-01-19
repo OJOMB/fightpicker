@@ -5,9 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	"github.com/OJOMB/fightpicker/internal/http/apiresponder"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
+	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
@@ -24,25 +25,28 @@ type Handler struct {
 	pathPrefix string
 }
 
-func New(service Service, idTool id.UUID7Parser, logger logs.Logger) *Handler {
+func New(service Service, idTool id.UUID7Parser, ctxTool contextual.ContextProvider, logger logs.Logger) (*Handler, error) {
+	if logger == nil {
+		return nil, v1.ErrLoggerIsNil
+	}
+
+	if idTool == nil {
+		return nil, v1.ErrIDToolIsNil
+	}
+
+	if ctxTool == nil {
+		return nil, v1.ErrContextToolIsNil
+	}
+
+	responder := apiresponder.NewJSONResponder(ctxTool, classifyError, logger.With("component", "handler_fighters_v1"))
 	return &Handler{
-		Handler:    v1.NewHandler(idTool, logger),
+		Handler:    v1.NewHandler(idTool, responder),
 		service:    service,
 		pathPrefix: pathPrefix,
-	}
+	}, nil
 }
 
-func (h *Handler) RegisterRoutes(mux *mux.Router) {
+func (h *Handler) RegisterRoutes(m *mux.Router) {
 	// GET /api/v1/fighters/{fighter_id} - get a fighter by ID
-	mux.Handle(
-		fmt.Sprintf("%s/{%s}", h.pathPrefix, v1.QueryParamFighterID),
-		otelhttp.NewHandler(
-			h.ToHandler(
-				h.getFighter(h.service),
-				classifyError,
-			),
-			v1.EndpointNameV1FightersGet,
-		),
-	).Name(v1.EndpointNameV1FightersGet).
-		Methods(http.MethodGet)
+	h.AddRoute(m, fmt.Sprintf("%s/{%s}", h.pathPrefix, v1.QueryParamFighterID), http.MethodGet, v1.EndpointNameV1FightersGet, h.getFighter(h.service))
 }

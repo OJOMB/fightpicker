@@ -30,7 +30,7 @@ func (h *Handler) createUser(svc UserCreator) v1.HandlerFunc {
 			return err
 		}
 
-		h.WriteJSON(ctx, w, http.StatusCreated, userIDOToDTO(createdUser))
+		h.Write(ctx, w, http.StatusCreated, userIDOToDTO(createdUser))
 
 		return nil
 	}

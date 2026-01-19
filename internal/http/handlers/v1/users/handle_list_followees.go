@@ -49,7 +49,7 @@ func (h *Handler) listFollowees(svc UserFolloweeLister) v1.HandlerFunc {
 			resp.LastSeenId = &resp.Users[len(resp.Users)-1].Id
 		}
 
-		h.WriteJSON(ctx, w, http.StatusOK, resp)
+		h.Write(ctx, w, http.StatusOK, resp)
 
 		return nil
 	}

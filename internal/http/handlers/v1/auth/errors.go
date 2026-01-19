@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	// ErrMissingRefreshToken indicates that the refresh token was not provided in the request cookie.
+	// ErrMissingRefreshToken indicates that the refresh token is missing.
 	ErrMissingRefreshToken = errors.New("missing refresh token")
 )
 
-func classifyError(err error) apierr.APIError {
+func classifyError(err error) *apierr.APIError {
 	var (
 		status    int
 		code      string
@@ -52,11 +52,7 @@ func classifyError(err error) apierr.APIError {
 		logMsg = "invalid credentials provided"
 		publicErr = service.ErrInvalidCredentials
 	default:
-		status = http.StatusInternalServerError
-		code = v1.ErrCodeInternalServerError
-		logLevel = logs.LevelError
-		logMsg = "internal server error"
-		publicErr = v1.ErrInternalServerError
+		return apierr.NewInternalError(err)
 	}
 
 	return apierr.NewAPIError(

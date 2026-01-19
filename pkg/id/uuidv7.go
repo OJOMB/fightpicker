@@ -111,13 +111,13 @@ func (g *uuid7Tool) Generate() UUID7 {
 func (g *uuid7Tool) ParseString(idStr string) (UUID7, error) {
 	id, err := uuid.FromString(idStr)
 	if err != nil {
-		return UUID7{}, err
+		return UUID7Nil, err
 	}
 
 	var uid UUID7
 	uid, err = validate(id)
 	if err != nil {
-		return UUID7{}, err
+		return UUID7Nil, err
 	}
 
 	return uid, nil
@@ -127,13 +127,13 @@ func (g *uuid7Tool) ParseString(idStr string) (UUID7, error) {
 func (g *uuid7Tool) ParseBytes(idBytes []byte) (UUID7, error) {
 	id, err := uuid.FromBytes(idBytes)
 	if err != nil {
-		return UUID7{}, err
+		return UUID7Nil, err
 	}
 
 	var uid UUID7
 	uid, err = validate(id)
 	if err != nil {
-		return UUID7{}, err
+		return UUID7Nil, err
 	}
 
 	return uid, nil
@@ -141,10 +141,10 @@ func (g *uuid7Tool) ParseBytes(idBytes []byte) (UUID7, error) {
 
 func validate(u uuid.UUID) (UUID7, error) {
 	if u.Version() != uuid.V7 {
-		return UUID7{}, ErrInvalidVersion7
+		return UUID7Nil, ErrInvalidVersion7
 	}
 	if u.Variant() != uuid.VariantRFC4122 {
-		return UUID7{}, ErrInvalidVariant
+		return UUID7Nil, ErrInvalidVariant
 	}
 	return UUID7(u), nil
 }

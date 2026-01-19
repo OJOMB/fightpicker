@@ -21,6 +21,7 @@ type ContextServiceProvider interface {
 type ContextRequestProvider interface {
 	WithRequestValues(ctx context.Context, r *http.Request) context.Context
 	GetRequestValues(ctx context.Context) map[string]string
+	GetRequestID(ctx context.Context) id.UUID7
 }
 
 type ContextTool struct {

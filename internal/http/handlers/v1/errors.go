@@ -3,6 +3,15 @@ package v1
 import "fmt"
 
 var (
+	// ErrLoggerIsNil is returned when the provided logger is nil.
+	ErrLoggerIsNil = fmt.Errorf("logger cannot be nil")
+	// ErrContextToolIsNil is returned when the provided context tool is nil.
+	ErrContextToolIsNil = fmt.Errorf("context tool cannot be nil")
+	// ErrIDToolIsNil is returned when the provided ID tool is nil.
+	ErrIDToolIsNil = fmt.Errorf("ID tool cannot be nil")
+	// ErrJWTToolIsNil is returned when the provided JWT tool is nil.
+	ErrJWTToolIsNil = fmt.Errorf("JWT tool cannot be nil")
+
 	// ErrInvalidUUID is returned when a provided UUID is invalid.
 	ErrInvalidUUID = fmt.Errorf("invalid UUID format")
 	// ErrEmptyRequestBody is returned when the request body is empty.

@@ -25,6 +25,14 @@ var (
 	LevelFatal Level = Level(slog.LevelError) // slog does not have Fatal level
 )
 
+func (level Level) String() string {
+	if level == LevelFatal {
+		return "FATAL"
+	}
+
+	return slog.Level(level).String()
+}
+
 type Logger interface {
 	DebugContext(ctx context.Context, msg string, args ...any)
 	ErrorContext(ctx context.Context, msg string, args ...any)

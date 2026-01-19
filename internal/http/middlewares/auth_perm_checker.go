@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 
+	"github.com/OJOMB/fightpicker/internal/http/apiresponder"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	"github.com/OJOMB/fightpicker/internal/service/auth"
 	"github.com/OJOMB/fightpicker/pkg/contextual"
@@ -21,14 +21,33 @@ type JWTValidator interface {
 }
 
 type AuthPermissionsChecker struct {
-	logger       logs.Logger
+	apiresponder.Responder
 	jwtValidator JWTValidator
+	ctxTool      contextual.ContextTool
 	ignorePaths  map[string]struct{}
 	secretKey    []byte
+	logger       logs.Logger
 }
 
-func NewAuthPermissionsChecker(secretKey []byte, jwtValidator JWTValidator, l logs.Logger) *AuthPermissionsChecker {
+func NewAuthPermissionsChecker(secretKey []byte, jwtValidator JWTValidator, ctxTool contextual.ContextProvider, l logs.Logger) (*AuthPermissionsChecker, error) {
+	if secretKey == nil || len(secretKey) == 0 {
+		return nil, ErrSecretKeyIsNilOrEmpty
+	}
+
+	if jwtValidator == nil {
+		return nil, ErrJWTValidatorIsNil
+	}
+
+	if ctxTool == nil {
+		return nil, ErrContextToolIsNil
+	}
+
+	if l == nil {
+		return nil, ErrLoggerIsNil
+	}
+
 	return &AuthPermissionsChecker{
+		Responder:    apiresponder.NewJSONResponder(ctxTool, classifyError, l.With("component", "middleware_auth_perm_checker")),
 		secretKey:    secretKey,
 		jwtValidator: jwtValidator,
 		ignorePaths: map[string]struct{}{
@@ -38,8 +57,7 @@ func NewAuthPermissionsChecker(secretKey []byte, jwtValidator JWTValidator, l lo
 			v1.EndpointNameV1UsersCreate:            {},
 			v1.EndpointNameV1UsersEmailVerification: {},
 		},
-		logger: l.With("middleware", "AuthPermissionsChecker"),
-	}
+	}, nil
 }
 
 func (apc *AuthPermissionsChecker) Middleware(next http.Handler) http.Handler {
@@ -51,8 +69,7 @@ func (apc *AuthPermissionsChecker) Middleware(next http.Handler) http.Handler {
 
 		permissionComponents := strings.Split(name, ".")
 		if len(permissionComponents) != 4 {
-			apc.logger.ErrorContext(ctx, "invalid endpoint name format", "endpoint_name", name)
-			http.Error(w, "internal server error", http.StatusInternalServerError)
+			apc.WriteError(ctx, w, ErrInvalidRouteName)
 			return
 		}
 
@@ -71,68 +88,33 @@ func (apc *AuthPermissionsChecker) Middleware(next http.Handler) http.Handler {
 		bearerToken := r.Header.Get("Authorization")
 		token := strings.TrimPrefix(bearerToken, "Bearer ")
 		if token == "" {
-			req_ID, _ := r.Context().Value(contextual.KeyRequestID).(string)
-			http.Error(w, fmt.Sprintf(`{
-				"error":{
-					"message":"missing authorization token",
-					"code": "UNAUTHORIZED",
-					"request_id": "%s"
-				}
-			}`, req_ID), http.StatusUnauthorized)
+			apc.WriteError(ctx, w, ErrMissingToken)
 			return
 		}
 
 		// validate the token and permissions
 		customClaims, registeredClaims, err := apc.jwtValidator.Parse(token, apc.secretKey)
 		if err != nil {
-			req_ID, _ := r.Context().Value(contextual.KeyRequestID).(string)
-			http.Error(w, fmt.Sprintf(`{
-				"error":{
-					"message":"invalid authorization token",
-					"code": "UNAUTHORIZED",
-					"request_id": "%s"
-				}
-			}`, req_ID), http.StatusUnauthorized)
+			apc.WriteError(ctx, w, ErrInvalidToken)
 			return
 		}
 
 		// check the token is not expired
 		if time.Now().After(registeredClaims.ExpiresAt.Time) {
-			req_ID, _ := r.Context().Value(contextual.KeyRequestID).(string)
-			http.Error(w, fmt.Sprintf(`{
-				"error":{
-					"message":"authorization token expired",
-					"code": "UNAUTHORIZED",
-					"request_id": "%s"
-				}
-			}`, req_ID), http.StatusUnauthorized)
+			apc.WriteError(ctx, w, ErrExpiredToken)
 			return
 		}
 
 		// check permissions
 		if _, ok := customClaims.Perms[version][resource][operation][permissionName]; !ok {
-			req_ID, _ := r.Context().Value(contextual.KeyRequestID).(string)
-			http.Error(w, fmt.Sprintf(`{
-				"error":{
-					"message":"insufficient permissions",
-					"code": "FORBIDDEN",
-					"request_id": "%s"
-				}
-			}`, req_ID), http.StatusForbidden)
+			apc.WriteError(ctx, w, ErrInsufficientPermissions)
 			return
 		}
 
 		// put the claims subject (user ID) into context
 		subject, err := registeredClaims.GetSubject()
 		if err != nil || subject == "" {
-			req_ID, _ := r.Context().Value(contextual.KeyRequestID).(string)
-			http.Error(w, fmt.Sprintf(`{
-				"error":{
-					"message":"invalid authorization token",
-					"code": "UNAUTHORIZED",
-					"request_id": "%s"
-				}
-			}`, req_ID), http.StatusUnauthorized)
+			apc.WriteError(ctx, w, ErrInvalidToken)
 			return
 		}
 

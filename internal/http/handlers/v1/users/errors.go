@@ -2,6 +2,7 @@ package users
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/OJOMB/fightpicker/internal/http/apierr"
@@ -11,7 +12,13 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
-func classifyError(err error) apierr.APIError {
+var (
+	ErrContextToolIsNil = fmt.Errorf("contextTool cannot be nil")
+	ErrLoggerIsNil      = fmt.Errorf("logger cannot be nil")
+	ErrIDToolIsNil      = fmt.Errorf("idTool cannot be nil")
+)
+
+func classifyError(err error) *apierr.APIError {
 	var (
 		status    int
 		code      string
@@ -76,11 +83,7 @@ func classifyError(err error) apierr.APIError {
 		publicErr = v1.ErrInternalServerError
 
 	default:
-		status = http.StatusInternalServerError
-		code = v1.ErrCodeInternalServerError
-		logLevel = logs.LevelError
-		logMsg = "internal server error"
-		publicErr = v1.ErrInternalServerError
+		return apierr.NewInternalError(err)
 	}
 
 	return apierr.NewAPIError(

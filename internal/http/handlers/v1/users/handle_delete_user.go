@@ -23,7 +23,6 @@ func (h *Handler) deleteUser(svc UserDeleter) v1.HandlerFunc {
 		}
 
 		if err = svc.DeleteUserByID(ctx, userID); err != nil {
-			h.WriteError(ctx, w, classifyError(err))
 			return err
 		}
 

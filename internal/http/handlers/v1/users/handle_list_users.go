@@ -65,7 +65,7 @@ func (h *Handler) listUsers(svc UserSearcher) v1.HandlerFunc {
 				PageSize: 1,
 			}
 
-			h.WriteJSON(ctx, w, http.StatusOK, resp)
+			h.Write(ctx, w, http.StatusOK, resp)
 			return nil
 		}
 
@@ -93,7 +93,7 @@ func (h *Handler) listUsers(svc UserSearcher) v1.HandlerFunc {
 			resp.LastSeenId = &resp.Users[len(resp.Users)-1].Id
 		}
 
-		h.WriteJSON(ctx, w, http.StatusOK, resp)
+		h.Write(ctx, w, http.StatusOK, resp)
 		return nil
 	}
 }

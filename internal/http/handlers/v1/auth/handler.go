@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	"github.com/OJOMB/fightpicker/internal/http/apiresponder"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
+	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
@@ -30,12 +31,25 @@ type Handler struct {
 }
 
 // New creates a new Handler for authentication-related endpoints.
-func New(service Service, idTool id.UUID7Parser, logger logs.Logger) *Handler {
+func New(service Service, idTool id.UUID7Parser, ctxTool contextual.ContextProvider, logger logs.Logger) (*Handler, error) {
+	if logger == nil {
+		return nil, v1.ErrLoggerIsNil
+	}
+
+	if idTool == nil {
+		return nil, v1.ErrIDToolIsNil
+	}
+
+	if ctxTool == nil {
+		return nil, v1.ErrContextToolIsNil
+	}
+
+	responder := apiresponder.NewJSONResponder(ctxTool, classifyError, logger.With("component", "handler_users_v1"))
 	return &Handler{
-		Handler:    v1.NewHandler(idTool, logger.With("component", "http_handler_v1_auth")),
+		Handler:    v1.NewHandler(idTool, responder),
 		service:    service,
 		pathPrefix: pathPrefix,
-	}
+	}, nil
 }
 
 func (h *Handler) generateRefreshCookie(refreshToken string, expiresAt time.Time) *http.Cookie {
@@ -51,40 +65,13 @@ func (h *Handler) generateRefreshCookie(refreshToken string, expiresAt time.Time
 }
 
 // RegisterRoutes registers the authentication-related routes with the given mux router.
-func (h *Handler) RegisterRoutes(mux *mux.Router) {
-	mux.Handle(
-		fmt.Sprintf("%s/login", h.pathPrefix),
-		otelhttp.NewHandler(
-			h.ToHandler(
-				h.login(h.service),
-				classifyError,
-			),
-			v1.EndpointNameV1AuthLogin,
-		),
-	).Name(v1.EndpointNameV1AuthLogin).
-		Methods(http.MethodPost)
+func (h *Handler) RegisterRoutes(m *mux.Router) {
+	// POST /api/v1/auth/login - log in a user
+	h.AddRoute(m, fmt.Sprintf("%s/login", h.pathPrefix), http.MethodPost, v1.EndpointNameV1AuthLogin, h.login(h.service))
 
-	mux.Handle(
-		fmt.Sprintf("%s/refresh", h.pathPrefix),
-		otelhttp.NewHandler(
-			h.ToHandler(
-				h.refresh(h.service),
-				classifyError,
-			),
-			v1.EndpointNameV1AuthRefresh,
-		),
-	).Name(v1.EndpointNameV1AuthRefresh).
-		Methods(http.MethodPost)
+	// POST /api/v1/auth/refresh - refresh authentication tokens
+	h.AddRoute(m, fmt.Sprintf("%s/refresh", h.pathPrefix), http.MethodPost, v1.EndpointNameV1AuthRefresh, h.refresh(h.service))
 
-	mux.Handle(
-		fmt.Sprintf("%s/logout", h.pathPrefix),
-		otelhttp.NewHandler(
-			h.ToHandler(
-				h.logout(h.service),
-				classifyError,
-			),
-			v1.EndpointNameV1AuthLogout,
-		),
-	).Name(v1.EndpointNameV1AuthLogout).
-		Methods(http.MethodPost)
+	// POST /api/v1/auth/logout - log out a user
+	h.AddRoute(m, fmt.Sprintf("%s/logout", h.pathPrefix), http.MethodPost, v1.EndpointNameV1AuthLogout, h.logout(h.service))
 }

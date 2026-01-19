@@ -35,7 +35,7 @@ func (h *Handler) updateUser(svc UserUpdater) v1.HandlerFunc {
 			return err
 		}
 
-		h.WriteJSON(ctx, w, http.StatusOK, userIDOToDTO(updatedUser))
+		h.Write(ctx, w, http.StatusOK, userIDOToDTO(updatedUser))
 
 		return nil
 	}
