@@ -1,6 +1,8 @@
 package users
 
 import (
+	"time"
+
 	"github.com/mikhalytch/eggs/deref"
 	"github.com/oapi-codegen/runtime/types"
 
@@ -30,6 +32,11 @@ func userUpdateDTOToIDO(ucr dtos.UserUpdateReq) usersservice.UserUpdate {
 		email = &e
 	}
 
+	var dob *time.Time
+	if ucr.Dob != nil {
+		dob = &ucr.Dob.Time
+	}
+
 	return usersservice.UserUpdate{
 		Email:     email,
 		FirstName: ucr.FirstName,
@@ -37,6 +44,7 @@ func userUpdateDTOToIDO(ucr dtos.UserUpdateReq) usersservice.UserUpdate {
 		Username:  ucr.Username,
 		Location:  ucr.Location,
 		Bio:       ucr.Bio,
+		DOB:       dob,
 		Password:  ucr.Password,
 	}
 }

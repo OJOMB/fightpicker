@@ -75,6 +75,10 @@ func (u User) Update(updates UserUpdate) User {
 		u.Location = *updates.Location
 	}
 
+	if updates.DOB != nil {
+		u.DOB = *updates.DOB
+	}
+
 	if updates.Bio != nil {
 		u.Bio = *updates.Bio
 	}
@@ -94,6 +98,7 @@ type UserUpdate struct {
 	Email     *string
 	FirstName *string
 	LastName  *string
+	DOB       *time.Time
 	Username  *string
 	Location  *string
 	Bio       *string
@@ -109,6 +114,7 @@ func (uu UserUpdate) IsZero() bool {
 		uu.FirstName == nil &&
 		uu.LastName == nil &&
 		uu.Username == nil &&
+		uu.DOB == nil &&
 		uu.Location == nil &&
 		uu.Bio == nil &&
 		uu.Gender == nil &&
