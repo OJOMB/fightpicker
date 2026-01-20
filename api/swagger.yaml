@@ -35,6 +35,14 @@ paths:
       responses:
         '200':
           description: Successful login
+          headers:
+            Set-Cookie:
+              description: Refresh token (HttpOnly)
+              schema:
+                type: string
+                example: >
+                  refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...;
+                  HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth; Max-Age=86400
           content:
             application/json:
               schema:
@@ -309,7 +317,7 @@ paths:
                 $ref: '#/components/schemas/ErrorEnvelope'
     patch:
       summary: Update user by ID
-      operationId: updateUserByIDV1
+      operationId: v1.users.patch.update
       tags:
         - users
       parameters:
@@ -677,6 +685,96 @@ paths:
   #     FIGHTERS PATHS      #
   #-------------------------#
 
+  /fighters:
+    get:
+      summary: List fighters paginated
+      description: |
+        Returns a paginated list of fighters.
+        Supports cursor-based pagination using `last_seen_id` and `page_size` parameters.
+        If no fighters match the criteria, an empty array is returned.
+      operationId: v1.fighters.get.list
+      parameters:
+        - name: last_seen_id
+          in: query
+          required: false
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      tags:
+        - fighters
+      responses:
+        '200':
+          description: A list of fighters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFightersResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /fighters:ingest:
+    post:
+      summary: ingest new fighters - optional upsert
+      operationId: v1.fighters.post.batch_create
+      parameters:
+        - name: upsert
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: |
+            this is an admin-only operation
+            if true, existing fighters (matched by first_name, last_name, dob) will be updated with the new data provided
+            if false or omitted, an error will be returned if a fighter already exists with the same first_name, last_name and dob
+      tags:
+        - fighters
+      x-required-role: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FightersBatchCreateReq'
+      responses:
+        '200':
+          description: Fighters successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FightersBatchCreateResp'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
   /fighters/{fighter_id}:
     get:
       summary: Get fighter by ID
@@ -701,6 +799,63 @@ paths:
                 $ref: '#/components/schemas/FighterResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Fighter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    patch:
+      summary: Update fighter by ID
+      operationId: v1.fighters.patch.update
+      tags:
+        - fighters
+      parameters:
+        - name: fighter_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import: github.com/OJOMB/fightpicker/pkg/id
+      x-required-role: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FighterUpdateReq'
+      responses:
+        '200':
+          description: Fighter successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FighterResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
           content:
             application/json:
               schema:
@@ -746,18 +901,15 @@ components:
         - password
 
     AuthResponse:
+      description: |
+        Authentication response.
+        The refresh token is issued via an HttpOnly cookie and is not included in the response body.
       type: object
       properties:
         access_token:
           type: string
           format: jwt
           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-      headers:
-        Set-Cookie:
-          description: Refresh token cookie
-          schema:
-            type: string
-            example: "refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=Lax; Path=/api/v1/auth; Max-Age=86400"
       required:
         - access_token
 
@@ -956,6 +1108,201 @@ components:
     #     FIGHTER STRUCTURES   #
     # -------------------------#
 
+    FightersBatchCreateReq:
+      type: array
+      items:
+        $ref: '#/components/schemas/FighterCreateReq'
+      minItems: 1
+      maxItems: 100
+
+    FighterCreateReq:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        nickname:
+          type: string
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+            - other
+        dob:
+          $ref: '#/components/schemas/SimpleDate'
+        height:
+          type: number
+          format: double
+        weight:
+          type: number
+          format: double
+        reach:
+          type: number
+          format: double
+        stance:
+          type: string
+        country:
+          type: string
+        fighting_out_of:
+          type: string
+        bio:
+          type: string
+        wins:
+          type: integer
+          default: 0
+        losses:
+          type: integer
+          default: 0
+        draws:
+          type: integer
+          default: 0
+        disqualifications:
+          type: integer
+          default: 0
+        no_contests:
+          type: integer
+          default: 0
+      required:
+        - first_name
+        - last_name
+        - gender
+        - dob
+        - height
+        - weight
+        - reach
+        - stance
+        - country
+        - fighting_out_of
+        - bio
+        - wins
+        - losses
+        - draws
+        - disqualifications
+        - no_contests
+
+    FightersBatchCreateResp:
+      type: object
+      properties:
+        summary:
+          $ref: '#/components/schemas/FightersBatchCreateSummary'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FighterBatchResult'
+      required:
+        - summary
+        - results
+
+    FightersBatchCreateSummary:
+      type: object
+      properties:
+        total:
+          type: integer
+        created:
+          type: integer
+        updated:
+          type: integer
+        skipped:
+          type: integer
+        failed:
+          type: integer
+      required:
+        - total
+        - created
+        - updated
+        - skipped
+        - failed
+
+    FighterBatchResult:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: Index of the item in the request array
+        status:
+          type: string
+          enum:
+            - created
+            - updated
+            - skipped
+            - failed
+        fighter_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          description: Present when status is created or updated
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+      required:
+        - index
+        - status
+
+    FighterUpdateReq:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        nickname:
+          type: string
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+            - other
+        dob:
+          $ref: '#/components/schemas/SimpleDate'
+        height:
+          type: number
+          format: double
+        weight:
+          type: number
+          format: double
+        reach:
+          type: number
+          format: double
+        stance:
+          type: string
+        country:
+          type: string
+        fighting_out_of:
+          type: string
+        bio:
+          type: string
+        wins:
+          type: integer
+        losses:
+          type: integer
+        draws:
+          type: integer
+        disqualifications:
+          type: integer
+        no_contests:
+          type: integer
+      anyOf:
+        - required: [first_name]
+        - required: [last_name]
+        - required: [nickname]
+        - required: [gender]
+        - required: [dob]
+        - required: [height]
+        - required: [weight]
+        - required: [reach]
+        - required: [stance]
+        - required: [country]
+        - required: [fighting_out_of]
+        - required: [bio]
+        - required: [wins]
+        - required: [losses]
+        - required: [draws]
+        - required: [disqualifications]
+        - required: [no_contests]
+
     FighterResponse:
       type: object
       properties:
@@ -1049,6 +1396,33 @@ components:
         - updated_at
         - updated_by
 
+    ListFightersResponse:
+      description: |
+        Paginated list of fighters.
+      type: object
+      properties:
+        fighters:
+          type: array
+          items:
+            $ref: '#/components/schemas/FighterResponse'
+        last_seen_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          nullable: true
+        page_size:
+          type: integer
+        total_count:
+          type: integer
+          description: |
+            Total number of fighters available (ignoring pagination). Useful for clients to understand the size of the dataset.
+            if filtering by email or username is used, this will be either 0 or 1.
+      required:
+        - fighters
+        - page_size
+        - last_seen_id
+        - total_count
     # -------------------------#
     #     ERROR STRUCTURES     #
     # -------------------------#

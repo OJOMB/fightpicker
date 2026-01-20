@@ -17,11 +17,33 @@ const (
 	BearerAuthScopes = "BearerAuth.Scopes"
 )
 
+// Defines values for FighterBatchResultStatus.
+const (
+	Created FighterBatchResultStatus = "created"
+	Failed  FighterBatchResultStatus = "failed"
+	Skipped FighterBatchResultStatus = "skipped"
+	Updated FighterBatchResultStatus = "updated"
+)
+
+// Defines values for FighterCreateReqGender.
+const (
+	FighterCreateReqGenderFemale FighterCreateReqGender = "female"
+	FighterCreateReqGenderMale   FighterCreateReqGender = "male"
+	FighterCreateReqGenderOther  FighterCreateReqGender = "other"
+)
+
 // Defines values for FighterResponseGender.
 const (
 	FighterResponseGenderFemale FighterResponseGender = "female"
 	FighterResponseGenderMale   FighterResponseGender = "male"
 	FighterResponseGenderOther  FighterResponseGender = "other"
+)
+
+// Defines values for FighterUpdateReqGender.
+const (
+	FighterUpdateReqGenderFemale FighterUpdateReqGender = "female"
+	FighterUpdateReqGenderMale   FighterUpdateReqGender = "male"
+	FighterUpdateReqGenderOther  FighterUpdateReqGender = "other"
 )
 
 // Defines values for UserCreateReqGender.
@@ -45,7 +67,8 @@ const (
 	UserUpdateReqGenderOther  UserUpdateReqGender = "other"
 )
 
-// AuthResponse defines model for AuthResponse.
+// AuthResponse Authentication response.
+// The refresh token is issued via an HttpOnly cookie and is not included in the response body.
 type AuthResponse struct {
 	AccessToken string `json:"access_token"`
 }
@@ -67,6 +90,46 @@ type ErrorObject struct {
 	// RequestId Correlation ID for tracing the request
 	RequestId string `json:"request_id"`
 }
+
+// FighterBatchResult defines model for FighterBatchResult.
+type FighterBatchResult struct {
+	// Error Machine-readable error structure
+	Error *ErrorObject `json:"error,omitempty"`
+
+	// FighterId Present when status is created or updated
+	FighterId *id.UUID7 `json:"fighter_id,omitempty"`
+
+	// Index Index of the item in the request array
+	Index  int                      `json:"index"`
+	Status FighterBatchResultStatus `json:"status"`
+}
+
+// FighterBatchResultStatus defines model for FighterBatchResult.Status.
+type FighterBatchResultStatus string
+
+// FighterCreateReq defines model for FighterCreateReq.
+type FighterCreateReq struct {
+	Bio               string                 `json:"bio"`
+	Country           string                 `json:"country"`
+	Disqualifications int                    `json:"disqualifications"`
+	Dob               SimpleDate             `json:"dob"`
+	Draws             int                    `json:"draws"`
+	FightingOutOf     string                 `json:"fighting_out_of"`
+	FirstName         string                 `json:"first_name"`
+	Gender            FighterCreateReqGender `json:"gender"`
+	Height            float64                `json:"height"`
+	LastName          string                 `json:"last_name"`
+	Losses            int                    `json:"losses"`
+	Nickname          *string                `json:"nickname,omitempty"`
+	NoContests        int                    `json:"no_contests"`
+	Reach             float64                `json:"reach"`
+	Stance            string                 `json:"stance"`
+	Weight            float64                `json:"weight"`
+	Wins              int                    `json:"wins"`
+}
+
+// FighterCreateReqGender defines model for FighterCreateReq.Gender.
+type FighterCreateReqGender string
 
 // FighterResponse defines model for FighterResponse.
 type FighterResponse struct {
@@ -97,6 +160,111 @@ type FighterResponse struct {
 
 // FighterResponseGender defines model for FighterResponse.Gender.
 type FighterResponseGender string
+
+// FighterUpdateReq defines model for FighterUpdateReq.
+type FighterUpdateReq struct {
+	Bio               *string                 `json:"bio,omitempty"`
+	Country           *string                 `json:"country,omitempty"`
+	Disqualifications *int                    `json:"disqualifications,omitempty"`
+	Dob               *SimpleDate             `json:"dob,omitempty"`
+	Draws             *int                    `json:"draws,omitempty"`
+	FightingOutOf     *string                 `json:"fighting_out_of,omitempty"`
+	FirstName         *string                 `json:"first_name,omitempty"`
+	Gender            *FighterUpdateReqGender `json:"gender,omitempty"`
+	Height            *float64                `json:"height,omitempty"`
+	LastName          *string                 `json:"last_name,omitempty"`
+	Losses            *int                    `json:"losses,omitempty"`
+	Nickname          *string                 `json:"nickname,omitempty"`
+	NoContests        *int                    `json:"no_contests,omitempty"`
+	Reach             *float64                `json:"reach,omitempty"`
+	Stance            *string                 `json:"stance,omitempty"`
+	Weight            *float64                `json:"weight,omitempty"`
+	Wins              *int                    `json:"wins,omitempty"`
+	union             json.RawMessage
+}
+
+// FighterUpdateReqGender defines model for FighterUpdateReq.Gender.
+type FighterUpdateReqGender string
+
+// FighterUpdateReq0 defines model for .
+type FighterUpdateReq0 = interface{}
+
+// FighterUpdateReq1 defines model for .
+type FighterUpdateReq1 = interface{}
+
+// FighterUpdateReq2 defines model for .
+type FighterUpdateReq2 = interface{}
+
+// FighterUpdateReq3 defines model for .
+type FighterUpdateReq3 = interface{}
+
+// FighterUpdateReq4 defines model for .
+type FighterUpdateReq4 = interface{}
+
+// FighterUpdateReq5 defines model for .
+type FighterUpdateReq5 = interface{}
+
+// FighterUpdateReq6 defines model for .
+type FighterUpdateReq6 = interface{}
+
+// FighterUpdateReq7 defines model for .
+type FighterUpdateReq7 = interface{}
+
+// FighterUpdateReq8 defines model for .
+type FighterUpdateReq8 = interface{}
+
+// FighterUpdateReq9 defines model for .
+type FighterUpdateReq9 = interface{}
+
+// FighterUpdateReq10 defines model for .
+type FighterUpdateReq10 = interface{}
+
+// FighterUpdateReq11 defines model for .
+type FighterUpdateReq11 = interface{}
+
+// FighterUpdateReq12 defines model for .
+type FighterUpdateReq12 = interface{}
+
+// FighterUpdateReq13 defines model for .
+type FighterUpdateReq13 = interface{}
+
+// FighterUpdateReq14 defines model for .
+type FighterUpdateReq14 = interface{}
+
+// FighterUpdateReq15 defines model for .
+type FighterUpdateReq15 = interface{}
+
+// FighterUpdateReq16 defines model for .
+type FighterUpdateReq16 = interface{}
+
+// FightersBatchCreateReq defines model for FightersBatchCreateReq.
+type FightersBatchCreateReq = []FighterCreateReq
+
+// FightersBatchCreateResp defines model for FightersBatchCreateResp.
+type FightersBatchCreateResp struct {
+	Results []FighterBatchResult       `json:"results"`
+	Summary FightersBatchCreateSummary `json:"summary"`
+}
+
+// FightersBatchCreateSummary defines model for FightersBatchCreateSummary.
+type FightersBatchCreateSummary struct {
+	Created int `json:"created"`
+	Failed  int `json:"failed"`
+	Skipped int `json:"skipped"`
+	Total   int `json:"total"`
+	Updated int `json:"updated"`
+}
+
+// ListFightersResponse Paginated list of fighters.
+type ListFightersResponse struct {
+	Fighters   []FighterResponse `json:"fighters"`
+	LastSeenId *id.UUID7         `json:"last_seen_id"`
+	PageSize   int               `json:"page_size"`
+
+	// TotalCount Total number of fighters available (ignoring pagination). Useful for clients to understand the size of the dataset.
+	// if filtering by email or username is used, this will be either 0 or 1.
+	TotalCount int `json:"total_count"`
+}
 
 // ListUsersResponse Paginated list of users.
 // presigned profile picture URLs are ommitted in this response for performance reasons.
@@ -211,6 +379,20 @@ type UserUpdateReq6 = interface{}
 // UserUpdateReq7 defines model for .
 type UserUpdateReq7 = interface{}
 
+// V1FightersGetListParams defines parameters for V1FightersGetList.
+type V1FightersGetListParams struct {
+	LastSeenId *id.UUID7 `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
+	PageSize   *int      `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
+// V1FightersPostBatchCreateParams defines parameters for V1FightersPostBatchCreate.
+type V1FightersPostBatchCreateParams struct {
+	// Upsert this is an admin-only operation
+	// if true, existing fighters (matched by first_name, last_name, dob) will be updated with the new data provided
+	// if false or omitted, an error will be returned if a fighter already exists with the same first_name, last_name and dob
+	Upsert *bool `form:"upsert,omitempty" json:"upsert,omitempty"`
+}
+
 // V1UsersGetListParams defines parameters for V1UsersGetList.
 type V1UsersGetListParams struct {
 	LastSeenId *id.UUID7 `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
@@ -245,14 +427,730 @@ type V1UsersGetFollowersParams struct {
 // V1AuthPostLoginJSONRequestBody defines body for V1AuthPostLogin for application/json ContentType.
 type V1AuthPostLoginJSONRequestBody = LoginRequest
 
+// V1FightersPatchUpdateJSONRequestBody defines body for V1FightersPatchUpdate for application/json ContentType.
+type V1FightersPatchUpdateJSONRequestBody = FighterUpdateReq
+
+// V1FightersPostBatchCreateJSONRequestBody defines body for V1FightersPostBatchCreate for application/json ContentType.
+type V1FightersPostBatchCreateJSONRequestBody = FightersBatchCreateReq
+
 // V1UsersPostCreateJSONRequestBody defines body for V1UsersPostCreate for application/json ContentType.
 type V1UsersPostCreateJSONRequestBody = UserCreateReq
 
-// UpdateUserByIDV1JSONRequestBody defines body for UpdateUserByIDV1 for application/json ContentType.
-type UpdateUserByIDV1JSONRequestBody = UserUpdateReq
+// V1UsersPatchUpdateJSONRequestBody defines body for V1UsersPatchUpdate for application/json ContentType.
+type V1UsersPatchUpdateJSONRequestBody = UserUpdateReq
 
 // V1UsersPostGeneratePresignedUrlJSONRequestBody defines body for V1UsersPostGeneratePresignedUrl for application/json ContentType.
 type V1UsersPostGeneratePresignedUrlJSONRequestBody = UserProfilePictureUploadURLRequest
+
+// AsFighterUpdateReq0 returns the union data inside the FighterUpdateReq as a FighterUpdateReq0
+func (t FighterUpdateReq) AsFighterUpdateReq0() (FighterUpdateReq0, error) {
+	var body FighterUpdateReq0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq0 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq0
+func (t *FighterUpdateReq) FromFighterUpdateReq0(v FighterUpdateReq0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq0 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq0
+func (t *FighterUpdateReq) MergeFighterUpdateReq0(v FighterUpdateReq0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq1 returns the union data inside the FighterUpdateReq as a FighterUpdateReq1
+func (t FighterUpdateReq) AsFighterUpdateReq1() (FighterUpdateReq1, error) {
+	var body FighterUpdateReq1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq1 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq1
+func (t *FighterUpdateReq) FromFighterUpdateReq1(v FighterUpdateReq1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq1 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq1
+func (t *FighterUpdateReq) MergeFighterUpdateReq1(v FighterUpdateReq1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq2 returns the union data inside the FighterUpdateReq as a FighterUpdateReq2
+func (t FighterUpdateReq) AsFighterUpdateReq2() (FighterUpdateReq2, error) {
+	var body FighterUpdateReq2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq2 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq2
+func (t *FighterUpdateReq) FromFighterUpdateReq2(v FighterUpdateReq2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq2 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq2
+func (t *FighterUpdateReq) MergeFighterUpdateReq2(v FighterUpdateReq2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq3 returns the union data inside the FighterUpdateReq as a FighterUpdateReq3
+func (t FighterUpdateReq) AsFighterUpdateReq3() (FighterUpdateReq3, error) {
+	var body FighterUpdateReq3
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq3 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq3
+func (t *FighterUpdateReq) FromFighterUpdateReq3(v FighterUpdateReq3) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq3 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq3
+func (t *FighterUpdateReq) MergeFighterUpdateReq3(v FighterUpdateReq3) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq4 returns the union data inside the FighterUpdateReq as a FighterUpdateReq4
+func (t FighterUpdateReq) AsFighterUpdateReq4() (FighterUpdateReq4, error) {
+	var body FighterUpdateReq4
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq4 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq4
+func (t *FighterUpdateReq) FromFighterUpdateReq4(v FighterUpdateReq4) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq4 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq4
+func (t *FighterUpdateReq) MergeFighterUpdateReq4(v FighterUpdateReq4) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq5 returns the union data inside the FighterUpdateReq as a FighterUpdateReq5
+func (t FighterUpdateReq) AsFighterUpdateReq5() (FighterUpdateReq5, error) {
+	var body FighterUpdateReq5
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq5 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq5
+func (t *FighterUpdateReq) FromFighterUpdateReq5(v FighterUpdateReq5) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq5 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq5
+func (t *FighterUpdateReq) MergeFighterUpdateReq5(v FighterUpdateReq5) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq6 returns the union data inside the FighterUpdateReq as a FighterUpdateReq6
+func (t FighterUpdateReq) AsFighterUpdateReq6() (FighterUpdateReq6, error) {
+	var body FighterUpdateReq6
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq6 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq6
+func (t *FighterUpdateReq) FromFighterUpdateReq6(v FighterUpdateReq6) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq6 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq6
+func (t *FighterUpdateReq) MergeFighterUpdateReq6(v FighterUpdateReq6) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq7 returns the union data inside the FighterUpdateReq as a FighterUpdateReq7
+func (t FighterUpdateReq) AsFighterUpdateReq7() (FighterUpdateReq7, error) {
+	var body FighterUpdateReq7
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq7 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq7
+func (t *FighterUpdateReq) FromFighterUpdateReq7(v FighterUpdateReq7) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq7 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq7
+func (t *FighterUpdateReq) MergeFighterUpdateReq7(v FighterUpdateReq7) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq8 returns the union data inside the FighterUpdateReq as a FighterUpdateReq8
+func (t FighterUpdateReq) AsFighterUpdateReq8() (FighterUpdateReq8, error) {
+	var body FighterUpdateReq8
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq8 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq8
+func (t *FighterUpdateReq) FromFighterUpdateReq8(v FighterUpdateReq8) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq8 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq8
+func (t *FighterUpdateReq) MergeFighterUpdateReq8(v FighterUpdateReq8) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq9 returns the union data inside the FighterUpdateReq as a FighterUpdateReq9
+func (t FighterUpdateReq) AsFighterUpdateReq9() (FighterUpdateReq9, error) {
+	var body FighterUpdateReq9
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq9 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq9
+func (t *FighterUpdateReq) FromFighterUpdateReq9(v FighterUpdateReq9) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq9 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq9
+func (t *FighterUpdateReq) MergeFighterUpdateReq9(v FighterUpdateReq9) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq10 returns the union data inside the FighterUpdateReq as a FighterUpdateReq10
+func (t FighterUpdateReq) AsFighterUpdateReq10() (FighterUpdateReq10, error) {
+	var body FighterUpdateReq10
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq10 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq10
+func (t *FighterUpdateReq) FromFighterUpdateReq10(v FighterUpdateReq10) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq10 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq10
+func (t *FighterUpdateReq) MergeFighterUpdateReq10(v FighterUpdateReq10) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq11 returns the union data inside the FighterUpdateReq as a FighterUpdateReq11
+func (t FighterUpdateReq) AsFighterUpdateReq11() (FighterUpdateReq11, error) {
+	var body FighterUpdateReq11
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq11 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq11
+func (t *FighterUpdateReq) FromFighterUpdateReq11(v FighterUpdateReq11) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq11 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq11
+func (t *FighterUpdateReq) MergeFighterUpdateReq11(v FighterUpdateReq11) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq12 returns the union data inside the FighterUpdateReq as a FighterUpdateReq12
+func (t FighterUpdateReq) AsFighterUpdateReq12() (FighterUpdateReq12, error) {
+	var body FighterUpdateReq12
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq12 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq12
+func (t *FighterUpdateReq) FromFighterUpdateReq12(v FighterUpdateReq12) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq12 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq12
+func (t *FighterUpdateReq) MergeFighterUpdateReq12(v FighterUpdateReq12) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq13 returns the union data inside the FighterUpdateReq as a FighterUpdateReq13
+func (t FighterUpdateReq) AsFighterUpdateReq13() (FighterUpdateReq13, error) {
+	var body FighterUpdateReq13
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq13 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq13
+func (t *FighterUpdateReq) FromFighterUpdateReq13(v FighterUpdateReq13) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq13 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq13
+func (t *FighterUpdateReq) MergeFighterUpdateReq13(v FighterUpdateReq13) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq14 returns the union data inside the FighterUpdateReq as a FighterUpdateReq14
+func (t FighterUpdateReq) AsFighterUpdateReq14() (FighterUpdateReq14, error) {
+	var body FighterUpdateReq14
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq14 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq14
+func (t *FighterUpdateReq) FromFighterUpdateReq14(v FighterUpdateReq14) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq14 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq14
+func (t *FighterUpdateReq) MergeFighterUpdateReq14(v FighterUpdateReq14) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq15 returns the union data inside the FighterUpdateReq as a FighterUpdateReq15
+func (t FighterUpdateReq) AsFighterUpdateReq15() (FighterUpdateReq15, error) {
+	var body FighterUpdateReq15
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq15 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq15
+func (t *FighterUpdateReq) FromFighterUpdateReq15(v FighterUpdateReq15) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq15 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq15
+func (t *FighterUpdateReq) MergeFighterUpdateReq15(v FighterUpdateReq15) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFighterUpdateReq16 returns the union data inside the FighterUpdateReq as a FighterUpdateReq16
+func (t FighterUpdateReq) AsFighterUpdateReq16() (FighterUpdateReq16, error) {
+	var body FighterUpdateReq16
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFighterUpdateReq16 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq16
+func (t *FighterUpdateReq) FromFighterUpdateReq16(v FighterUpdateReq16) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFighterUpdateReq16 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq16
+func (t *FighterUpdateReq) MergeFighterUpdateReq16(v FighterUpdateReq16) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t FighterUpdateReq) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	object := make(map[string]json.RawMessage)
+	if t.union != nil {
+		err = json.Unmarshal(b, &object)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if t.Bio != nil {
+		object["bio"], err = json.Marshal(t.Bio)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'bio': %w", err)
+		}
+	}
+
+	if t.Country != nil {
+		object["country"], err = json.Marshal(t.Country)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'country': %w", err)
+		}
+	}
+
+	if t.Disqualifications != nil {
+		object["disqualifications"], err = json.Marshal(t.Disqualifications)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'disqualifications': %w", err)
+		}
+	}
+
+	if t.Dob != nil {
+		object["dob"], err = json.Marshal(t.Dob)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'dob': %w", err)
+		}
+	}
+
+	if t.Draws != nil {
+		object["draws"], err = json.Marshal(t.Draws)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'draws': %w", err)
+		}
+	}
+
+	if t.FightingOutOf != nil {
+		object["fighting_out_of"], err = json.Marshal(t.FightingOutOf)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'fighting_out_of': %w", err)
+		}
+	}
+
+	if t.FirstName != nil {
+		object["first_name"], err = json.Marshal(t.FirstName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'first_name': %w", err)
+		}
+	}
+
+	if t.Gender != nil {
+		object["gender"], err = json.Marshal(t.Gender)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'gender': %w", err)
+		}
+	}
+
+	if t.Height != nil {
+		object["height"], err = json.Marshal(t.Height)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'height': %w", err)
+		}
+	}
+
+	if t.LastName != nil {
+		object["last_name"], err = json.Marshal(t.LastName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'last_name': %w", err)
+		}
+	}
+
+	if t.Losses != nil {
+		object["losses"], err = json.Marshal(t.Losses)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'losses': %w", err)
+		}
+	}
+
+	if t.Nickname != nil {
+		object["nickname"], err = json.Marshal(t.Nickname)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'nickname': %w", err)
+		}
+	}
+
+	if t.NoContests != nil {
+		object["no_contests"], err = json.Marshal(t.NoContests)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'no_contests': %w", err)
+		}
+	}
+
+	if t.Reach != nil {
+		object["reach"], err = json.Marshal(t.Reach)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'reach': %w", err)
+		}
+	}
+
+	if t.Stance != nil {
+		object["stance"], err = json.Marshal(t.Stance)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'stance': %w", err)
+		}
+	}
+
+	if t.Weight != nil {
+		object["weight"], err = json.Marshal(t.Weight)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'weight': %w", err)
+		}
+	}
+
+	if t.Wins != nil {
+		object["wins"], err = json.Marshal(t.Wins)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'wins': %w", err)
+		}
+	}
+	b, err = json.Marshal(object)
+	return b, err
+}
+
+func (t *FighterUpdateReq) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	if err != nil {
+		return err
+	}
+	object := make(map[string]json.RawMessage)
+	err = json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["bio"]; found {
+		err = json.Unmarshal(raw, &t.Bio)
+		if err != nil {
+			return fmt.Errorf("error reading 'bio': %w", err)
+		}
+	}
+
+	if raw, found := object["country"]; found {
+		err = json.Unmarshal(raw, &t.Country)
+		if err != nil {
+			return fmt.Errorf("error reading 'country': %w", err)
+		}
+	}
+
+	if raw, found := object["disqualifications"]; found {
+		err = json.Unmarshal(raw, &t.Disqualifications)
+		if err != nil {
+			return fmt.Errorf("error reading 'disqualifications': %w", err)
+		}
+	}
+
+	if raw, found := object["dob"]; found {
+		err = json.Unmarshal(raw, &t.Dob)
+		if err != nil {
+			return fmt.Errorf("error reading 'dob': %w", err)
+		}
+	}
+
+	if raw, found := object["draws"]; found {
+		err = json.Unmarshal(raw, &t.Draws)
+		if err != nil {
+			return fmt.Errorf("error reading 'draws': %w", err)
+		}
+	}
+
+	if raw, found := object["fighting_out_of"]; found {
+		err = json.Unmarshal(raw, &t.FightingOutOf)
+		if err != nil {
+			return fmt.Errorf("error reading 'fighting_out_of': %w", err)
+		}
+	}
+
+	if raw, found := object["first_name"]; found {
+		err = json.Unmarshal(raw, &t.FirstName)
+		if err != nil {
+			return fmt.Errorf("error reading 'first_name': %w", err)
+		}
+	}
+
+	if raw, found := object["gender"]; found {
+		err = json.Unmarshal(raw, &t.Gender)
+		if err != nil {
+			return fmt.Errorf("error reading 'gender': %w", err)
+		}
+	}
+
+	if raw, found := object["height"]; found {
+		err = json.Unmarshal(raw, &t.Height)
+		if err != nil {
+			return fmt.Errorf("error reading 'height': %w", err)
+		}
+	}
+
+	if raw, found := object["last_name"]; found {
+		err = json.Unmarshal(raw, &t.LastName)
+		if err != nil {
+			return fmt.Errorf("error reading 'last_name': %w", err)
+		}
+	}
+
+	if raw, found := object["losses"]; found {
+		err = json.Unmarshal(raw, &t.Losses)
+		if err != nil {
+			return fmt.Errorf("error reading 'losses': %w", err)
+		}
+	}
+
+	if raw, found := object["nickname"]; found {
+		err = json.Unmarshal(raw, &t.Nickname)
+		if err != nil {
+			return fmt.Errorf("error reading 'nickname': %w", err)
+		}
+	}
+
+	if raw, found := object["no_contests"]; found {
+		err = json.Unmarshal(raw, &t.NoContests)
+		if err != nil {
+			return fmt.Errorf("error reading 'no_contests': %w", err)
+		}
+	}
+
+	if raw, found := object["reach"]; found {
+		err = json.Unmarshal(raw, &t.Reach)
+		if err != nil {
+			return fmt.Errorf("error reading 'reach': %w", err)
+		}
+	}
+
+	if raw, found := object["stance"]; found {
+		err = json.Unmarshal(raw, &t.Stance)
+		if err != nil {
+			return fmt.Errorf("error reading 'stance': %w", err)
+		}
+	}
+
+	if raw, found := object["weight"]; found {
+		err = json.Unmarshal(raw, &t.Weight)
+		if err != nil {
+			return fmt.Errorf("error reading 'weight': %w", err)
+		}
+	}
+
+	if raw, found := object["wins"]; found {
+		err = json.Unmarshal(raw, &t.Wins)
+		if err != nil {
+			return fmt.Errorf("error reading 'wins': %w", err)
+		}
+	}
+
+	return err
+}
 
 // AsUserUpdateReq0 returns the union data inside the UserUpdateReq as a UserUpdateReq0
 func (t UserUpdateReq) AsUserUpdateReq0() (UserUpdateReq0, error) {
