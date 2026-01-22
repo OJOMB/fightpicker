@@ -6,10 +6,11 @@ import (
 	"github.com/oapi-codegen/runtime/types"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
-	service "github.com/OJOMB/fightpicker/internal/service/fighters"
+	"github.com/OJOMB/fightpicker/internal/service"
+	fightersservice "github.com/OJOMB/fightpicker/internal/service/fighters"
 )
 
-func fighterIDOToDTO(fighter service.Fighter) dtos.FighterResponse {
+func fighterIDOToDTO(fighter fightersservice.Fighter) dtos.FighterResponse {
 	return dtos.FighterResponse{
 		Id:        fighter.ID,
 		FirstName: fighter.FirstName,
@@ -36,5 +37,85 @@ func fighterIDOToDTO(fighter service.Fighter) dtos.FighterResponse {
 		CreatedBy:         fighter.CreatedBy,
 		UpdatedAt:         fighter.UpdatedAt,
 		UpdatedBy:         fighter.UpdatedBy,
+	}
+}
+
+func fightersCreateReqDTOToIDO(req dtos.FighterCreateReq) fightersservice.Fighter {
+	var nickname string
+	if req.Nickname != nil {
+		nickname = *req.Nickname
+	}
+
+	return fightersservice.Fighter{
+		FirstName:         req.FirstName,
+		LastName:          req.LastName,
+		Nickname:          nickname,
+		Gender:            service.GenderFromString(string(req.Gender)),
+		Weight:            req.Weight,
+		Height:            req.Height,
+		Reach:             req.Reach,
+		DOB:               req.Dob.Time,
+		Stance:            req.Stance,
+		Country:           req.Country,
+		FightingOutOf:     req.FightingOutOf,
+		Bio:               req.Bio,
+		Wins:              req.Wins,
+		Losses:            req.Losses,
+		Draws:             req.Draws,
+		Disqualifications: req.Disqualifications,
+		NoContests:        req.NoContests,
+	}
+}
+
+func fightersIngestionReqDTOtoIDO(req dtos.FightersIngestionReq) []fightersservice.IngestRow {
+	fighterIngestionRows := make([]fightersservice.IngestRow, len(req))
+	for i, fighterDTO := range req {
+		fighterIngestionRows[i] = fightersservice.IngestRow{
+			Index:   i,
+			Fighter: fightersCreateReqDTOToIDO(fighterDTO),
+		}
+	}
+
+	return fighterIngestionRows
+}
+
+func ingestionIDOstoDTO(results []fightersservice.IngestionResult, summary fightersservice.IngestionSummary) dtos.FightersIngestionResp {
+	dtoResults := make([]dtos.FighterIngestionResult, len(results))
+	for i, result := range results {
+		dtoResults[i] = ingestionResultIDOtoDTO(result)
+	}
+
+	dtoSummary := ingestionSummaryIDOtoDTO(summary)
+
+	return dtos.FightersIngestionResp{
+		Results: dtoResults,
+		Summary: dtoSummary,
+	}
+}
+
+func ingestionResultIDOtoDTO(ido fightersservice.IngestionResult) dtos.FighterIngestionResult {
+	dto := dtos.FighterIngestionResult{
+		Index:     ido.Index,
+		Status:    dtos.FighterIngestionResultStatus(ido.Status.String()),
+		FighterId: ido.FighterId,
+	}
+
+	if ido.Error != nil {
+		dto.Error = &dtos.ErrorObject{
+			Code:    ido.Error.Code,
+			Message: ido.Error.Message,
+		}
+	}
+
+	return dto
+}
+
+func ingestionSummaryIDOtoDTO(summary fightersservice.IngestionSummary) dtos.FightersIngestionSummary {
+	return dtos.FightersIngestionSummary{
+		Created: summary.Created,
+		Failed:  summary.Failed,
+		Skipped: summary.Skipped,
+		Updated: summary.Updated,
+		Total:   summary.Total,
 	}
 }

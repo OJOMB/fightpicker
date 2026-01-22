@@ -56,7 +56,7 @@ func (a *App) newServices(ctx context.Context, cfg *config.Config) error {
 		return err
 	}
 
-	fightersService, err := fightersservice.New(a.Repos.FightersRepo, a.Utils.IDTool, a.Utils.DateTimeTool, a.Logger)
+	fightersService, err := fightersservice.New(a.Repos.FightersRepo, a.Utils.IDTool, a.Utils.DateTimeTool, a.Utils.ContextTool, a.Logger)
 	if err != nil {
 		a.Logger.ErrorContext(ctx, "failed to create fighters service", "error", err)
 		return err

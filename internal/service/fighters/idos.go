@@ -13,7 +13,7 @@ type Fighter struct {
 	LastName          string
 	Nickname          string
 	Gender            service.Gender
-	DOB               DOB
+	DOB               time.Time
 	Height            float64
 	Weight            float64
 	Reach             float64
@@ -33,17 +33,94 @@ type Fighter struct {
 	UpdatedBy         id.UUID7
 }
 
-// DOB is a custom type for handling date of birth with special JSON unmarshalling.
-// date in the format "YYYY-MM-DD"
-type DOB time.Time
+type IngestionSummary struct {
+	Created int
+	Failed  int
+	Skipped int
+	Updated int
+	Total   int
+}
 
-func (d *DOB) UnmarshalJSON(data []byte) error {
-	str := string(data)
-	t, err := time.Parse(`"2006-01-02"`, str)
-	if err != nil {
-		return err
+type IngestRow struct {
+	Index   int
+	Fighter Fighter
+}
+
+type IngestionResult struct {
+	// Index Index of the item in the request array
+	Index int
+
+	// FighterId Present when status is created or updated
+	FighterId *id.UUID7
+	Status    IngestionResultStatus
+
+	Error *ErrorObject `json:"error,omitempty"`
+}
+
+type IngestionResultStatus int
+
+const (
+	IngestionResultStatusCreated IngestionResultStatus = iota + 1
+	IngestionResultStatusUpdated
+	IngestionResultStatusSkipped
+	IngestionResultStatusFailed
+)
+
+func (irs IngestionResultStatus) String() string {
+	switch irs {
+	case IngestionResultStatusCreated:
+		return "created"
+	case IngestionResultStatusUpdated:
+		return "updated"
+	case IngestionResultStatusSkipped:
+		return "skipped"
+	case IngestionResultStatusFailed:
+		return "failed"
+	default:
+		return ""
+	}
+}
+
+func IngestionResultStatusFromString(s string) IngestionResultStatus {
+	switch s {
+	case "created":
+		return IngestionResultStatusCreated
+	case "updated":
+		return IngestionResultStatusUpdated
+	case "skipped":
+		return IngestionResultStatusSkipped
+	case "failed":
+		return IngestionResultStatusFailed
+	default:
+		return 0
+	}
+}
+
+// Scan implements the sql.Scanner interface for IngestionResultStatus
+func (irs *IngestionResultStatus) Scan(value interface{}) error {
+	if value == nil {
+		*irs = 0
+		return nil
 	}
 
-	*d = DOB(t)
+	// string to int mapping
+	strVal, ok := value.(string)
+	if !ok {
+		return nil
+	}
+
+	intVal := IngestionResultStatusFromString(strVal)
+
+	*irs = IngestionResultStatus(intVal)
 	return nil
+}
+
+// Value implements the driver.Valuer interface for IngestionResultStatus
+func (irs IngestionResultStatus) Value() (interface{}, error) {
+	return irs.String(), nil
+}
+
+type ErrorObject struct {
+	Code    string
+	Message string
 }

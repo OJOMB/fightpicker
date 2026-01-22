@@ -29,4 +29,7 @@ var (
 
 	// ErrInvalidFighterID is returned when an invalid fighter ID is provided.
 	ErrInvalidFighterID = fmt.Errorf("invalid fighter ID provided")
+
+	// ErrUnauthorized is returned when the requester is not authorized to perform the action.
+	ErrUnauthorized = fmt.Errorf("unauthorized to perform this action")
 )

@@ -17,19 +17,19 @@ const (
 	BearerAuthScopes = "BearerAuth.Scopes"
 )
 
-// Defines values for FighterBatchResultStatus.
-const (
-	Created FighterBatchResultStatus = "created"
-	Failed  FighterBatchResultStatus = "failed"
-	Skipped FighterBatchResultStatus = "skipped"
-	Updated FighterBatchResultStatus = "updated"
-)
-
 // Defines values for FighterCreateReqGender.
 const (
 	FighterCreateReqGenderFemale FighterCreateReqGender = "female"
 	FighterCreateReqGenderMale   FighterCreateReqGender = "male"
 	FighterCreateReqGenderOther  FighterCreateReqGender = "other"
+)
+
+// Defines values for FighterIngestionResultStatus.
+const (
+	Created FighterIngestionResultStatus = "created"
+	Failed  FighterIngestionResultStatus = "failed"
+	Skipped FighterIngestionResultStatus = "skipped"
+	Updated FighterIngestionResultStatus = "updated"
 )
 
 // Defines values for FighterResponseGender.
@@ -91,22 +91,6 @@ type ErrorObject struct {
 	RequestId string `json:"request_id"`
 }
 
-// FighterBatchResult defines model for FighterBatchResult.
-type FighterBatchResult struct {
-	// Error Machine-readable error structure
-	Error *ErrorObject `json:"error,omitempty"`
-
-	// FighterId Present when status is created or updated
-	FighterId *id.UUID7 `json:"fighter_id,omitempty"`
-
-	// Index Index of the item in the request array
-	Index  int                      `json:"index"`
-	Status FighterBatchResultStatus `json:"status"`
-}
-
-// FighterBatchResultStatus defines model for FighterBatchResult.Status.
-type FighterBatchResultStatus string
-
 // FighterCreateReq defines model for FighterCreateReq.
 type FighterCreateReq struct {
 	Bio               string                 `json:"bio"`
@@ -130,6 +114,22 @@ type FighterCreateReq struct {
 
 // FighterCreateReqGender defines model for FighterCreateReq.Gender.
 type FighterCreateReqGender string
+
+// FighterIngestionResult defines model for FighterIngestionResult.
+type FighterIngestionResult struct {
+	// Error Machine-readable error structure
+	Error *ErrorObject `json:"error,omitempty"`
+
+	// FighterId Present when status is created or updated
+	FighterId *id.UUID7 `json:"fighter_id,omitempty"`
+
+	// Index Index of the item in the request array
+	Index  int                          `json:"index"`
+	Status FighterIngestionResultStatus `json:"status"`
+}
+
+// FighterIngestionResultStatus defines model for FighterIngestionResult.Status.
+type FighterIngestionResultStatus string
 
 // FighterResponse defines model for FighterResponse.
 type FighterResponse struct {
@@ -237,17 +237,17 @@ type FighterUpdateReq15 = interface{}
 // FighterUpdateReq16 defines model for .
 type FighterUpdateReq16 = interface{}
 
-// FightersBatchCreateReq defines model for FightersBatchCreateReq.
-type FightersBatchCreateReq = []FighterCreateReq
+// FightersIngestionReq defines model for FightersIngestionReq.
+type FightersIngestionReq = []FighterCreateReq
 
-// FightersBatchCreateResp defines model for FightersBatchCreateResp.
-type FightersBatchCreateResp struct {
-	Results []FighterBatchResult       `json:"results"`
-	Summary FightersBatchCreateSummary `json:"summary"`
+// FightersIngestionResp defines model for FightersIngestionResp.
+type FightersIngestionResp struct {
+	Results []FighterIngestionResult `json:"results"`
+	Summary FightersIngestionSummary `json:"summary"`
 }
 
-// FightersBatchCreateSummary defines model for FightersBatchCreateSummary.
-type FightersBatchCreateSummary struct {
+// FightersIngestionSummary defines model for FightersIngestionSummary.
+type FightersIngestionSummary struct {
 	Created int `json:"created"`
 	Failed  int `json:"failed"`
 	Skipped int `json:"skipped"`
@@ -385,8 +385,8 @@ type V1FightersGetListParams struct {
 	PageSize   *int      `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
 
-// V1FightersPostBatchCreateParams defines parameters for V1FightersPostBatchCreate.
-type V1FightersPostBatchCreateParams struct {
+// V1FightersPostIngestParams defines parameters for V1FightersPostIngest.
+type V1FightersPostIngestParams struct {
 	// Upsert this is an admin-only operation
 	// if true, existing fighters (matched by first_name, last_name, dob) will be updated with the new data provided
 	// if false or omitted, an error will be returned if a fighter already exists with the same first_name, last_name and dob
@@ -430,8 +430,8 @@ type V1AuthPostLoginJSONRequestBody = LoginRequest
 // V1FightersPatchUpdateJSONRequestBody defines body for V1FightersPatchUpdate for application/json ContentType.
 type V1FightersPatchUpdateJSONRequestBody = FighterUpdateReq
 
-// V1FightersPostBatchCreateJSONRequestBody defines body for V1FightersPostBatchCreate for application/json ContentType.
-type V1FightersPostBatchCreateJSONRequestBody = FightersBatchCreateReq
+// V1FightersPostIngestJSONRequestBody defines body for V1FightersPostIngest for application/json ContentType.
+type V1FightersPostIngestJSONRequestBody = FightersIngestionReq
 
 // V1UsersPostCreateJSONRequestBody defines body for V1UsersPostCreate for application/json ContentType.
 type V1UsersPostCreateJSONRequestBody = UserCreateReq

@@ -734,7 +734,7 @@ paths:
   /fighters:ingest:
     post:
       summary: ingest new fighters - optional upsert
-      operationId: v1.fighters.post.batch_create
+      operationId: v1.fighters.post.ingest
       parameters:
         - name: upsert
           in: query
@@ -754,14 +754,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FightersBatchCreateReq'
+              $ref: '#/components/schemas/FightersIngestionReq'
       responses:
         '200':
-          description: Fighters successfully created
+          description: Fighters successfully ingested
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FightersBatchCreateResp'
+                $ref: '#/components/schemas/FightersIngestionResp'
         '400':
           description: Invalid request body
           content:
@@ -1108,12 +1108,12 @@ components:
     #     FIGHTER STRUCTURES   #
     # -------------------------#
 
-    FightersBatchCreateReq:
+    FightersIngestionReq:
       type: array
       items:
         $ref: '#/components/schemas/FighterCreateReq'
       minItems: 1
-      maxItems: 100
+      maxItems: 50
 
     FighterCreateReq:
       type: object
@@ -1182,20 +1182,25 @@ components:
         - disqualifications
         - no_contests
 
-    FightersBatchCreateResp:
+    FightersIngestionResp:
       type: object
       properties:
         summary:
-          $ref: '#/components/schemas/FightersBatchCreateSummary'
+          $ref: '#/components/schemas/FightersIngestionSummary'
         results:
           type: array
           items:
-            $ref: '#/components/schemas/FighterBatchResult'
+            $ref: '#/components/schemas/FighterIngestionResult'
+        request_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
       required:
         - summary
         - results
 
-    FightersBatchCreateSummary:
+    FightersIngestionSummary:
       type: object
       properties:
         total:
@@ -1215,7 +1220,7 @@ components:
         - skipped
         - failed
 
-    FighterBatchResult:
+    FighterIngestionResult:
       type: object
       properties:
         index:

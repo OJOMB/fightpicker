@@ -19,6 +19,7 @@ type CacheClient interface {
 
 type Client interface {
 	GetFighterByID(ctx context.Context, id id.UUID7) (postgres.Fighter, error)
+	IngestFighters(ctx context.Context, arg postgres.IngestFightersParams) ([]postgres.IngestFightersRow, error)
 	WithTx(tx pgx.Tx) *postgres.Queries
 }
 
@@ -27,6 +28,7 @@ type Repo struct {
 	client         Client
 	cachingEnabled bool
 	cache          CacheClient
+	id             id.UUID7Parser
 	now            datetimes.Now
 	logger         logs.Logger
 }

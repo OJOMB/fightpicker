@@ -20,7 +20,7 @@ const (
 	EndpointNameV1UsersGeneratePresignedURL = "v1.users.post.generate_presigned_url"
 
 	// v1 Fighters
-	EndpointNameV1FightersCreate = "v1.fighters.post.create"
+	EndpointNameV1FightersIngest = "v1.fighters.post.ingest"
 	EndpointNameV1FightersGet    = "v1.fighters.get.get"
 	EndpointNameV1FightersList   = "v1.fighters.get.list"
 	EndpointNameV1FightersUpdate = "v1.fighters.patch.update"

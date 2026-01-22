@@ -8,6 +8,9 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 
+const jsonNotFoundResponse = `{"error":{"code": "NOT_FOUND","message":"resource not found"}}`
+const jsonMethodNotAllowedResponse = `{"error":{"code": "METHOD_NOT_ALLOWED","message":"method not allowed"}}`
+
 // routes sets up all the HTTP routes for the server.
 // Handlers are registered from the server's handler list and loaded dynamically.
 func (s *Server) routes() {
@@ -33,11 +36,11 @@ func (s *Server) routes() {
 	})
 
 	s.router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, `{"error":"not found"}`, http.StatusNotFound)
+		http.Error(w, jsonNotFoundResponse, http.StatusNotFound)
 	})
 
 	s.router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		http.Error(w, jsonMethodNotAllowedResponse, http.StatusMethodNotAllowed)
 	})
 
 	// static route for default profile picture when user has not set one

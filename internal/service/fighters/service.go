@@ -1,23 +1,26 @@
 package fighters
 
 import (
-	"context"
-
+	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/datetimes"
 	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
 type Repo interface {
-	GetFighterByID(ctx context.Context, id id.UUID7) (Fighter, error)
+	FighterByIDGetter
+	FightersIngestor
 }
 
 type Service struct {
-	repo   Repo
-	logger logs.Logger
+	repo         Repo
+	id           id.UUID7GeneratorParser
+	datetimeTool datetimes.Now
+	ctxTool      contextual.ContextProvider
+	logger       logs.Logger
 }
 
-func New(repo Repo, idGen id.UUID7GeneratorParser, now datetimes.Now, logger logs.Logger) (*Service, error) {
+func New(repo Repo, idGen id.UUID7GeneratorParser, now datetimes.Now, ctxProvider contextual.ContextProvider, logger logs.Logger) (*Service, error) {
 	if repo == nil {
 		return nil, ErrNilRepo
 	}
@@ -35,7 +38,10 @@ func New(repo Repo, idGen id.UUID7GeneratorParser, now datetimes.Now, logger log
 	}
 
 	return &Service{
-		repo:   repo,
-		logger: logger.With("component", "fighters_service"),
+		id:           idGen,
+		datetimeTool: now,
+		ctxTool:      ctxProvider,
+		repo:         repo,
+		logger:       logger.With("component", "fighters_service"),
 	}, nil
 }

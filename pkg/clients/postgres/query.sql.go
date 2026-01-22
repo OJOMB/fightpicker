@@ -8,9 +8,8 @@ package postgres
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
-
 	"github.com/OJOMB/fightpicker/pkg/id"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const assignRoleToUserByRoleName = `-- name: AssignRoleToUserByRoleName :exec
@@ -687,6 +686,137 @@ func (q *Queries) GetUserRolesByID(ctx context.Context, userID id.UUID7) ([]stri
 			return nil, err
 		}
 		items = append(items, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const ingestFighters = `-- name: IngestFighters :many
+WITH input AS (
+    SELECT
+        (item->>'Index')::int                         AS idx,
+        (item->'Fighter'->>'id')::uuid                AS id,
+        item->'Fighter'->>'first_name'                AS first_name,
+        item->'Fighter'->>'last_name'                 AS last_name,
+        (item->'Fighter'->>'dob')::date               AS dob,
+        item->'Fighter'->>'gender'                    AS gender,
+        (item->'Fighter'->>'height')::numeric         AS height,
+        (item->'Fighter'->>'weight')::numeric         AS weight,
+        (item->'Fighter'->>'reach')::numeric          AS reach,
+        item->'Fighter'->>'stance'                    AS stance,
+        item->'Fighter'->>'country'                   AS country,
+        item->'Fighter'->>'fighting_out_of'           AS fighting_out_of,
+        item->'Fighter'->>'bio'                       AS bio
+    FROM jsonb_array_elements($1::jsonb) AS item
+),
+upserted AS (
+    INSERT INTO fighters (
+        id,
+        first_name,
+        last_name,
+        dob,
+        gender,
+        height,
+        weight,
+        reach,
+        stance,
+        country,
+        fighting_out_of,
+        bio,
+        created_at,
+        created_by,
+        updated_at,
+        updated_by
+    )
+    SELECT
+        i.id,
+        i.first_name,
+        i.last_name,
+        i.dob,
+        i.gender,
+        i.height,
+        i.weight,
+        i.reach,
+        i.stance,
+        i.country,
+        i.fighting_out_of,
+        i.bio,
+        $2,
+        $3,
+        $2,
+        $3
+    FROM input i
+    ON CONFLICT (id)
+    DO UPDATE SET
+        first_name        = EXCLUDED.first_name,
+        last_name         = EXCLUDED.last_name,
+        dob               = EXCLUDED.dob,
+        gender            = EXCLUDED.gender,
+        height            = EXCLUDED.height,
+        weight            = EXCLUDED.weight,
+        reach             = EXCLUDED.reach,
+        stance            = EXCLUDED.stance,
+        country           = EXCLUDED.country,
+        fighting_out_of   = EXCLUDED.fighting_out_of,
+        bio               = EXCLUDED.bio,
+        updated_at        = $2,
+        updated_by        = $3
+    RETURNING
+        id,
+        first_name,
+        last_name,
+        dob,
+        xmax = 0 AS inserted
+)
+SELECT
+    i.idx                                   AS idx,
+    u.id                                    AS fighter_id,
+    CASE
+        WHEN u.inserted THEN 'created'
+        ELSE 'updated'
+    END                                     AS status,
+    NULL::text                              AS error_code,
+    NULL::text                              AS error_message
+FROM input i
+JOIN upserted u
+  ON u.id = i.id
+`
+
+type IngestFightersParams struct {
+	Payload       []byte
+	OperationTime pgtype.Timestamptz
+	AdminUserID   pgtype.UUID
+}
+
+type IngestFightersRow struct {
+	Idx          int32
+	FighterID    id.UUID7
+	Status       string
+	ErrorCode    pgtype.Text
+	ErrorMessage pgtype.Text
+}
+
+func (q *Queries) IngestFighters(ctx context.Context, arg IngestFightersParams) ([]IngestFightersRow, error) {
+	rows, err := q.db.Query(ctx, ingestFighters, arg.Payload, arg.OperationTime, arg.AdminUserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []IngestFightersRow
+	for rows.Next() {
+		var i IngestFightersRow
+		if err := rows.Scan(
+			&i.Idx,
+			&i.FighterID,
+			&i.Status,
+			&i.ErrorCode,
+			&i.ErrorMessage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

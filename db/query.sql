@@ -380,3 +380,93 @@ INSERT INTO fighters (
     $16, $17, $18, $19, $20,
     $21, $22, $23
 );
+
+-- name: IngestFighters :many
+WITH input AS (
+    SELECT
+        (item->>'Index')::int                         AS idx,
+        (item->'Fighter'->>'id')::uuid                AS id,
+        item->'Fighter'->>'first_name'                AS first_name,
+        item->'Fighter'->>'last_name'                 AS last_name,
+        (item->'Fighter'->>'dob')::date               AS dob,
+        item->'Fighter'->>'gender'                    AS gender,
+        (item->'Fighter'->>'height')::numeric         AS height,
+        (item->'Fighter'->>'weight')::numeric         AS weight,
+        (item->'Fighter'->>'reach')::numeric          AS reach,
+        item->'Fighter'->>'stance'                    AS stance,
+        item->'Fighter'->>'country'                   AS country,
+        item->'Fighter'->>'fighting_out_of'           AS fighting_out_of,
+        item->'Fighter'->>'bio'                       AS bio
+    FROM jsonb_array_elements(@payload::jsonb) AS item
+),
+upserted AS (
+    INSERT INTO fighters (
+        id,
+        first_name,
+        last_name,
+        dob,
+        gender,
+        height,
+        weight,
+        reach,
+        stance,
+        country,
+        fighting_out_of,
+        bio,
+        created_at,
+        created_by,
+        updated_at,
+        updated_by
+    )
+    SELECT
+        i.id,
+        i.first_name,
+        i.last_name,
+        i.dob,
+        i.gender,
+        i.height,
+        i.weight,
+        i.reach,
+        i.stance,
+        i.country,
+        i.fighting_out_of,
+        i.bio,
+        @operation_time,
+        @admin_user_id,
+        @operation_time,
+        @admin_user_id
+    FROM input i
+    ON CONFLICT (id)
+    DO UPDATE SET
+        first_name        = EXCLUDED.first_name,
+        last_name         = EXCLUDED.last_name,
+        dob               = EXCLUDED.dob,
+        gender            = EXCLUDED.gender,
+        height            = EXCLUDED.height,
+        weight            = EXCLUDED.weight,
+        reach             = EXCLUDED.reach,
+        stance            = EXCLUDED.stance,
+        country           = EXCLUDED.country,
+        fighting_out_of   = EXCLUDED.fighting_out_of,
+        bio               = EXCLUDED.bio,
+        updated_at        = @operation_time,
+        updated_by        = @admin_user_id
+    RETURNING
+        id,
+        first_name,
+        last_name,
+        dob,
+        xmax = 0 AS inserted
+)
+SELECT
+    i.idx                                   AS idx,
+    u.id                                    AS fighter_id,
+    CASE
+        WHEN u.inserted THEN 'created'
+        ELSE 'updated'
+    END                                     AS status,
+    NULL::text                              AS error_code,
+    NULL::text                              AS error_message
+FROM input i
+JOIN upserted u
+  ON u.id = i.id;
