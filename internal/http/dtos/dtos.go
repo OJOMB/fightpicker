@@ -104,7 +104,7 @@ type FighterCreateReq struct {
 	Height            float64                `json:"height"`
 	LastName          string                 `json:"last_name"`
 	Losses            int                    `json:"losses"`
-	Nickname          *string                `json:"nickname,omitempty"`
+	Nickname          string                 `json:"nickname"`
 	NoContests        int                    `json:"no_contests"`
 	Reach             float64                `json:"reach"`
 	Stance            string                 `json:"stance"`
@@ -242,8 +242,9 @@ type FightersIngestionReq = []FighterCreateReq
 
 // FightersIngestionResp defines model for FightersIngestionResp.
 type FightersIngestionResp struct {
-	Results []FighterIngestionResult `json:"results"`
-	Summary FightersIngestionSummary `json:"summary"`
+	RequestId *id.UUID7                `json:"request_id,omitempty"`
+	Results   []FighterIngestionResult `json:"results"`
+	Summary   FightersIngestionSummary `json:"summary"`
 }
 
 // FightersIngestionSummary defines model for FightersIngestionSummary.

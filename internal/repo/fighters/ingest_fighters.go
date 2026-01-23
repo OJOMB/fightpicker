@@ -50,7 +50,7 @@ func (r *Repo) IngestFighters(ctx context.Context, rows []fightersservice.Ingest
 	for _, row := range dbRows {
 		result := fightersservice.IngestionResult{
 			Index:  int(row.Idx),
-			Status: fightersservice.IngestionResultStatusFromString(row.Status),
+			Status: fightersservice.IngestionResultStatus(row.Status),
 		}
 
 		if row.FighterID != id.UUID7Nil {
@@ -68,15 +68,17 @@ func (r *Repo) IngestFighters(ctx context.Context, rows []fightersservice.Ingest
 
 		// Update summary
 		summary.Total++
-		switch row.Status {
-		case fightersservice.IngestionResultStatusCreated.String():
+		switch fightersservice.IngestionResultStatus(row.Status) {
+		case fightersservice.IngestionResultStatusCreated:
 			summary.Created++
-		case fightersservice.IngestionResultStatusUpdated.String():
+		case fightersservice.IngestionResultStatusUpdated:
 			summary.Updated++
-		case fightersservice.IngestionResultStatusSkipped.String():
+		case fightersservice.IngestionResultStatusSkipped:
 			summary.Skipped++
-		case fightersservice.IngestionResultStatusFailed.String():
+		case fightersservice.IngestionResultStatusFailed:
 			summary.Failed++
+		default:
+			r.logger.ErrorContext(ctx, "unknown ingestion result status", "status", row.Status)
 		}
 	}
 

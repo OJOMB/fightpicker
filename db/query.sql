@@ -384,26 +384,28 @@ INSERT INTO fighters (
 -- name: IngestFighters :many
 WITH input AS (
     SELECT
-        (item->>'Index')::int                         AS idx,
-        (item->'Fighter'->>'id')::uuid                AS id,
-        item->'Fighter'->>'first_name'                AS first_name,
-        item->'Fighter'->>'last_name'                 AS last_name,
-        (item->'Fighter'->>'dob')::date               AS dob,
-        item->'Fighter'->>'gender'                    AS gender,
-        (item->'Fighter'->>'height')::numeric         AS height,
-        (item->'Fighter'->>'weight')::numeric         AS weight,
-        (item->'Fighter'->>'reach')::numeric          AS reach,
-        item->'Fighter'->>'stance'                    AS stance,
-        item->'Fighter'->>'country'                   AS country,
-        item->'Fighter'->>'fighting_out_of'           AS fighting_out_of,
-        item->'Fighter'->>'bio'                       AS bio
-    FROM jsonb_array_elements(@payload::jsonb) AS item
+        (item->>'Index')::int                   AS idx,
+        (item->'Fighter'->>'ID')::uuid          AS id,
+        item->'Fighter'->>'FirstName'           AS first_name,
+        item->'Fighter'->>'LastName'            AS last_name,
+        item->'Fighter'->>'Nickname'            AS nickname,
+        (item->'Fighter'->>'DOB')::date         AS dob,
+        (item->'Fighter'->>'Gender')::gender    AS gender,
+        (item->'Fighter'->>'Height')::numeric   AS height,
+        (item->'Fighter'->>'Weight')::numeric   AS weight,
+        (item->'Fighter'->>'Reach')::numeric    AS reach,
+        item->'Fighter'->>'Stance'              AS stance,
+        item->'Fighter'->>'Country'             AS country,
+        item->'Fighter'->>'FightingOutOf'       AS fighting_out_of,
+        item->'Fighter'->>'Bio'                 AS bio
+    FROM jsonb_array_elements(@payload::jsonb)  AS item
 ),
 upserted AS (
     INSERT INTO fighters (
         id,
         first_name,
         last_name,
+        nickname,
         dob,
         gender,
         height,
@@ -422,6 +424,7 @@ upserted AS (
         i.id,
         i.first_name,
         i.last_name,
+        i.nickname,
         i.dob,
         i.gender,
         i.height,
@@ -440,6 +443,7 @@ upserted AS (
     DO UPDATE SET
         first_name        = EXCLUDED.first_name,
         last_name         = EXCLUDED.last_name,
+        nickname          = EXCLUDED.nickname,
         dob               = EXCLUDED.dob,
         gender            = EXCLUDED.gender,
         height            = EXCLUDED.height,
@@ -455,6 +459,7 @@ upserted AS (
         id,
         first_name,
         last_name,
+        nickname,
         dob,
         xmax = 0 AS inserted
 )

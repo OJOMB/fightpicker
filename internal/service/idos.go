@@ -30,6 +30,7 @@ func GenderFromString(s string) Gender {
 	}
 }
 
+// UnmarshalJSON implements the json.Unmarshaler interface
 func (g *Gender) UnmarshalJSON(data []byte) error {
 	str := string(data)
 	switch str {
@@ -42,4 +43,9 @@ func (g *Gender) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+// MarshalJSON implements the json.Marshaler interface
+func (g Gender) MarshalJSON() ([]byte, error) {
+	return []byte(`"` + g.String() + `"`), nil
 }

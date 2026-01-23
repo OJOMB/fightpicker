@@ -17,7 +17,8 @@ INSERT INTO permissions (id, name, version, resource, operation, description, cr
     (gen_random_uuid(), 'create', 'v1', 'fighters', 'post', 'Permission to create a new fighter', now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
     (gen_random_uuid(), 'delete', 'v1', 'fighters', 'delete', 'Permission to delete a fighter', now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
     (gen_random_uuid(), 'update', 'v1', 'fighters', 'put', 'Permission to update fighter information', now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
-    (gen_random_uuid(), 'get', 'v1', 'fighters', 'get', 'Permission to view fighter information', now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98');
+    (gen_random_uuid(), 'get', 'v1', 'fighters', 'get', 'Permission to view fighter information', now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    (gen_random_uuid(), 'ingest', 'v1', 'fighters', 'post', 'Permission to list fighters', now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98');
 
 -- Assign all above permissions to admin and user role
 INSERT INTO role_permissions (role_id, permission_id, created_at, created_by, updated_at, updated_by)

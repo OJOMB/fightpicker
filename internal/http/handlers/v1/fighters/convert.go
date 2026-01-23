@@ -41,15 +41,10 @@ func fighterIDOToDTO(fighter fightersservice.Fighter) dtos.FighterResponse {
 }
 
 func fightersCreateReqDTOToIDO(req dtos.FighterCreateReq) fightersservice.Fighter {
-	var nickname string
-	if req.Nickname != nil {
-		nickname = *req.Nickname
-	}
-
 	return fightersservice.Fighter{
 		FirstName:         req.FirstName,
 		LastName:          req.LastName,
-		Nickname:          nickname,
+		Nickname:          req.Nickname,
 		Gender:            service.GenderFromString(string(req.Gender)),
 		Weight:            req.Weight,
 		Height:            req.Height,

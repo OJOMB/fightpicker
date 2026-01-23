@@ -57,28 +57,17 @@ type IngestionResult struct {
 	Error *ErrorObject `json:"error,omitempty"`
 }
 
-type IngestionResultStatus int
+type IngestionResultStatus string
 
 const (
-	IngestionResultStatusCreated IngestionResultStatus = iota + 1
-	IngestionResultStatusUpdated
-	IngestionResultStatusSkipped
-	IngestionResultStatusFailed
+	IngestionResultStatusCreated IngestionResultStatus = "created"
+	IngestionResultStatusUpdated IngestionResultStatus = "updated"
+	IngestionResultStatusSkipped IngestionResultStatus = "skipped"
+	IngestionResultStatusFailed  IngestionResultStatus = "failed"
 )
 
-func (irs IngestionResultStatus) String() string {
-	switch irs {
-	case IngestionResultStatusCreated:
-		return "created"
-	case IngestionResultStatusUpdated:
-		return "updated"
-	case IngestionResultStatusSkipped:
-		return "skipped"
-	case IngestionResultStatusFailed:
-		return "failed"
-	default:
-		return ""
-	}
+func (s IngestionResultStatus) String() string {
+	return string(s)
 }
 
 func IngestionResultStatusFromString(s string) IngestionResultStatus {
@@ -92,32 +81,8 @@ func IngestionResultStatusFromString(s string) IngestionResultStatus {
 	case "failed":
 		return IngestionResultStatusFailed
 	default:
-		return 0
+		return ""
 	}
-}
-
-// Scan implements the sql.Scanner interface for IngestionResultStatus
-func (irs *IngestionResultStatus) Scan(value interface{}) error {
-	if value == nil {
-		*irs = 0
-		return nil
-	}
-
-	// string to int mapping
-	strVal, ok := value.(string)
-	if !ok {
-		return nil
-	}
-
-	intVal := IngestionResultStatusFromString(strVal)
-
-	*irs = IngestionResultStatus(intVal)
-	return nil
-}
-
-// Value implements the driver.Valuer interface for IngestionResultStatus
-func (irs IngestionResultStatus) Value() (interface{}, error) {
-	return irs.String(), nil
 }
 
 type ErrorObject struct {

@@ -46,6 +46,16 @@ func (s *Service) IngestFighters(ctx context.Context, fighterIngestionRows []Ing
 		valid = append(valid, f)
 	}
 
+	now := s.datetimeTool.Now().UTC()
+	// create a uuid7 for each valid fighter
+	for i := range valid {
+		valid[i].Fighter.ID = s.id.Generate()
+		valid[i].Fighter.CreatedAt = now
+		valid[i].Fighter.CreatedBy = reqSubject
+		valid[i].Fighter.UpdatedAt = now
+		valid[i].Fighter.UpdatedBy = reqSubject
+	}
+
 	// Nothing valid to ingest
 	if len(valid) == 0 {
 		return results, IngestionSummary{

@@ -1167,6 +1167,7 @@ components:
       required:
         - first_name
         - last_name
+        - nickname
         - gender
         - dob
         - height
