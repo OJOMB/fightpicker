@@ -229,6 +229,49 @@ func (ns NullResourceType) Value() (driver.Value, error) {
 	return string(ns.ResourceType), nil
 }
 
+type Source string
+
+const (
+	SourceUfcstats Source = "ufcstats"
+	SourceTapology Source = "tapology"
+	SourceSherdog  Source = "sherdog"
+)
+
+func (e *Source) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Source(s)
+	case string:
+		*e = Source(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Source: %T", src)
+	}
+	return nil
+}
+
+type NullSource struct {
+	Source Source
+	Valid  bool // Valid is true if Source is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSource) Scan(value interface{}) error {
+	if value == nil {
+		ns.Source, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Source.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSource) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Source), nil
+}
+
 type WinMethod string
 
 const (
@@ -357,7 +400,6 @@ type Fighter struct {
 	Stance            string
 	Country           string
 	FightingOutOf     string
-	Bio               pgtype.Text
 	ProfilePicture    pgtype.Text
 	Wins              int32
 	Losses            int32
@@ -368,6 +410,14 @@ type Fighter struct {
 	CreatedBy         pgtype.UUID
 	UpdatedAt         pgtype.Timestamptz
 	UpdatedBy         pgtype.UUID
+}
+
+type FighterExternalID struct {
+	FighterID  id.UUID7
+	Source     Source
+	ExternalID string
+	CreatedAt  pgtype.Timestamptz
+	CreatedBy  pgtype.UUID
 }
 
 type Follower struct {

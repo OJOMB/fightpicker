@@ -140,7 +140,6 @@ CREATE TABLE IF NOT EXISTS fighters (
     stance VARCHAR(50) NOT NULL,
     country VARCHAR(100) NOT NULL,
     fighting_out_of VARCHAR(100) NOT NULL,
-    bio TEXT,
     profile_picture VARCHAR(255),
     wins INTEGER NOT NULL DEFAULT 0,
     losses INTEGER NOT NULL DEFAULT 0,
@@ -152,6 +151,22 @@ CREATE TABLE IF NOT EXISTS fighters (
     created_by UUID REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
     updated_at TIMESTAMPTZ NOT NULL,
     updated_by UUID REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TYPE source AS ENUM ('ufcstats', 'tapology', 'sherdog');
+
+-- fighter_external_ids table to store external IDs for fighters from various sources
+-- e.g. Sherdog ID, Tapology ID, etc.
+CREATE TABLE fighter_external_ids (
+    fighter_id UUID NOT NULL REFERENCES fighters(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    source source NOT NULL,
+    external_id TEXT NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL,
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+    PRIMARY KEY (source, external_id),
+    UNIQUE (fighter_id, source)
 );
 
 CREATE TYPE fight_status AS ENUM ('scheduled', 'in_progress', 'completed', 'cancelled');

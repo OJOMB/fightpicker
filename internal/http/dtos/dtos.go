@@ -93,7 +93,6 @@ type ErrorObject struct {
 
 // FighterCreateReq defines model for FighterCreateReq.
 type FighterCreateReq struct {
-	Bio               string                 `json:"bio"`
 	Country           string                 `json:"country"`
 	Disqualifications int                    `json:"disqualifications"`
 	Dob               SimpleDate             `json:"dob"`
@@ -133,7 +132,6 @@ type FighterIngestionResultStatus string
 
 // FighterResponse defines model for FighterResponse.
 type FighterResponse struct {
-	Bio               string                `json:"bio"`
 	Country           string                `json:"country"`
 	CreatedAt         time.Time             `json:"created_at"`
 	CreatedBy         id.UUID7              `json:"created_by"`
@@ -163,7 +161,6 @@ type FighterResponseGender string
 
 // FighterUpdateReq defines model for FighterUpdateReq.
 type FighterUpdateReq struct {
-	Bio               *string                 `json:"bio,omitempty"`
 	Country           *string                 `json:"country,omitempty"`
 	Disqualifications *int                    `json:"disqualifications,omitempty"`
 	Dob               *SimpleDate             `json:"dob,omitempty"`
@@ -233,9 +230,6 @@ type FighterUpdateReq14 = interface{}
 
 // FighterUpdateReq15 defines model for .
 type FighterUpdateReq15 = interface{}
-
-// FighterUpdateReq16 defines model for .
-type FighterUpdateReq16 = interface{}
 
 // FightersIngestionReq defines model for FightersIngestionReq.
 type FightersIngestionReq = []FighterCreateReq
@@ -859,32 +853,6 @@ func (t *FighterUpdateReq) MergeFighterUpdateReq15(v FighterUpdateReq15) error {
 	return err
 }
 
-// AsFighterUpdateReq16 returns the union data inside the FighterUpdateReq as a FighterUpdateReq16
-func (t FighterUpdateReq) AsFighterUpdateReq16() (FighterUpdateReq16, error) {
-	var body FighterUpdateReq16
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromFighterUpdateReq16 overwrites any union data inside the FighterUpdateReq as the provided FighterUpdateReq16
-func (t *FighterUpdateReq) FromFighterUpdateReq16(v FighterUpdateReq16) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeFighterUpdateReq16 performs a merge with any union data inside the FighterUpdateReq, using the provided FighterUpdateReq16
-func (t *FighterUpdateReq) MergeFighterUpdateReq16(v FighterUpdateReq16) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
 func (t FighterUpdateReq) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	if err != nil {
@@ -895,13 +863,6 @@ func (t FighterUpdateReq) MarshalJSON() ([]byte, error) {
 		err = json.Unmarshal(b, &object)
 		if err != nil {
 			return nil, err
-		}
-	}
-
-	if t.Bio != nil {
-		object["bio"], err = json.Marshal(t.Bio)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'bio': %w", err)
 		}
 	}
 
@@ -1029,13 +990,6 @@ func (t *FighterUpdateReq) UnmarshalJSON(b []byte) error {
 	err = json.Unmarshal(b, &object)
 	if err != nil {
 		return err
-	}
-
-	if raw, found := object["bio"]; found {
-		err = json.Unmarshal(raw, &t.Bio)
-		if err != nil {
-			return fmt.Errorf("error reading 'bio': %w", err)
-		}
 	}
 
 	if raw, found := object["country"]; found {

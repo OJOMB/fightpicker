@@ -1147,8 +1147,6 @@ components:
           type: string
         fighting_out_of:
           type: string
-        bio:
-          type: string
         wins:
           type: integer
           default: 0
@@ -1176,7 +1174,6 @@ components:
         - stance
         - country
         - fighting_out_of
-        - bio
         - wins
         - losses
         - draws
@@ -1278,8 +1275,6 @@ components:
           type: string
         fighting_out_of:
           type: string
-        bio:
-          type: string
         wins:
           type: integer
         losses:
@@ -1302,7 +1297,6 @@ components:
         - required: [stance]
         - required: [country]
         - required: [fighting_out_of]
-        - required: [bio]
         - required: [wins]
         - required: [losses]
         - required: [draws]
@@ -1346,8 +1340,6 @@ components:
           type: string
         fighting_out_of:
           type: string
-        bio:
-          type: string
         profile_picture:
           type: string
           format: uri
@@ -1390,7 +1382,6 @@ components:
         - stance
         - country
         - fighting_out_of
-        - bio
         - profile_picture
         - wins
         - losses

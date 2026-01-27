@@ -31,6 +31,8 @@ func (svc *Service) CreateUser(ctx context.Context, user User) (User, error) {
 
 	user.PasswordHash = hashedPassword
 
+	user.Normalize()
+
 	if err := svc.repo.CreateUser(ctx, user); err != nil {
 		svc.logger.DebugContext(ctx, "failed to create user", "error", err, "user_id", user.ID)
 		return User{}, err

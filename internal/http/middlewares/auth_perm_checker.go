@@ -30,7 +30,7 @@ type AuthPermissionsChecker struct {
 }
 
 func NewAuthPermissionsChecker(secretKey []byte, jwtValidator JWTValidator, ctxTool contextual.ContextProvider, l logs.Logger) (*AuthPermissionsChecker, error) {
-	if secretKey == nil || len(secretKey) == 0 {
+	if len(secretKey) == 0 {
 		return nil, ErrSecretKeyIsNilOrEmpty
 	}
 

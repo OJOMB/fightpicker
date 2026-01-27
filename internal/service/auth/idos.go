@@ -22,7 +22,7 @@ func (p *Permissions) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Convert `any` → `struct{}`
+	// Convert `any` -> `struct{}`
 	perms := Permissions{}
 	for v, resources := range raw {
 		perms[v] = map[string]map[string]map[string]struct{}{}

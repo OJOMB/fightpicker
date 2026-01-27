@@ -54,6 +54,8 @@ func (s *Service) IngestFighters(ctx context.Context, fighterIngestionRows []Ing
 		valid[i].Fighter.CreatedBy = reqSubject
 		valid[i].Fighter.UpdatedAt = now
 		valid[i].Fighter.UpdatedBy = reqSubject
+
+		valid[i].Fighter.normalize()
 	}
 
 	// Nothing valid to ingest

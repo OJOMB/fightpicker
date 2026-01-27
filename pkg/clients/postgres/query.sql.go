@@ -97,7 +97,6 @@ INSERT INTO fighters (
     stance,
     country,
     fighting_out_of,
-    bio,
     profile_picture,
     wins,
     losses,
@@ -113,7 +112,7 @@ INSERT INTO fighters (
     $6, $7, $8, $9, $10,
     $11, $12, $13, $14, $15,
     $16, $17, $18, $19, $20,
-    $21, $22, $23
+    $21, $22
 )
 `
 
@@ -130,7 +129,6 @@ type CreateFighterParams struct {
 	Stance            string
 	Country           string
 	FightingOutOf     string
-	Bio               pgtype.Text
 	ProfilePicture    pgtype.Text
 	Wins              int32
 	Losses            int32
@@ -157,7 +155,6 @@ func (q *Queries) CreateFighter(ctx context.Context, arg CreateFighterParams) er
 		arg.Stance,
 		arg.Country,
 		arg.FightingOutOf,
-		arg.Bio,
 		arg.ProfilePicture,
 		arg.Wins,
 		arg.Losses,
@@ -286,7 +283,6 @@ SELECT
     stance,
     country,
     fighting_out_of,
-    bio,
     profile_picture,
     wins,
     losses,
@@ -320,7 +316,6 @@ func (q *Queries) GetFighterByID(ctx context.Context, argID id.UUID7) (Fighter, 
 		&i.Stance,
 		&i.Country,
 		&i.FightingOutOf,
-		&i.Bio,
 		&i.ProfilePicture,
 		&i.Wins,
 		&i.Losses,
@@ -694,26 +689,40 @@ func (q *Queries) GetUserRolesByID(ctx context.Context, userID id.UUID7) ([]stri
 }
 
 const ingestFighters = `-- name: IngestFighters :many
-WITH input AS (
+WITH
+  input AS (
     SELECT
-        (item->>'Index')::int                   AS idx,
-        (item->'Fighter'->>'ID')::uuid          AS id,
-        item->'Fighter'->>'FirstName'           AS first_name,
-        item->'Fighter'->>'LastName'            AS last_name,
-        item->'Fighter'->>'Nickname'            AS nickname,
-        (item->'Fighter'->>'DOB')::date         AS dob,
-        (item->'Fighter'->>'Gender')::gender    AS gender,
-        (item->'Fighter'->>'Height')::numeric   AS height,
-        (item->'Fighter'->>'Weight')::numeric   AS weight,
-        (item->'Fighter'->>'Reach')::numeric    AS reach,
-        item->'Fighter'->>'Stance'              AS stance,
-        item->'Fighter'->>'Country'             AS country,
-        item->'Fighter'->>'FightingOutOf'       AS fighting_out_of,
-        item->'Fighter'->>'Bio'                 AS bio
-    FROM jsonb_array_elements($1::jsonb)  AS item
-),
-upserted AS (
-    INSERT INTO fighters (
+      (item ->> 'Index')::int AS idx,
+      item ->> 'ExternalID' AS external_id,
+      (item -> 'Fighter' ->> 'ID')::uuid AS supplied_id,
+      item -> 'Fighter' ->> 'FirstName' AS first_name,
+      item -> 'Fighter' ->> 'LastName' AS last_name,
+      item -> 'Fighter' ->> 'Nickname' AS nickname,
+      (item -> 'Fighter' ->> 'DOB')::date AS dob,
+      (item -> 'Fighter' ->> 'Gender')::gender AS gender,
+      (item -> 'Fighter' ->> 'Height')::numeric AS height,
+      (item -> 'Fighter' ->> 'Weight')::numeric AS weight,
+      (item -> 'Fighter' ->> 'Reach')::numeric AS reach,
+      item -> 'Fighter' ->> 'Stance' AS stance,
+      item -> 'Fighter' ->> 'Country' AS country,
+      item -> 'Fighter' ->> 'FightingOutOf' AS fighting_out_of
+    FROM
+      jsonb_array_elements($1::jsonb) AS item
+  ),
+  -- Resolve identity via external IDs using the query parameter @source
+  resolved AS (
+    SELECT
+      i.idx, i.external_id, i.supplied_id, i.first_name, i.last_name, i.nickname, i.dob, i.gender, i.height, i.weight, i.reach, i.stance, i.country, i.fighting_out_of,
+      fe.fighter_id AS existing_fighter_id
+    FROM
+      input i
+      LEFT JOIN fighter_external_ids fe ON fe.source = $2
+      AND fe.external_id = i.external_id
+  ),
+  -- Upsert fighters using resolved identity
+  upserted_fighters AS (
+    INSERT INTO
+      fighters (
         id,
         first_name,
         last_name,
@@ -731,66 +740,84 @@ upserted AS (
         created_by,
         updated_at,
         updated_by
-    )
+      )
     SELECT
-        i.id,
-        i.first_name,
-        i.last_name,
-        i.nickname,
-        i.dob,
-        i.gender,
-        i.height,
-        i.weight,
-        i.reach,
-        i.stance,
-        i.country,
-        i.fighting_out_of,
-        i.bio,
-        $2,
-        $3,
-        $2,
-        $3
-    FROM input i
-    ON CONFLICT (id)
-    DO UPDATE SET
-        first_name        = EXCLUDED.first_name,
-        last_name         = EXCLUDED.last_name,
-        nickname          = EXCLUDED.nickname,
-        dob               = EXCLUDED.dob,
-        gender            = EXCLUDED.gender,
-        height            = EXCLUDED.height,
-        weight            = EXCLUDED.weight,
-        reach             = EXCLUDED.reach,
-        stance            = EXCLUDED.stance,
-        country           = EXCLUDED.country,
-        fighting_out_of   = EXCLUDED.fighting_out_of,
-        bio               = EXCLUDED.bio,
-        updated_at        = $2,
-        updated_by        = $3
+      COALESCE(existing_fighter_id, supplied_id),
+      first_name,
+      last_name,
+      nickname,
+      dob,
+      gender,
+      height,
+      weight,
+      reach,
+      stance,
+      country,
+      fighting_out_of,
+      bio,
+      $3,
+      $4,
+      $3,
+      $4
+    FROM
+      resolved
+    ON CONFLICT (id) DO UPDATE
+    SET
+      first_name = EXCLUDED.first_name,
+      last_name = EXCLUDED.last_name,
+      nickname = EXCLUDED.nickname,
+      dob = EXCLUDED.dob,
+      gender = EXCLUDED.gender,
+      height = EXCLUDED.height,
+      weight = EXCLUDED.weight,
+      reach = EXCLUDED.reach,
+      stance = EXCLUDED.stance,
+      country = EXCLUDED.country,
+      fighting_out_of = EXCLUDED.fighting_out_of,
+      bio = EXCLUDED.bio,
+      updated_at = $3,
+      updated_by = $4
     RETURNING
-        id,
-        first_name,
-        last_name,
-        nickname,
-        dob,
-        xmax = 0 AS inserted
-)
+      id
+  ),
+  -- Insert external IDs (idempotent)
+  external_ids AS (
+    INSERT INTO
+      fighter_external_ids (
+        fighter_id,
+        source,
+        external_id,
+        created_at,
+        created_by
+      )
+    SELECT
+      u.id,
+      $2, -- Used parameter here
+      r.external_id,
+      $3,
+      $4
+    FROM
+      upserted_fighters u
+      JOIN resolved r ON COALESCE(r.existing_fighter_id, r.supplied_id) = u.id
+    ON CONFLICT (source, external_id) DO NOTHING
+  )
 SELECT
-    i.idx                                   AS idx,
-    u.id                                    AS fighter_id,
-    CASE
-        WHEN u.inserted THEN 'created'
-        ELSE 'updated'
-    END                                     AS status,
-    NULL::text                              AS error_code,
-    NULL::text                              AS error_message
-FROM input i
-JOIN upserted u
-  ON u.id = i.id
+  r.idx AS idx,
+  u.id AS fighter_id,
+  CASE
+    WHEN r.existing_fighter_id IS NULL THEN 'created'
+    ELSE 'updated'
+  END AS status,
+  NULL::text AS error_code,
+  NULL::text AS error_message
+FROM
+  resolved r
+  JOIN upserted_fighters u ON u.id = COALESCE(r.existing_fighter_id, r.supplied_id)
 `
 
 type IngestFightersParams struct {
 	Payload       []byte
+	Source        Source
 	OperationTime pgtype.Timestamptz
 	AdminUserID   pgtype.UUID
 }
@@ -803,8 +830,14 @@ type IngestFightersRow struct {
 	ErrorMessage pgtype.Text
 }
 
+// Upsert fighters using resolved identity
 func (q *Queries) IngestFighters(ctx context.Context, arg IngestFightersParams) ([]IngestFightersRow, error) {
-	rows, err := q.db.Query(ctx, ingestFighters, arg.Payload, arg.OperationTime, arg.AdminUserID)
+	rows, err := q.db.Query(ctx, ingestFighters,
+		arg.Payload,
+		arg.Source,
+		arg.OperationTime,
+		arg.AdminUserID,
+	)
 	if err != nil {
 		return nil, err
 	}

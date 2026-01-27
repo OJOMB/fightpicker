@@ -20,7 +20,6 @@ type Fighter struct {
 	Stance            string
 	Country           string
 	FightingOutOf     string
-	Bio               string
 	ProfilePicture    string
 	Wins              int
 	Losses            int
@@ -31,6 +30,15 @@ type Fighter struct {
 	CreatedBy         id.UUID7
 	UpdatedAt         time.Time
 	UpdatedBy         id.UUID7
+}
+
+func (f *Fighter) normalize() {
+	f.FirstName = service.NormalizeName(f.FirstName)
+	f.LastName = service.NormalizeName(f.LastName)
+	f.Nickname = service.NormalizeName(f.Nickname)
+	f.Stance = service.NormalizeString(f.Stance)
+	f.Country = service.NormalizeString(f.Country)
+	f.FightingOutOf = service.NormalizeString(f.FightingOutOf)
 }
 
 type IngestionSummary struct {

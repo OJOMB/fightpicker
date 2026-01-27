@@ -38,7 +38,6 @@ func fighterDBOtoFighterIDO(dbo postgres.Fighter) fightersservice.Fighter {
 		Stance:            dbo.Stance,
 		Country:           dbo.Country,
 		FightingOutOf:     dbo.FightingOutOf,
-		Bio:               dbo.Bio.String,
 		ProfilePicture:    dbo.ProfilePicture.String,
 		Wins:              int(dbo.Wins),
 		Losses:            int(dbo.Losses),

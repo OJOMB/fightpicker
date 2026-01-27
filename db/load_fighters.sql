@@ -23,8 +23,31 @@ INSERT INTO fighters (
     updated_at,
     updated_by
 ) VALUES
-    ('019b938d-580f-78b5-9472-998c8ea79678', 'Conor', 'McGregor', 'The Notorious', 'male', '1988-07-14', 175.26, 70.31, 188.0, 'Southpaw', 'Ireland', 'Dublin, Ireland', 'Former UFC Featherweight and Lightweight Champion.', 'https://example.com/images/conor.jpg', 22, 6, 0, 0, 0, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
-    ('019b938d-8ac1-774c-8208-8898c1b8b2e0', 'Khabib', 'Nurmagomedov', 'The Eagle', 'male', '1988-09-20', 177.8, 70.31, 178.0, 'Orthodox', 'Russia', 'Makhachkala, Russia', 'Retired undefeated former UFC Lightweight Champion.', 'https://example.com/images/khabib.jpg', 29, 0, 0, 0, 0, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
-    ('019b938d-ae54-7114-9a16-2d284db4c971', 'Israel', 'Adesanya', 'The Last Stylebender', 'male', '1989-07-22', 193.0, 83.9, 203.2, 'Switch', 'New Zealand', 'Auckland, New Zealand', 'Former UFC Middleweight Champion.', 'https://example.com/images/adesanya.jpg', 24, 3, 0, 0, 0, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
-    ('019b938d-cc96-750c-9eb0-6dcabb235d64', 'Amanda', 'Nunes', 'The Lioness', 'female', '1988-05-30', 173.0, 61.2, 175.3, 'Orthodox', 'Brazil', 'Miami, Florida, USA', 'Former UFC Bantamweight and Featherweight Champion.', 'https://example.com/images/nunes.jpg', 23, 5, 0, 0, 0, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
-    ('019b938e-0ff0-7979-8592-3853765f3520', 'Jon', 'Jones', 'Bones', 'male', '1987-07-19', 193.0, 93.0, 215.9, 'Orthodox', 'USA', 'Albuquerque, New Mexico, USA', 'UFC Heavyweight and former Light Heavyweight Champion.', 'https://example.com/images/jones.jpg', 27, 1, 0, 1, 1, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98');
+    ('019b938d-580f-78b5-9472-998c8ea79678', 'Conor', 'McGregor', 'The Notorious', 'male', '1988-07-14', 175.26, 70.31, 188.0, 'Southpaw', 'Ireland', 'Dublin, Ireland', 'https://example.com/images/conor.jpg', 22, 6, 0, 0, 0, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-8ac1-774c-8208-8898c1b8b2e0', 'Khabib', 'Nurmagomedov', 'The Eagle', 'male', '1988-09-20', 177.8, 70.31, 178.0, 'Orthodox', 'Russia', 'Makhachkala, Russia', 'https://example.com/images/khabib.jpg', 29, 0, 0, 0, 0, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-ae54-7114-9a16-2d284db4c971', 'Israel', 'Adesanya', 'The Last Stylebender', 'male', '1989-07-22', 193.0, 83.9, 203.2, 'Switch', 'New Zealand', 'Auckland, New Zealand','https://example.com/images/adesanya.jpg', 24, 3, 0, 0, 0, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-cc96-750c-9eb0-6dcabb235d64', 'Amanda', 'Nunes', 'The Lioness', 'female', '1988-05-30', 173.0, 61.2, 175.3, 'Orthodox', 'Brazil', 'Miami, Florida, USA', 'https://example.com/images/nunes.jpg', 23, 5, 0, 0, 0, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938e-0ff0-7979-8592-3853765f3520', 'Jon', 'Jones', 'Bones', 'male', '1987-07-19', 193.0, 93.0, 215.9, 'Orthodox', 'USA', 'Albuquerque, New Mexico, USA', 'https://example.com/images/jones.jpg', 27, 1, 0, 1, 1, now(), '019b938b-69b9-76c5-973b-547d442dbf98', now(), '019b938b-69b9-76c5-973b-547d442dbf98');
+
+INSERT INTO fighter_external_ids (
+    fighter_id,
+    source,
+    external_id,
+    created_at,
+    created_by
+) VALUES
+    ('019b938d-580f-78b5-9472-998c8ea79678', 'sherdog', '29688', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-580f-78b5-9472-998c8ea79678', 'ufcstats', 'f4c49976c75c5ab2', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-580f-78b5-9472-998c8ea79678', 'tapology', '14607-conor-mcgregor', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-8ac1-774c-8208-8898c1b8b2e0', 'sherdog', '56035', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-8ac1-774c-8208-8898c1b8b2e0', 'ufcstats', '032cc3922d871c7f', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-8ac1-774c-8208-8898c1b8b2e0', 'tapology', '18536-khabib-nurmagomedov', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-ae54-7114-9a16-2d284db4c971', 'sherdog', '56374', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-ae54-7114-9a16-2d284db4c971', 'ufcstats', '1338e2c7480bdf9e', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-ae54-7114-9a16-2d284db4c971', 'tapology', '79163-israel-adesanya', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-cc96-750c-9eb0-6dcabb235d64', 'sherdog', '31496', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-cc96-750c-9eb0-6dcabb235d64', 'ufcstats', '80fa8218c99f9c58', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938d-cc96-750c-9eb0-6dcabb235d64', 'tapology', 'amanda-nunes-lioness-of-the-ring', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938e-0ff0-7979-8592-3853765f3520', 'sherdog', '27944', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938e-0ff0-7979-8592-3853765f3520', 'ufcstats', '07f72a2a7591b409', now(), '019b938b-69b9-76c5-973b-547d442dbf98'),
+    ('019b938e-0ff0-7979-8592-3853765f3520', 'tapology', 'jon-jones-bones', now(), '019b938b-69b9-76c5-973b-547d442dbf98');

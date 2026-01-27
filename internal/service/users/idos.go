@@ -25,6 +25,15 @@ type User struct {
 	UpdatedBy      id.UUID7
 }
 
+func (u *User) Normalize() {
+	u.Email = service.NormalizeEmail(u.Email)
+	u.FirstName = service.NormalizeName(u.FirstName)
+	u.LastName = service.NormalizeName(u.LastName)
+	u.Username = service.NormalizeUsername(u.Username)
+	u.Location = service.NormalizeString(u.Location)
+	u.Bio = service.NormalizeString(u.Bio)
+}
+
 // removePI removes personally identifiable information from the User struct.
 func (u *User) removePI() {
 	u.LastName = ""
