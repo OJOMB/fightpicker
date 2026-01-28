@@ -14,6 +14,7 @@ import (
 	"github.com/OJOMB/fightpicker/internal/app"
 	"github.com/OJOMB/fightpicker/internal/config"
 	userspb "github.com/OJOMB/fightpicker/internal/grpc/gen/go/users/v1"
+	"github.com/OJOMB/fightpicker/internal/grpc/interceptors"
 	usersgrpc "github.com/OJOMB/fightpicker/internal/grpc/users"
 	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/pyroscope"
@@ -48,7 +49,15 @@ func main() {
 	}
 	defer app.Shutdown(context.Background())
 
-	grpcServer := grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	interceptAuth, err := interceptors.NewUnaryAuthInterceptor([]byte(cfg.Auth.PrivateKey), app.Utils.JWTTool, app.Utils.ContextTool)
+	if err != nil {
+		app.Logger.FatalContext(ctx, "failed to create auth interceptor", "error", err)
+	}
+
+	grpcServer := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.UnaryInterceptor(interceptAuth.GetInterceptor()),
+	)
 
 	usersServer := usersgrpc.NewServer(
 		app.Services.UsersService,

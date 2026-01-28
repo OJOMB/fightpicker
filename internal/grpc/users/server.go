@@ -159,7 +159,7 @@ func (s *Server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*em
 		return nil, s.toStatus(err)
 	}
 
-	return &emptypb.Empty{}, nil
+	return new(emptypb.Empty), nil
 }
 
 // ListUsers retrieves a paginated list of users.

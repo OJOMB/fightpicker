@@ -53,7 +53,7 @@ func NewUnaryAuthInterceptor(secretKey []byte, jwtValidator JWTValidator, ctxToo
 	}, nil
 }
 
-func (i UnaryAuthInterceptor) Intercept() grpc.UnaryServerInterceptor {
+func (i UnaryAuthInterceptor) GetInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		fullMethod := info.FullMethod
 		// Bypass auth for certain methods

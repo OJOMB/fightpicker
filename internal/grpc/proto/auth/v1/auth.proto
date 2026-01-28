@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/OJOMB/fightpicker/internal/grpc/gen/go/auth/v1;authpb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// AuthService defines the gRPC service for authentication
+service AuthService {
+  // login logs a user into the system
+  rpc Login(LoginRequest) returns (LoginResponse);
+  // logout logs a user out of the system
+  rpc Logout(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // Refresh uses the refresh token in the metadata to obtain a new access token
+  rpc Refresh(google.protobuf.Empty) returns (LoginResponse);
+}
+
+// LoginRequest represents a request to log in a user
+message LoginRequest {
+    string email    = 1;
+    string password = 2;
+}
+
+// LoginResponse represents a response after a successful login
+message LoginResponse {
+    string access_token = 1;
+}
