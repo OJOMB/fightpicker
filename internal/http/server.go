@@ -4,8 +4,6 @@ import (
 	"context"
 	"net"
 	"net/http"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -101,11 +99,8 @@ func New(cfg *config.Config, app *app.App) (*Server, error) {
 }
 
 // Run starts the HTTP server and listens for incoming requests. It also handles graceful shutdown on receiving termination signals.
-func (s *Server) Run() error {
+func (s *Server) Run(ctx context.Context) error {
 	s.routes()
-
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
 
 	httpServer := &http.Server{
 		Handler: s.router,
@@ -118,7 +113,7 @@ func (s *Server) Run() error {
 	}
 	defer listener.Close()
 
-	s.logger.InfoContext(ctx, "starting server", "domain", s.addr.String())
+	s.logger.InfoContext(ctx, "starting http server", "addr", s.addr.String())
 
 	// run http server in background
 	errCh := make(chan error, 1)

@@ -77,9 +77,9 @@ func New(ctx context.Context, cfg *config.Config) (*App, error) {
 	return a, nil
 }
 
+// Shutdown handles db and otel shutdown gracefully
 func (a *App) Shutdown(ctx context.Context) error {
-	var errs []error
-
+	var errs = make([]error, 0)
 	if a.DB.pool != nil {
 		a.DB.pool.Close()
 	}

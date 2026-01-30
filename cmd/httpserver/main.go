@@ -50,7 +50,7 @@ func main() {
 		app.Logger.FatalContext(ctx, "failed to create server", "error", err)
 	}
 
-	if err := srv.Run(); err != nil {
+	if err := srv.Run(ctx); err != nil {
 		app.Logger.FatalContext(ctx, "server encountered an error", "error", err)
 	}
 }

@@ -3,19 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
-	"net"
-
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 
 	"github.com/OJOMB/fightpicker/internal/app"
 	"github.com/OJOMB/fightpicker/internal/config"
-	userspb "github.com/OJOMB/fightpicker/internal/grpc/gen/go/users/v1"
-	"github.com/OJOMB/fightpicker/internal/grpc/interceptors"
-	usersgrpc "github.com/OJOMB/fightpicker/internal/grpc/users"
+	"github.com/OJOMB/fightpicker/internal/grpc"
 	"github.com/OJOMB/fightpicker/pkg/contextual"
 	"github.com/OJOMB/fightpicker/pkg/pyroscope"
 )
@@ -49,35 +41,12 @@ func main() {
 	}
 	defer app.Shutdown(context.Background())
 
-	interceptAuth, err := interceptors.NewUnaryAuthInterceptor([]byte(cfg.Auth.PrivateKey), app.Utils.JWTTool, app.Utils.ContextTool)
+	srv, err := grpc.New(cfg, app)
 	if err != nil {
-		app.Logger.FatalContext(ctx, "failed to create auth interceptor", "error", err)
+		app.Logger.FatalContext(ctx, "failed to create gRPC server", "error", err)
 	}
 
-	grpcServer := grpc.NewServer(
-		grpc.StatsHandler(otelgrpc.NewServerHandler()),
-		grpc.UnaryInterceptor(interceptAuth.GetInterceptor()),
-	)
-
-	usersServer := usersgrpc.NewServer(
-		app.Services.UsersService,
-		&app.Logger,
-	)
-
-	userspb.RegisterUsersServiceServer(grpcServer, usersServer)
-
-	if cfg.GRPC.EnableReflection {
-		reflection.Register(grpcServer)
-	}
-
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.GRPC.Domain, cfg.GRPC.Port))
-	if err != nil {
-		panic(err)
-	}
-
-	app.Logger.InfoContext(ctx, "gRPC server listening", "addr", fmt.Sprintf("%s:%d", cfg.GRPC.Domain, cfg.GRPC.Port))
-
-	if err := grpcServer.Serve(lis); err != nil {
-		panic(err)
+	if err := srv.Run(ctx); err != nil {
+		app.Logger.FatalContext(ctx, "gRPC server encountered an error", "error", err)
 	}
 }
