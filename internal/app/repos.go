@@ -17,7 +17,11 @@ type repos struct {
 }
 
 func (a *App) newRepos(ctx context.Context, cfg *config.Config) error {
-	authRepo := authrepo.New(a.DB.pool, a.DB.queries, a.Utils.IDTool, a.Logger)
+	authRepo, err := authrepo.New(a.DB.pool, a.DB.queries, a.Utils.IDTool, a.Logger)
+	if err != nil {
+		a.Logger.ErrorContext(ctx, "failed to create auth repo", "error", err)
+		return err
+	}
 
 	presignedGetURLTTLDuration := time.Duration(cfg.AWS.PresignedGetURLTTL) * time.Minute
 	presignedPutURLTTLDuration := time.Duration(cfg.AWS.PresignedPutURLTTL) * time.Minute

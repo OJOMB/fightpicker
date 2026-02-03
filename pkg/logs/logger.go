@@ -50,7 +50,19 @@ type Slogger struct {
 // New creates a new Logger instance with the specified log level.
 // If otelEnabled is true, an OTel slog handler is added for exporting logs to OpenTelemetry on top of the standard output JSON handler.
 // Each handler is wrapped with ContextHandler to enrich logging calls with request-scoped context values.
-func New(level Level, ctxTool ContextRequestProvider, otelEnabled bool, appName, env string) Logger {
+func New(level Level, ctxTool ContextRequestProvider, otelEnabled bool, appName, env string) (Logger, error) {
+	if ctxTool == nil {
+		return nil, errNilContextTool
+	}
+
+	if appName == "" {
+		return nil, errEmptyAppName
+	}
+
+	if env == "" {
+		return nil, errEmptyEnv
+	}
+
 	loggerHandlers := []slog.Handler{NewContextHandler(
 		ctxTool,
 		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.Level(level)}),
@@ -63,7 +75,7 @@ func New(level Level, ctxTool ContextRequestProvider, otelEnabled bool, appName,
 	// TODO: slogmulti can be removed once we have go 1.26 is released as it includes built-in support for multiple handlers https://tip.golang.org/doc/go1.26
 	baseLogger := newMultiSlogger(loggerHandlers...)
 
-	return baseLogger.With("env", env)
+	return baseLogger.With("env", env), nil
 }
 
 func newMultiSlogger(handlers ...slog.Handler) Logger {

@@ -76,36 +76,36 @@ func New(
 	logger logs.Logger,
 ) (*Service, error) {
 	if repo == nil {
-		return nil, ErrNilRepo
+		return nil, errNilRepo
 	}
 
 	if ctxTool == nil {
-		return nil, ErrNilContextTool
+		return nil, errNilContextTool
 	}
 
 	if logger == nil {
-		return nil, ErrNilLogger
+		return nil, errNilLogger
 	}
 
 	if idTool == nil {
-		return nil, ErrNilIDTool
+		return nil, errNilIDTool
 	}
 
 	if now == nil {
-		return nil, ErrNilNowFunc
+		return nil, errNilNowFunc
 	}
 
 	if authTool == nil {
-		return nil, ErrNilPasswordHasher
+		return nil, errNilPasswordHasher
 	}
 
 	if imageProcessor == nil {
-		return nil, ErrNilImageProcessor
+		return nil, errNilImageProcessor
 	}
 
 	emailRegex, err := regexp.Compile(emailRegexPattern)
 	if err != nil {
-		return nil, ErrEmailRegexCompile
+		return nil, errEmailRegexCompile
 	}
 
 	metrics, err := usermetrics.New()

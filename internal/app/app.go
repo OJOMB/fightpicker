@@ -30,17 +30,21 @@ type App struct {
 
 func New(ctx context.Context, cfg *config.Config) (*App, error) {
 	if cfg == nil {
-		return nil, ErrNilConfig
+		return nil, errNilConfig
 	}
 
 	var a = new(App)
+	var err error
 
 	// 1. Initialize common utilities -- must be done first as logger depends on it
 	if err := a.newUtils(cfg); err != nil {
 		return nil, err
 	}
 
-	a.Logger = logs.New(cfg.LogLevel, a.Utils.ContextTool, cfg.Observability.OTel.Enable, cfg.AppName, cfg.Env)
+	a.Logger, err = logs.New(cfg.LogLevel, a.Utils.ContextTool, cfg.Observability.OTel.Enable, cfg.AppName, cfg.Env)
+	if err != nil {
+		return nil, err
+	}
 
 	if cfg.Observability.OTel.Enable {
 		a.Logger.InfoContext(ctx, "setting up OpenTelemetry SDK", "endpoint", cfg.Observability.OTel.Endpoint)

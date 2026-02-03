@@ -54,35 +54,35 @@ type Service struct {
 // New creates a new instance of the auth Service.
 func New(userRepo UserRepo, authRepo AuthRepo, passwordVerifier PasswordVerifier, idTool id.UUID7GeneratorParser, jwtGen JWTGenerator, accessTokenTTL, refreshTokenTTL time.Duration, secretKey string, tokenAudience string, tokenIssuer string, logger logs.Logger) (*Service, error) {
 	if userRepo == nil {
-		return nil, ErrNilUserRepo
+		return nil, errNilUserRepo
 	}
 
 	if authRepo == nil {
-		return nil, ErrNilAuthRepo
+		return nil, errNilAuthRepo
 	}
 
 	if passwordVerifier == nil {
-		return nil, ErrNilPasswordVerifier
+		return nil, errNilPasswordVerifier
 	}
 
 	if idTool == nil {
-		return nil, ErrNilIDGenerator
+		return nil, errNilIDGenerator
 	}
 
 	if jwtGen == nil {
-		return nil, ErrNilJWTGenerator
+		return nil, errNilJWTGenerator
 	}
 
 	if accessTokenTTL <= 0 {
-		return nil, ErrInvalidAccessTokenTTL
+		return nil, errInvalidAccessTokenTTL
 	}
 
 	if refreshTokenTTL <= 0 {
-		return nil, ErrInvalidRefreshTokenTTL
+		return nil, errInvalidRefreshTokenTTL
 	}
 
 	if secretKey == "" {
-		return nil, ErrEmptySecretKey
+		return nil, errEmptySecretKey
 	}
 
 	return &Service{

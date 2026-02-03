@@ -2,31 +2,35 @@ package users
 
 import "fmt"
 
+// private initialization errors
 var (
-	// ErrNilRepo is returned when a nil repository is provided during service initialization.
-	ErrNilRepo = fmt.Errorf("repository cannot be nil")
+	// errNilRepo is returned when a nil repository is provided during service initialization.
+	errNilRepo = fmt.Errorf("repository cannot be nil")
 
-	// ErrNilLogger is returned when a nil logger is provided.
-	ErrNilLogger = fmt.Errorf("logger cannot be nil")
+	// errNilLogger is returned when a nil logger is provided.
+	errNilLogger = fmt.Errorf("logger cannot be nil")
 
-	// ErrNilContextTool is returned when a nil context tool is provided.
-	ErrNilContextTool = fmt.Errorf("context tool cannot be nil")
+	// errNilContextTool is returned when a nil context tool is provided.
+	errNilContextTool = fmt.Errorf("context tool cannot be nil")
 
-	// ErrEmailRegexCompile is returned when the email regex fails to compile.
-	ErrEmailRegexCompile = fmt.Errorf("failed to compile email regex")
+	// errEmailRegexCompile is returned when the email regex fails to compile.
+	errEmailRegexCompile = fmt.Errorf("failed to compile email regex")
 
-	// ErrNilIDTool is returned when a nil ID generator function is provided.
-	ErrNilIDTool = fmt.Errorf("ID tool cannot be nil")
+	// errNilIDTool is returned when a nil ID generator function is provided.
+	errNilIDTool = fmt.Errorf("ID tool cannot be nil")
 
-	// ErrNilNowFunc is returned when a nil time function is provided.
-	ErrNilNowFunc = fmt.Errorf("now function cannot be nil")
+	// errNilNowFunc is returned when a nil time function is provided.
+	errNilNowFunc = fmt.Errorf("now function cannot be nil")
 
-	// ErrNilPasswordHasher is returned when a nil password hasher is provided.
-	ErrNilPasswordHasher = fmt.Errorf("password hasher cannot be nil")
+	// errNilPasswordHasher is returned when a nil password hasher is provided.
+	errNilPasswordHasher = fmt.Errorf("password hasher cannot be nil")
 
-	// ErrNilImageProcessor is returned when a nil image processor is provided.
-	ErrNilImageProcessor = fmt.Errorf("image processor cannot be nil")
+	// errNilImageProcessor is returned when a nil image processor is provided.
+	errNilImageProcessor = fmt.Errorf("image processor cannot be nil")
+)
 
+// public runtime errors
+var (
 	// ErrMissingParameter is returned when required data is ommitted from the request.
 	ErrMissingParameter = fmt.Errorf("missing parameter")
 

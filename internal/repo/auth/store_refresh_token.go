@@ -39,7 +39,7 @@ func (r *Repo) StoreRefreshToken(ctx context.Context, userID id.UUID7, jti id.UU
 	}
 
 	if err := r.client.StoreRefreshToken(ctx, params); err != nil {
-		return dbErrorToServiceError(err)
+		return dbErrorToRepoError(err)
 	}
 
 	return nil

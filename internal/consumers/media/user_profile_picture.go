@@ -26,15 +26,15 @@ type UserProfilePictureConsumer struct {
 
 func NewUserProfilePictureConsumer(client *kgo.Client, service UsersService, logger logs.Logger) (*UserProfilePictureConsumer, error) {
 	if client == nil {
-		return nil, ErrNilKafkaClient
+		return nil, errNilKafkaClient
 	}
 
 	if service == nil {
-		return nil, ErrNilUsersService
+		return nil, errNilUsersService
 	}
 
 	if logger == nil {
-		return nil, ErrNilLogger
+		return nil, errNilLogger
 	}
 
 	return &UserProfilePictureConsumer{
@@ -97,7 +97,7 @@ func (c *UserProfilePictureConsumer) handleRecord(ctx context.Context, record *k
 		bucketName := record.S3.Bucket.Name
 		objectKey, err := url.PathUnescape(record.S3.Object.Key)
 		if err != nil {
-			c.logger.ErrorContext(ctx, "failed to unescape object key", "error", err)
+			c.logger.ErrorContext(ctx, "failed to unescape object key path", "error", err)
 			return err
 		}
 

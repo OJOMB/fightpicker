@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"html/template"
 
-	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/pkg/errors"
 	"gopkg.in/mail.v2"
+
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 const verificationEmailBody = `
@@ -83,7 +84,7 @@ func (s *Service) SendVerificationEmail(ctx context.Context, userID id.UUID7, fi
 	}
 
 	if firstName == "" {
-		s.logger.ErrorContext(ctx, "invalid first name: empty string")
+		s.logger.WarnContext(ctx, "invalid first name: empty string")
 		// no need to fail the req due to missing first name, use a reasonable default
 		firstName = "User"
 	}
@@ -110,6 +111,7 @@ func (s *Service) SendVerificationEmail(ctx context.Context, userID id.UUID7, fi
 
 	tmpl, err := template.New("email").Parse(verificationEmailBody)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to parse email template", "error", err)
 		return err
 	}
 

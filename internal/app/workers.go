@@ -10,7 +10,7 @@ import (
 // RunWorkers starts all background worker consumers.
 func (a *App) RunWorkers(ctx context.Context) error {
 	if !a.initialized {
-		return ErrAppNotInitialized
+		return errAppNotInitialized
 	}
 
 	// create consumers

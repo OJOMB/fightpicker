@@ -2,19 +2,23 @@ package fighters
 
 import "fmt"
 
+// private initialization errors
 var (
-	// ErrNilRepo is returned when a nil repository is provided to the service during initialization.
-	ErrNilRepo = fmt.Errorf("repository cannot be nil")
+	// errNilRepo is returned when a nil repository is provided to the service during initialization.
+	errNilRepo = fmt.Errorf("repository cannot be nil")
 
-	// ErrNilLogger is returned when a nil logger is provided to the service during initialization.
-	ErrNilLogger = fmt.Errorf("logger cannot be nil")
+	// errNilLogger is returned when a nil logger is provided to the service during initialization.
+	errNilLogger = fmt.Errorf("logger cannot be nil")
 
-	// ErrNilIDGenerator is returned when a nil ID generator is provided to the service during initialization.
-	ErrNilIDGenerator = fmt.Errorf("ID generator cannot be nil")
+	// errNilIDGenerator is returned when a nil ID generator is provided to the service during initialization.
+	errNilIDGenerator = fmt.Errorf("ID generator cannot be nil")
 
-	// ErrNilNowFunc is returned when a nil now function is provided to the service during initialization.
-	ErrNilNowFunc = fmt.Errorf("now function cannot be nil")
+	// errNilDatetimeTool is returned when a nil datetime tool is provided to the service during initialization.
+	errNilDatetimeTool = fmt.Errorf("now function cannot be nil")
+)
 
+// public runtime errors
+var (
 	// ErrFighterNotFound is returned when a fighter with the specified ID does not exist.
 	ErrFighterNotFound = fmt.Errorf("fighter not found")
 

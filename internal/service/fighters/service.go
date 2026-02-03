@@ -22,19 +22,19 @@ type Service struct {
 
 func New(repo Repo, idGen id.UUID7GeneratorParser, now datetimes.Now, ctxProvider contextual.ContextProvider, logger logs.Logger) (*Service, error) {
 	if repo == nil {
-		return nil, ErrNilRepo
+		return nil, errNilRepo
 	}
 
 	if logger == nil {
-		return nil, ErrNilLogger
+		return nil, errNilLogger
 	}
 
 	if idGen == nil {
-		return nil, ErrNilIDGenerator
+		return nil, errNilIDGenerator
 	}
 
 	if now == nil {
-		return nil, ErrNilNowFunc
+		return nil, errNilDatetimeTool
 	}
 
 	return &Service{

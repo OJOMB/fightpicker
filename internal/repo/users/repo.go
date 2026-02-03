@@ -97,6 +97,42 @@ func New(
 	emailDialer *mail.Dialer, emailAddressNoReply string,
 	logger logs.Logger,
 ) (*Repo, error) {
+	if pool == nil {
+		return nil, errNilDBPool
+	}
+
+	if client == nil {
+		return nil, errNilDBClient
+	}
+
+	if s3Client == nil {
+		return nil, errNilS3Client
+	}
+
+	if bucketNameMedia == "" || bucketNameMediaRaw == "" {
+		return nil, errEmptyBucketName
+	}
+
+	if dateTimeTool == nil {
+		return nil, errNilDatetimeTool
+	}
+
+	if kafkaClient == nil {
+		return nil, errNilKafkaClient
+	}
+
+	if emailDialer == nil {
+		return nil, errNilEmailDialer
+	}
+
+	if logger == nil {
+		return nil, errNilLogger
+	}
+
+	if topicPostUserCreate == "" || topicPostUserVerified == "" {
+		return nil, errEmptyKafkaTopic
+	}
+
 	presigner := s3.NewPresignClient(s3Client)
 
 	metrics, err := usermetrics.New()

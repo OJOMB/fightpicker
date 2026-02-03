@@ -27,7 +27,7 @@ func (a *App) newUtils(cfg *config.Config) error {
 	dateTimeTool := datetimes.NewUTCNow()
 
 	if cfg.Auth.HashingCost <= 0 {
-		return errors.Wrap(ErrInvalidConfig, "hashing_cost")
+		return errors.Wrap(errInvalidConfig, "hashing_cost must be greater than zero")
 	}
 	authTool := auth.NewAuthTool(cfg.Auth.HashingCost)
 

@@ -24,19 +24,19 @@ type UserCreationEmailConsumer struct {
 
 func NewUserCreationEmailConsumer(client *kgo.Client, service UsersService, idTool id.UUID7Parser, logger logs.Logger) (*UserCreationEmailConsumer, error) {
 	if client == nil {
-		return nil, ErrNilKafkaClient
+		return nil, errNilKafkaClient
 	}
 
 	if service == nil {
-		return nil, ErrNilUsersService
+		return nil, errNilUsersService
 	}
 
 	if idTool == nil {
-		return nil, ErrNilIDTool
+		return nil, errNilIDTool
 	}
 
 	if logger == nil {
-		return nil, ErrNilLogger
+		return nil, errNilLogger
 	}
 
 	return &UserCreationEmailConsumer{

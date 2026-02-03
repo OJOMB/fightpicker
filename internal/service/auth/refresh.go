@@ -4,11 +4,17 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/OJOMB/fightpicker/pkg/contextual"
 )
 
 // Refresh validates a refresh token and generates new access and refresh tokens.
 func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, string, time.Time, error) {
+	if refreshToken == "" {
+		return "", "", time.Time{}, errors.Wrap(ErrMissingParameter, "refresh_token")
+	}
+
 	hashedToken := s.jwtGen.HashTokenString(refreshToken)
 
 	currentRefreshToken, err := s.authRepo.GetRefreshTokenByHash(ctx, hashedToken)

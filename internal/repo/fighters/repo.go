@@ -35,19 +35,19 @@ type Repo struct {
 
 func New(pool *pgxpool.Pool, client Client, cache CacheClient, now datetimes.Now, logger logs.Logger) (*Repo, error) {
 	if logger == nil {
-		return nil, ErrNilLogger
+		return nil, errNilLogger
 	}
 
 	if pool == nil {
-		return nil, ErrNilDBPool
+		return nil, errNilDBPool
 	}
 
 	if client == nil {
-		return nil, ErrNilDBClient
+		return nil, errNilDBClient
 	}
 
 	if now == nil {
-		return nil, ErrNilNowFunc
+		return nil, errNilNowFunc
 	}
 
 	cacheingEnabled := cache != nil

@@ -28,11 +28,27 @@ type Repo struct {
 	id     id.UUID7GeneratorParser
 }
 
-func New(pool *pgxpool.Pool, client DBClient, idTool id.UUID7GeneratorParser, logger logs.Logger) *Repo {
+func New(pool *pgxpool.Pool, client DBClient, idTool id.UUID7GeneratorParser, logger logs.Logger) (*Repo, error) {
+	if pool == nil {
+		return nil, errNilDBPool
+	}
+
+	if client == nil {
+		return nil, errNilDBClient
+	}
+
+	if idTool == nil {
+		return nil, errNilIDTool
+	}
+
+	if logger == nil {
+		return nil, errNilLogger
+	}
+
 	return &Repo{
 		pool:   pool,
 		client: client,
 		id:     idTool,
 		logger: logger.With("component", "auth_repo"),
-	}
+	}, nil
 }

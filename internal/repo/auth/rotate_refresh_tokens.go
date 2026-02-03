@@ -63,7 +63,7 @@ func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHa
 	}
 
 	if err := qs.StoreRefreshToken(ctx, params); err != nil {
-		return dbErrorToServiceError(err)
+		return dbErrorToRepoError(err)
 	}
 
 	// update the old refresh token to be revoked
@@ -78,7 +78,7 @@ func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHa
 			Valid: true,
 		},
 	}); err != nil {
-		return dbErrorToServiceError(err)
+		return dbErrorToRepoError(err)
 	}
 
 	return tx.Commit(ctx)

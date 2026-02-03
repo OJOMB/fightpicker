@@ -9,6 +9,19 @@ import (
 )
 
 var (
+	errNilDBPool       = fmt.Errorf("nil db pool")
+	errNilDBClient     = fmt.Errorf("nil db client")
+	errNilS3Client     = fmt.Errorf("nil s3 client")
+	errEmptyBucketName = fmt.Errorf("empty bucket name")
+	errNilDatetimeTool = fmt.Errorf("nil datetime tool")
+	errNilKafkaClient  = fmt.Errorf("nil kafka client")
+	errEmptyKafkaTopic = fmt.Errorf("empty kafka topic")
+	errNilEmailDialer  = fmt.Errorf("nil email dialer")
+	errNilLogger       = fmt.Errorf("nil logger")
+)
+
+// public runtime errors
+var (
 	// ErrUserNotFound is returned when a user is not found in the database.
 	ErrUserNotFound = fmt.Errorf("user not found")
 	// ErrEmailTaken is returned when a user email is already taken.
