@@ -27,3 +27,6 @@ go.work.sum
 .idea
 .vscode
 __debug_*
+
+
+cmd/ufcstatsscraper/fighter_details_*.json
