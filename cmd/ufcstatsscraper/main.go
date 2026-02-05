@@ -233,7 +233,10 @@ func scrapeFighterDetail(c *colly.Collector, url string) (FighterDetail, error) 
 					if len(texts) > 1 && clean(texts[1]) != "" {
 						method += " (" + clean(texts[1]) + ")"
 					}
+				case "KO/TKO":
+					method = first
 				}
+
 			}
 		})
 
