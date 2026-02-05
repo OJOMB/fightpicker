@@ -45,6 +45,18 @@ func (q *Queries) AssignRoleToUserByRoleName(ctx context.Context, arg AssignRole
 	return err
 }
 
+const countFighters = `-- name: CountFighters :one
+SELECT COUNT(*) AS fighter_count
+FROM fighters
+`
+
+func (q *Queries) CountFighters(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countFighters)
+	var fighter_count int64
+	err := row.Scan(&fighter_count)
+	return fighter_count, err
+}
+
 const countFollowees = `-- name: CountFollowees :one
 SELECT COUNT(*) AS followee_count
 FROM followers
@@ -893,6 +905,84 @@ func (q *Queries) IsUserEmailVerifiedByID(ctx context.Context, argID id.UUID7) (
 	var email_verified bool
 	err := row.Scan(&email_verified)
 	return email_verified, err
+}
+
+const listFighters = `-- name: ListFighters :many
+SELECT
+    id,
+    first_name,
+    last_name,
+    nickname,
+    gender,
+    dob,
+    height,
+    weight,
+    reach,
+    stance,
+    country,
+    fighting_out_of,
+    profile_picture,
+    wins,
+    losses,
+    draws,
+    disqualifications,
+    no_contests,
+    created_at,
+    created_by,
+    updated_at,
+    updated_by
+FROM fighters
+WHERE id > $1
+ORDER BY id
+LIMIT $2
+`
+
+type ListFightersParams struct {
+	ID    id.UUID7
+	Limit int32
+}
+
+func (q *Queries) ListFighters(ctx context.Context, arg ListFightersParams) ([]Fighter, error) {
+	rows, err := q.db.Query(ctx, listFighters, arg.ID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Fighter
+	for rows.Next() {
+		var i Fighter
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Nickname,
+			&i.Gender,
+			&i.Dob,
+			&i.Height,
+			&i.Weight,
+			&i.Reach,
+			&i.Stance,
+			&i.Country,
+			&i.FightingOutOf,
+			&i.ProfilePicture,
+			&i.Wins,
+			&i.Losses,
+			&i.Draws,
+			&i.Disqualifications,
+			&i.NoContests,
+			&i.CreatedAt,
+			&i.CreatedBy,
+			&i.UpdatedAt,
+			&i.UpdatedBy,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listFollowees = `-- name: ListFollowees :many

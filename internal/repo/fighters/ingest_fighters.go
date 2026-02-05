@@ -19,7 +19,7 @@ func (r *Repo) IngestFighters(ctx context.Context, rows []fightersservice.Ingest
 	}
 	defer tx.Rollback(ctx)
 
-	qs := r.client.WithTx(tx)
+	qs := r.dbClient.WithTx(tx)
 
 	// Convert rows → JSON payload expected by SQL
 	jsonPayload, err := json.Marshal(rows)

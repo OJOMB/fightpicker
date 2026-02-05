@@ -19,13 +19,15 @@ type CacheClient interface {
 
 type Client interface {
 	GetFighterByID(ctx context.Context, id id.UUID7) (postgres.Fighter, error)
+	ListFighters(ctx context.Context, arg postgres.ListFightersParams) ([]postgres.Fighter, error)
+	CountFighters(ctx context.Context) (int64, error)
 	IngestFighters(ctx context.Context, arg postgres.IngestFightersParams) ([]postgres.IngestFightersRow, error)
 	WithTx(tx pgx.Tx) *postgres.Queries
 }
 
 type Repo struct {
 	pool           *pgxpool.Pool
-	client         Client
+	dbClient       Client
 	cachingEnabled bool
 	cache          CacheClient
 	id             id.UUID7Parser
@@ -54,10 +56,10 @@ func New(pool *pgxpool.Pool, client Client, cache CacheClient, now datetimes.Now
 
 	return &Repo{
 		pool:           pool,
-		client:         client,
+		dbClient:       client,
 		cache:          cache,
 		cachingEnabled: cacheingEnabled,
-		logger:         logger,
+		logger:         logger.With("component", "fighters_repo"),
 		now:            now,
 	}, nil
 }

@@ -17,6 +17,7 @@ const pathPrefix = "/api/v1/fighters"
 
 type Service interface {
 	FighterGetter
+	FighterLister
 	FightersIngestor
 }
 
@@ -53,4 +54,7 @@ func (h *Handler) RegisterRoutes(m *mux.Router) {
 
 	// POST /api/v1/fighters:ingest - ingest fighters
 	h.AddRoute(m, fmt.Sprintf("%s:ingest", h.pathPrefix), http.MethodPost, v1.EndpointNameV1FightersIngest, h.ingestFighters(h.service))
+
+	// GET /api/v1/fighters - list fighters with pagination
+	h.AddRoute(m, h.pathPrefix, http.MethodGet, v1.EndpointNameV1FightersList, h.listFighters(h.service))
 }

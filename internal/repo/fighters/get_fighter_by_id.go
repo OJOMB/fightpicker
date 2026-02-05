@@ -24,7 +24,7 @@ func (r *Repo) GetFighterByID(ctx context.Context, id id.UUID7) (service.Fighter
 		r.logger.DebugContext(ctx, "failed to get fighter from cache", "error", err)
 	}
 
-	fighter, err := r.client.GetFighterByID(ctx, id)
+	fighter, err := r.dbClient.GetFighterByID(ctx, id)
 	if err != nil {
 		return service.Fighter{}, dbErrorToServiceError(err)
 	}

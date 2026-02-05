@@ -9,6 +9,7 @@ import (
 
 type Repo interface {
 	FighterByIDGetter
+	FighterLister
 	FightersIngestor
 }
 

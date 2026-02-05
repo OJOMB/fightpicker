@@ -347,6 +347,39 @@ SELECT
 FROM fighters
 WHERE id = $1;
 
+-- name: ListFighters :many
+SELECT
+    id,
+    first_name,
+    last_name,
+    nickname,
+    gender,
+    dob,
+    height,
+    weight,
+    reach,
+    stance,
+    country,
+    fighting_out_of,
+    profile_picture,
+    wins,
+    losses,
+    draws,
+    disqualifications,
+    no_contests,
+    created_at,
+    created_by,
+    updated_at,
+    updated_by
+FROM fighters
+WHERE id > $1
+ORDER BY id
+LIMIT $2;
+
+-- name: CountFighters :one
+SELECT COUNT(*) AS fighter_count
+FROM fighters;
+
 -- name: CreateFighter :exec
 INSERT INTO fighters (
     id,
