@@ -20,6 +20,8 @@ var (
 	ErrUnreadableRequestBody = fmt.Errorf("unreadable request body")
 	// ErrInvalidJSONRequestBody is returned when the request body contains invalid JSON.
 	ErrInvalidJSONRequestBody = fmt.Errorf("invalid JSON in request body")
+	// ErrInvalidEmailFormat is returned when an email parameter is not in a valid format.
+	ErrInvalidEmailFormat = fmt.Errorf("invalid email format")
 	// ErrInternalServerError is returned when an internal server error occurs.
 	ErrInternalServerError = fmt.Errorf("internal server error")
 	// ErrMissingRequiredQueryParameter is returned when a required query parameter is missing.

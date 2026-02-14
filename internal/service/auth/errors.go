@@ -14,8 +14,8 @@ var (
 
 	// errNilPasswordVerifier is returned when the password verifier is nil.
 	errNilPasswordVerifier = fmt.Errorf("password verifier is nil")
-	// errNilTimeProvider is returned when the time provider is nil.
-	errNilTimeProvider = fmt.Errorf("time provider is nil")
+	// errNilDateTimeProvider is returned when the time provider is nil.
+	errNilDateTimeProvider = fmt.Errorf("time provider is nil")
 	// errNilIDGenerator is returned when the ID generator is nil.
 	errNilIDGenerator = fmt.Errorf("ID generator is nil")
 	// errNilJWTGenerator is returned when the JWT generator is nil.

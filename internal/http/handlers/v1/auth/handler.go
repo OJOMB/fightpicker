@@ -18,9 +18,9 @@ const pathPrefix = "/api/v1/auth"
 
 // Service defines the interface for authentication-related operations.
 type Service interface {
-	UserLoginner
-	UserAuthenticationRefresher
-	UserLogouter
+	Loginner
+	Refresher
+	Logouter
 }
 
 // Handler handles authentication-related HTTP requests.
@@ -44,7 +44,7 @@ func New(service Service, idTool id.UUID7Parser, ctxTool contextual.ContextProvi
 		return nil, v1.ErrContextToolIsNil
 	}
 
-	responder := apiresponder.NewJSONResponder(ctxTool, classifyError, logger.With("component", "handler_users_v1"))
+	responder := apiresponder.NewJSONResponder(ctxTool, classifyError, logger.With("component", "handler_auth_v1"))
 	return &Handler{
 		Handler:    v1.NewHandler(idTool, responder),
 		service:    service,

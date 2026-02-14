@@ -21,7 +21,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 
 	user, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
-		// TODO: distinguish between not found and other errors
+
 		return "", "", time.Time{}, ErrUserNotFound
 	}
 

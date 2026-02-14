@@ -1,4 +1,4 @@
-package e2e
+package httpe2e
 
 import (
 	"encoding/json"
@@ -265,7 +265,7 @@ func TestV1CreateUser(t *testing.T) {
 		"password": "SetupPass123!"
 	}`, takenUsername, takenEmail)
 
-	setupreq, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", testDomain, createUserURL), strings.NewReader(duplicateSetupRequestBody))
+	setupreq, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", testDomain, baseURLV1Users), strings.NewReader(duplicateSetupRequestBody))
 	require.NoError(t, err)
 
 	setupreq.Header.Set("Content-Type", "application/json")
@@ -277,7 +277,7 @@ func TestV1CreateUser(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", testDomain, createUserURL), strings.NewReader(tc.requestBody))
+			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", testDomain, baseURLV1Users), strings.NewReader(tc.requestBody))
 			require.NoError(t, err)
 
 			req.Header.Set("Content-Type", "application/json")

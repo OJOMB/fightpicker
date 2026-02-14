@@ -8,13 +8,13 @@ import (
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 )
 
-// UserLogouter defines the interface for logging out users.
-type UserLogouter interface {
+// Logouter defines the interface for logging out users.
+type Logouter interface {
 	Logout(ctx context.Context, refreshToken string) error
 }
 
 // logout handles the logout HTTP request.
-func (h *Handler) logout(svc UserLogouter) v1.HandlerFunc {
+func (h *Handler) logout(svc Logouter) v1.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 

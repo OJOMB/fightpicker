@@ -3,12 +3,13 @@ package auth
 import (
 	"errors"
 	"net/http"
-	"strings"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/OJOMB/fightpicker/internal/http/apierr"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
 	repo "github.com/OJOMB/fightpicker/internal/repo/users"
-	service "github.com/OJOMB/fightpicker/internal/service/auth"
+	authservice "github.com/OJOMB/fightpicker/internal/service/auth"
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
@@ -27,30 +28,30 @@ func classifyError(err error) *apierr.APIError {
 	)
 
 	switch {
-	case errors.Is(err, service.ErrMissingParameter), errors.Is(err, ErrMissingRefreshToken):
+	case errors.Is(err, authservice.ErrMissingParameter), errors.Is(err, ErrMissingRefreshToken):
 		status = http.StatusBadRequest
 		code = v1.ErrCodeMissingRequiredParameter
 		logLevel = logs.LevelDebug
 		logMsg = "missing required parameter"
 		publicErr = err
-	case strings.Contains(err.Error(), "email: failed to pass regex validation"):
+	case errors.Is(err, openapi_types.ErrValidationEmail):
 		status = http.StatusBadRequest
 		code = v1.ErrCodeInvalidParameter
 		logLevel = logs.LevelDebug
-		logMsg = "invalid parameter(s)"
-		publicErr = err
+		logMsg = "invalid parameter"
+		publicErr = v1.ErrInvalidEmailFormat
 	case errors.Is(err, repo.ErrUserNotFound):
 		status = http.StatusNotFound
 		code = v1.ErrCodeResourceNotFound
 		logLevel = logs.LevelDebug
 		logMsg = "resource not found"
 		publicErr = repo.ErrUserNotFound
-	case errors.Is(err, service.ErrInvalidCredentials):
+	case errors.Is(err, authservice.ErrInvalidCredentials):
 		status = http.StatusUnauthorized
 		code = v1.ErrCodeInvalidCredentials
 		logLevel = logs.LevelDebug
 		logMsg = "invalid credentials provided"
-		publicErr = service.ErrInvalidCredentials
+		publicErr = authservice.ErrInvalidCredentials
 	default:
 		return apierr.NewInternalError(err)
 	}
