@@ -1,6 +1,6 @@
 module github.com/OJOMB/fightpicker
 
-go 1.25.5
+go 1.26.1
 
 require (
 	github.com/HugoSmits86/nativewebp v1.2.1
@@ -20,7 +20,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/extra/redisotel/v9 v9.17.2
 	github.com/redis/go-redis/v9 v9.17.2
-	github.com/samber/slog-multi v1.6.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/twmb/franz-go v1.20.5
@@ -179,8 +178,6 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
-	github.com/samber/lo v1.52.0 // indirect
-	github.com/samber/slog-common v0.19.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/segmentio/encoding v0.5.3 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect

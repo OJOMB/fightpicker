@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 
-	slogmulti "github.com/samber/slog-multi"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
 
@@ -72,14 +71,11 @@ func New(level Level, ctxTool ContextRequestProvider, otelEnabled bool, appName,
 		loggerHandlers = append(loggerHandlers, NewContextHandler(ctxTool, otelslog.NewHandler(appName)))
 	}
 
-	// TODO: slogmulti can be removed once we have go 1.26 is released as it includes built-in support for multiple handlers https://tip.golang.org/doc/go1.26
-	baseLogger := newMultiSlogger(loggerHandlers...)
-
-	return baseLogger.With("env", env), nil
+	return newMultiSlogger(loggerHandlers...).With("env", env), nil
 }
 
 func newMultiSlogger(handlers ...slog.Handler) Logger {
-	return &Slogger{slog.New(slogmulti.Fanout(handlers...))}
+	return &Slogger{slog.New(slog.NewMultiHandler(handlers...))}
 }
 
 func (sl *Slogger) With(args ...any) Logger {
