@@ -32,6 +32,7 @@ func fighterDBOtoFighterIDO(dbo postgres.Fighter) fightersservice.Fighter {
 		Nickname:          dbo.Nickname.String,
 		Gender:            service.GenderFromString(string(dbo.Gender)),
 		DOB:               dbo.Dob.Time,
+		Bio:               dbo.Bio.String,
 		Weight:            weight,
 		Height:            height,
 		Reach:             reach,

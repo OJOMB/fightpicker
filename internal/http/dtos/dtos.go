@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 const (

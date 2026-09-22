@@ -14,6 +14,7 @@ type Fighter struct {
 	Nickname          string
 	Gender            service.Gender
 	DOB               time.Time
+	Bio               string
 	Height            float64
 	Weight            float64
 	Reach             float64
@@ -39,6 +40,7 @@ func (f *Fighter) normalize() {
 	f.Stance = service.NormalizeString(f.Stance)
 	f.Country = service.NormalizeString(f.Country)
 	f.FightingOutOf = service.NormalizeString(f.FightingOutOf)
+	f.Bio = service.NormalizeString(f.Bio)
 }
 
 type IngestionSummary struct {

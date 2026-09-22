@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   database:
+    # --- PostgreSQL Database --- #
     image: postgres:18.1
     container_name: database
     ports:
@@ -23,6 +24,7 @@ services:
     restart: unless-stopped
 
   redis:
+    # --- Redis Cache --- #
     image: redis:7.2
     container_name: redis
     command:
@@ -38,6 +40,7 @@ services:
     restart: unless-stopped
 
   kafka:
+    # --- Kafka Broker --- #
     image: apache/kafka:4.1.1
     container_name: kafka
     hostname: kafka
@@ -68,6 +71,7 @@ services:
       - fightpicker
 
   kafka-init:
+    # --- Kafka Initialization Container --- #
       image: apache/kafka:4.1.1
       container_name: kafka-init
       depends_on:
@@ -97,6 +101,7 @@ services:
         - fightpicker
 
   minio:
+    # --- MinIO Object Storage (local S3) --- #
     image: quay.io/minio/minio:latest
     container_name: minio
     command: server /data --console-address ":9001"
@@ -120,6 +125,7 @@ services:
     restart: unless-stopped
 
   minio-init:
+    # --- MinIO Initialization Container --- #
       image: quay.io/minio/mc:latest
       depends_on:
         - kafka
@@ -200,6 +206,7 @@ services:
   #     restart: unless-stopped
 
   alloy:
+  ## Alloy - Observability Aggregation and Management
     image: grafana/alloy:latest
     container_name: alloy
     volumes:
@@ -223,6 +230,7 @@ services:
       - fightpicker
 
   loki:
+  ## Loki - Log Aggregation
     image: grafana/loki:latest
     container_name: loki
     command: ["-config.file=/etc/loki/loki.yaml"]
@@ -239,6 +247,7 @@ services:
       - fightpicker
 
   tempo:
+  ## Tempo - Distributed Tracing Backend
     image: grafana/tempo:latest
     container_name: tempo
     command: ["-config.file=/etc/tempo/tempo.yaml"]
@@ -251,6 +260,7 @@ services:
       - fightpicker
 
   prometheus:
+  ## Prometheus - Metrics Collection and Alerting
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
@@ -265,6 +275,7 @@ services:
       - fightpicker
 
   pyroscope:
+  ## Pyroscope - Continuous Profiling
     image: grafana/pyroscope:main-f27dc74
     container_name: pyroscope
     volumes:
@@ -278,6 +289,7 @@ services:
       - fightpicker
 
   grafana:
+  ## Grafana - Visualization and Dashboarding
     image: grafana/grafana:latest
     container_name: grafana
     environment:

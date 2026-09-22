@@ -45,10 +45,10 @@ func (a *App) newRepos(ctx context.Context, cfg *config.Config) error {
 	)
 	if err != nil {
 		a.Logger.ErrorContext(ctx, "failed to create users repo", "error", err)
-
+		return err
 	}
 
-	fightersrepo, err := fightersrepo.New(a.DB.pool, a.DB.queries, a.Clients.RedisClient, a.Utils.DateTimeTool, a.Logger)
+	fightersRepo, err := fightersrepo.New(a.DB.pool, a.DB.queries, a.Clients.RedisClient, a.Utils.DateTimeTool, a.Logger)
 	if err != nil {
 		a.Logger.ErrorContext(ctx, "failed to create fighters repo", "error", err)
 		return err
@@ -57,7 +57,7 @@ func (a *App) newRepos(ctx context.Context, cfg *config.Config) error {
 	a.Repos = repos{
 		AuthRepo:     authRepo,
 		UsersRepo:    usersRepo,
-		FightersRepo: fightersrepo,
+		FightersRepo: fightersRepo,
 	}
 
 	return nil

@@ -27,8 +27,8 @@ type User struct {
 
 func (u *User) Normalize() {
 	u.Email = service.NormalizeEmail(u.Email)
-	u.FirstName = service.NormalizeName(u.FirstName)
-	u.LastName = service.NormalizeName(u.LastName)
+	u.FirstName = service.NormalizeString(u.FirstName)
+	u.LastName = service.NormalizeString(u.LastName)
 	u.Username = service.NormalizeUsername(u.Username)
 	u.Location = service.NormalizeString(u.Location)
 	u.Bio = service.NormalizeString(u.Bio)

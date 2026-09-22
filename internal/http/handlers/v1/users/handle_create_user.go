@@ -22,7 +22,7 @@ func (h *Handler) createUser(svc UserCreator) v1.HandlerFunc {
 		defer r.Body.Close()
 		var userCreateReq dtos.UserCreateReq
 		if err := json.NewDecoder(r.Body).Decode(&userCreateReq); err != nil {
-			return v1.ErrInvalidJSONRequestBody
+			return err
 		}
 
 		createdUser, err := svc.CreateUser(ctx, userCreateRequestDTOtoIDO(userCreateReq))

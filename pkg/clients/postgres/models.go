@@ -393,6 +393,7 @@ type Fighter struct {
 	LastName          string
 	Nickname          pgtype.Text
 	Gender            Gender
+	Bio               pgtype.Text
 	Dob               pgtype.Date
 	Height            pgtype.Numeric
 	Weight            pgtype.Numeric

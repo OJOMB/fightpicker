@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS fighters (
     last_name VARCHAR(255) NOT NULL,
     nickname VARCHAR(100),
     gender gender NOT NULL,
+    bio TEXT,
     dob DATE CHECK (dob <= CURRENT_DATE) NOT NULL,
     height NUMERIC(5,2) NOT NULL,
     weight NUMERIC(5,2) NOT NULL,

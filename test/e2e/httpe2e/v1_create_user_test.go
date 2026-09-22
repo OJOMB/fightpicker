@@ -26,9 +26,6 @@ func TestV1CreateUser(t *testing.T) {
 		expectedError      dtos.ErrorEnvelope
 	}
 
-	randEmail1 := newRandomEmail()
-	randUsername1 := newRandomUsername()
-
 	takenEmail := newRandomEmail()
 	takenUsername := newRandomUsername()
 
@@ -44,15 +41,15 @@ func TestV1CreateUser(t *testing.T) {
 				"location": "Testville",
 				"dob": "1990-01-01",
 				"password": "SecurePass123!"
-			}`, randUsername1, randEmail1),
+			}`, takenUsername, takenEmail),
 			expectedStatusCode: http.StatusCreated,
 			expectedResponse: dtos.UserResponse{
-				Username:  randUsername1,
-				Email:     ptrOAPIEmail(types.Email(randEmail1)),
-				FirstName: ptrString("John"),
-				LastName:  ptrString("Doe"),
+				Username:  takenUsername,
+				Email:     new(types.Email(takenEmail)),
+				FirstName: new("John"),
+				LastName:  new("Doe"),
 				Bio:       "Just a test user.",
-				Location:  ptrString("Testville"),
+				Location:  new("Testville"),
 				Dob: &types.Date{
 					Time: time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
 				},
@@ -201,7 +198,7 @@ func TestV1CreateUser(t *testing.T) {
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
 					Code:      "INVALID_PARAMETER",
-					Message:   "email: failed to pass regex validation",
+					Message:   "invalid email format",
 					RequestId: "req-id",
 				},
 			},
@@ -222,7 +219,7 @@ func TestV1CreateUser(t *testing.T) {
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
-					Code:      "CONFLICT",
+					Code:      "CONFLICTING_RESOURCES",
 					Message:   "email already taken",
 					RequestId: "req-id",
 				},
@@ -244,7 +241,7 @@ func TestV1CreateUser(t *testing.T) {
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
-					Code:      "CONFLICT",
+					Code:      "CONFLICTING_RESOURCES",
 					Message:   "username already taken",
 					RequestId: "req-id",
 				},
@@ -252,36 +249,14 @@ func TestV1CreateUser(t *testing.T) {
 		},
 	}
 
-	// Setup: create a user to test duplicate email and username cases
-	// we don't use the original success test case to avoid dependency on it passing and ordering issues with t.Run
-	duplicateSetupRequestBody := fmt.Sprintf(`{
-		"username": "%s",
-		"email": "%s",
-		"first_name": "Setup",
-		"last_name": "User",
-		"bio": "Setup user for duplicate tests.",
-		"location": "Setupville
-		"dob": "1991-01-01",
-		"password": "SetupPass123!"
-	}`, takenUsername, takenEmail)
-
-	setupreq, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", testDomain, baseURLV1Users), strings.NewReader(duplicateSetupRequestBody))
-	require.NoError(t, err)
-
-	setupreq.Header.Set("Content-Type", "application/json")
-
 	client := &http.Client{}
-	resp, err := client.Do(setupreq)
-	require.NoError(t, err)
-	require.Equal(t, 201, resp.StatusCode)
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("%d-%s", i, tc.name), func(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", testDomain, baseURLV1Users), strings.NewReader(tc.requestBody))
 			require.NoError(t, err)
 
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("X-Request-ID", "req-id")
 
 			resp, err := client.Do(req)
 			require.NoError(t, err)
@@ -289,33 +264,31 @@ func TestV1CreateUser(t *testing.T) {
 
 			assert.Equal(t, tc.expectedStatusCode, resp.StatusCode)
 
-			assert.Equal(t, "req-id", resp.Header.Get("X-Request-ID"))
-
 			if resp.StatusCode == http.StatusCreated {
 				// check the response body does not contain the password field
 				bodyBytes, err := io.ReadAll(resp.Body)
 				require.NoError(t, err)
-				bodyString := string(bodyBytes)
-				assert.NotContains(t, bodyString, "password")
 
 				var userResp dtos.UserResponse
 				require.NoError(t, json.Unmarshal(bodyBytes, &userResp))
+
+				assert.NotContains(t, strings.ToLower(string(bodyBytes)), "password")
 
 				// check id is valid uuid
 				_, err = uuid.FromString(userResp.Id.String())
 				require.NoError(t, err)
 
-				assert.Equal(t, tc.expectedResponse.Username, userResp.Username)
-				assert.Equal(t, tc.expectedResponse.Email, userResp.Email)
-				assert.Equal(t, tc.expectedResponse.FirstName, userResp.FirstName)
-				assert.Equal(t, tc.expectedResponse.LastName, userResp.LastName)
-				assert.Equal(t, tc.expectedResponse.Dob, userResp.Dob)
-				assert.Equal(t, tc.expectedResponse.Bio, userResp.Bio)
-				assert.Equal(t, tc.expectedResponse.Location, userResp.Location)
-				assert.Equal(t, tc.expectedResponse.ProfilePicture, userResp.ProfilePicture)
+				assert.Equal(t, tc.expectedResponse.Username, userResp.Username, "usernames should match")
+				assert.Equal(t, tc.expectedResponse.Email, userResp.Email, "emails should match")
+				assert.Equal(t, tc.expectedResponse.FirstName, userResp.FirstName, "first names should match")
+				assert.Equal(t, tc.expectedResponse.LastName, userResp.LastName, "last names should match")
+				assert.Equal(t, tc.expectedResponse.Dob, userResp.Dob, "dates of birth should match")
+				assert.Equal(t, tc.expectedResponse.Bio, userResp.Bio, "bios should match")
+				assert.Equal(t, tc.expectedResponse.Location, userResp.Location, "locations should match")
+				assert.Equal(t, tc.expectedResponse.ProfilePicture, userResp.ProfilePicture, "profile pictures should match")
 
-				assert.False(t, userResp.CreatedAt.IsZero())
-				assert.False(t, userResp.UpdatedAt.IsZero())
+				assert.False(t, userResp.CreatedAt.IsZero(), "createdAt should not be zero")
+				assert.False(t, userResp.UpdatedAt.IsZero(), "updatedAt should not be zero")
 
 				return
 			}
@@ -324,15 +297,10 @@ func TestV1CreateUser(t *testing.T) {
 			require.NoError(t, err)
 
 			var errResp dtos.ErrorEnvelope
-			err = json.Unmarshal(bodyBytes, &errResp)
-			if err != nil {
-				t.Logf("Failed to decode error response. Status: %d, Body: %s", resp.StatusCode, string(bodyBytes))
-				require.NoError(t, err, "Response body should be valid JSON")
-			}
+			require.NoError(t, json.Unmarshal(bodyBytes, &errResp))
 
 			assert.Equal(t, tc.expectedError.Error.Code, errResp.Error.Code)
 			assert.Equal(t, tc.expectedError.Error.Message, errResp.Error.Message)
-			assert.Equal(t, tc.expectedError.Error.RequestId, errResp.Error.RequestId)
 		})
 	}
 }

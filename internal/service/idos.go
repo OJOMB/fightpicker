@@ -110,8 +110,7 @@ func NormalizeName(s string) string {
 	return t
 }
 
-// NormalizeUsername converts arbitrary user input into a
-// deterministic, ASCII-safe username string.
+// NormalizeUsername converts arbitrary user input into a deterministic, ASCII-safe username string.
 func NormalizeUsername(s string) string {
 	if s == "" {
 		return ""
@@ -123,6 +122,7 @@ func NormalizeUsername(s string) string {
 		if unicode.Is(unicode.Mn, r) {
 			return -1
 		}
+
 		return r
 	}, t)
 
