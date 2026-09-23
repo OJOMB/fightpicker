@@ -26,8 +26,15 @@ func classifyError(err error) *apierr.APIError {
 		logMsg    string
 		publicErr error
 	)
+	strErr := err.Error()
 
 	switch {
+	case strErr == "email: failed to pass regex validation":
+		status = http.StatusBadRequest
+		code = v1.ErrCodeInvalidParameter
+		logLevel = logs.LevelDebug
+		logMsg = strErr
+		publicErr = errors.New("invalid email format")
 	case errors.Is(err, authservice.ErrMissingParameter), errors.Is(err, ErrMissingRefreshToken):
 		status = http.StatusBadRequest
 		code = v1.ErrCodeMissingRequiredParameter

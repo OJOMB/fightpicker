@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -9,9 +10,13 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/OJOMB/fightpicker/internal/http/apierr"
-	"github.com/OJOMB/fightpicker/internal/http/apiresponder"
 	"github.com/OJOMB/fightpicker/pkg/id"
 )
+
+type Responder interface {
+	WriteError(ctx context.Context, w http.ResponseWriter, err error)
+	Write(ctx context.Context, w http.ResponseWriter, status int, v any)
+}
 
 // HandlerFunc defines a function signature that returns a standard error.
 // the error is intended to be classified and handled by the caller.
@@ -22,11 +27,11 @@ type APIErrClassifier func(error) apierr.APIError
 
 // Handler is the base HTTP handler for v1 endpoints.
 type Handler struct {
-	apiresponder.Responder
+	Responder
 	id id.UUID7Parser
 }
 
-func NewHandler(idTool id.UUID7Parser, responder apiresponder.Responder) *Handler {
+func NewHandler(idTool id.UUID7Parser, responder Responder) *Handler {
 	return &Handler{
 		Responder: responder,
 		id:        idTool,

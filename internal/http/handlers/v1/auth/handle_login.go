@@ -3,11 +3,8 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"time"
-
-	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
@@ -25,10 +22,6 @@ func (h *Handler) login(svc Loginner) v1.HandlerFunc {
 
 		var credentials dtos.LoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-			if !errors.Is(err, openapi_types.ErrValidationEmail) {
-				err = v1.ErrInvalidJSONRequestBody
-			}
-
 			return err
 		}
 

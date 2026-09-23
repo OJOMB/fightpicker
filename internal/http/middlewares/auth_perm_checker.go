@@ -16,12 +16,17 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
+type Responder interface {
+	WriteError(ctx context.Context, w http.ResponseWriter, err error)
+	Write(ctx context.Context, w http.ResponseWriter, status int, v any)
+}
+
 type JWTValidator interface {
 	Parse(tokenStr string, secretKey []byte) (*auth.AuthClaims, *jwt.RegisteredClaims, error)
 }
 
 type AuthPermissionsChecker struct {
-	apiresponder.Responder
+	Responder
 	jwtValidator JWTValidator
 	ctxTool      contextual.ContextTool
 	ignorePaths  map[string]struct{}
