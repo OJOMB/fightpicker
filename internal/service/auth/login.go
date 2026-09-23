@@ -21,13 +21,18 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 
 	user, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
-
-		return "", "", time.Time{}, ErrUserNotFound
+		s.logger.DebugContext(ctx, "user not found with email: "+email)
+		// for security purposes, we do not explicitly reveal whether the email is registered or not
+		return "", "", time.Time{}, ErrInvalidCredentials
 	}
 
 	if ok, err := s.passwordVerifier.Verify(user.PasswordHash, password); err != nil {
 		return "", "", time.Time{}, err
 	} else if !ok {
+		s.logger.DebugContext(ctx, "user password incorrect: "+email)
+		// we don't let the user know it's specifically the password that is incorrect for security reasons
+		// user enumeration protection: we return a generic invalid credentials error instead of specifically revealing that the password is incorrect
+		// thus not revealing whether the email is registered or not
 		return "", "", time.Time{}, ErrInvalidCredentials
 	}
 

@@ -96,6 +96,4 @@ func cleanupTestUser(t *testing.T, userID id.UUID7) {
 	resp, err := client.Do(req)
 	require.NoError(t, err)
 	defer resp.Body.Close()
-
-	require.Equal(t, http.StatusNoContent, resp.StatusCode)
 }

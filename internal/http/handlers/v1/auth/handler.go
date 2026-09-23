@@ -31,12 +31,12 @@ type Handler struct {
 }
 
 // New creates a new Handler for authentication-related endpoints.
-func New(service Service, idTool id.UUID7Parser, ctxTool contextual.ContextProvider, logger logs.Logger) (*Handler, error) {
+func New(service Service, idParser id.UUID7Parser, ctxTool contextual.ContextProvider, logger logs.Logger) (*Handler, error) {
 	if logger == nil {
 		return nil, v1.ErrLoggerIsNil
 	}
 
-	if idTool == nil {
+	if idParser == nil {
 		return nil, v1.ErrIDToolIsNil
 	}
 
@@ -45,8 +45,9 @@ func New(service Service, idTool id.UUID7Parser, ctxTool contextual.ContextProvi
 	}
 
 	responder := apiresponder.NewJSONResponder(ctxTool, classifyError, logger.With("component", "handler_auth_v1"))
+
 	return &Handler{
-		Handler:    v1.NewHandler(idTool, responder),
+		Handler:    v1.NewHandler(idParser, responder),
 		service:    service,
 		pathPrefix: pathPrefix,
 	}, nil

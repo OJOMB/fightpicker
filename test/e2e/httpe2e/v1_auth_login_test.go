@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -25,26 +24,23 @@ func TestV1Login(t *testing.T) {
 	defer cleanupTestUser(t, user.Id)
 
 	type testCase struct {
-		name               string
-		requestBody        dtos.LoginRequest
+		name string
+		// we dont use the DTO here because it would disallow us from testing some invalid request scenarios
+		// using a raw JSON string allows us to easily craft invalid requests
+		requestBody        string
 		expectedStatusCode int
 		expectedError      dtos.ErrorEnvelope
 	}
 
 	testCases := []testCase{
 		{
-			name: "successful login",
-			requestBody: dtos.LoginRequest{
-				Email:    openapi_types.Email(email),
-				Password: password,
-			},
+			name:               "successful login",
+			requestBody:        fmt.Sprintf(`{"email": "%s", "password": "%s"}`, email, password),
 			expectedStatusCode: 200,
 		},
 		{
-			name: "missing password",
-			requestBody: dtos.LoginRequest{
-				Email: openapi_types.Email(email),
-			},
+			name:               "missing password",
+			requestBody:        fmt.Sprintf(`{"email": "%s"}`, email),
 			expectedStatusCode: 400,
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
@@ -54,44 +50,38 @@ func TestV1Login(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid email format",
-			requestBody: dtos.LoginRequest{
-				Email:    openapi_types.Email("invalid-email"),
-				Password: "userPassword",
-			},
+			name:               "invalid email format",
+			requestBody:        `{"email": "invalid-email", "password": "userPassword"}`,
 			expectedStatusCode: 400,
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
-					Code:    "INVALID_PARAMETER",
-					Message: "invalid email format",
+					Code:      "INVALID_PARAMETER",
+					RequestId: "reqID",
+					Message:   "invalid email format",
 				},
 			},
 		},
 		{
-			name: "incorrect password",
-			requestBody: dtos.LoginRequest{
-				Email:    openapi_types.Email(email),
-				Password: "wrongPassword",
-			},
+			name:               "incorrect password",
+			requestBody:        fmt.Sprintf(`{"email": "%s", "password": "wrongPassword"}`, email),
 			expectedStatusCode: 401,
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
 					Code:    "INVALID_CREDENTIALS",
-					Message: "invalid email or password",
+					Message: "invalid credentials provided",
 				},
 			},
 		},
 		{
-			name: "non-existent email",
-			requestBody: dtos.LoginRequest{
-				Email:    openapi_types.Email("nonexistent@example.com"),
-				Password: "somePassword",
-			},
+			// this test case checks the scenario where the user tries to log in with an email that does not exist in the system
+			// we don't reveal that the email does not exist for security reasons
+			name:               "non-existent email",
+			requestBody:        `{"email": "nonexistent@example.com", "password": "somePassword"}`,
 			expectedStatusCode: 401,
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
 					Code:    "INVALID_CREDENTIALS",
-					Message: "invalid email or password",
+					Message: "invalid credentials provided",
 				},
 			},
 		},
@@ -100,13 +90,14 @@ func TestV1Login(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("%d-%s", i, tc.name), func(t *testing.T) {
 			var requestBody bytes.Buffer
-			err := json.NewEncoder(&requestBody).Encode(tc.requestBody)
+			_, err := requestBody.WriteString(tc.requestBody)
 			require.NoError(t, err)
 
 			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s/login", testDomain, baseURLV1Auth), &requestBody)
 			require.NoError(t, err)
 
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("X-Request-Id", "reqID")
 
 			client := &http.Client{}
 			resp, err := client.Do(req)
