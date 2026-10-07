@@ -29,6 +29,13 @@ func TestV1CreateUser(t *testing.T) {
 	takenEmail := newRandomEmail()
 	takenUsername := newRandomUsername()
 
+	pWord := "SecurePass123!"
+
+	var usersToBeCleaned []testUser
+	t.Cleanup(func() {
+		cleanupTestUsers(t, usersToBeCleaned...)
+	})
+
 	testCases := []testCase{
 		{
 			name: "successful user creation",
@@ -40,8 +47,8 @@ func TestV1CreateUser(t *testing.T) {
 				"bio": "Just a test user.",
 				"location": "Testville",
 				"dob": "1990-01-01",
-				"password": "SecurePass123!"
-			}`, takenUsername, takenEmail),
+				"password": "%s"
+			}`, takenUsername, takenEmail, pWord),
 			expectedStatusCode: http.StatusCreated,
 			expectedResponse: dtos.UserResponse{
 				Username:  takenUsername,
@@ -57,15 +64,15 @@ func TestV1CreateUser(t *testing.T) {
 		},
 		{
 			name: "missing required email field",
-			requestBody: `{
+			requestBody: fmt.Sprintf(`{
 				"username": "testuser2",
 				"first_name": "Jane",
 				"last_name": "Doe",
 				"bio": "Another test user.",
 				"location": "Exampletown",
 				"dob": "1992-02-02",
-				"password": "AnotherSecurePass123!"
-			}`,
+				"password": "%s"
+			}`, pWord),
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -78,15 +85,16 @@ func TestV1CreateUser(t *testing.T) {
 		},
 		{
 			name: "missing required first_name field",
-			requestBody: `{
+			requestBody: fmt.Sprintf(`{
 				"username": "testuser2",
 				"email": "testuser2@example.com",
 				"last_name": "Doe",
 				"bio": "Another test user.",
 				"location": "Exampletown",
 				"dob": "1992-02-02",
-				"password": "AnotherSecurePass123!"
+				"password": "%s"
 			}`,
+				pWord),
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -99,15 +107,15 @@ func TestV1CreateUser(t *testing.T) {
 		},
 		{
 			name: "missing required last_name field",
-			requestBody: `{
+			requestBody: fmt.Sprintf(`{
 				"username": "testuser2",
 				"email": "testuser2@example.com",
 				"first_name": "Jane",
 				"bio": "Another test user.",
 				"location": "Exampletown",
 				"dob": "1992-02-02",
-				"password": "AnotherSecurePass123!"
-			}`,
+				"password": "%s"
+			}`, pWord),
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -120,15 +128,15 @@ func TestV1CreateUser(t *testing.T) {
 		},
 		{
 			name: "missing required username field",
-			requestBody: `{
+			requestBody: fmt.Sprintf(`{
 				"email": "testuser2@example.com",
 				"first_name": "Jane",
 				"last_name": "Doe",
 				"bio": "Another test user.",
 				"location": "Exampletown",
 				"dob": "1992-02-02",
-				"password": "AnotherSecurePass123!"
-			}`,
+				"password": "%s"
+			}`, pWord),
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -141,15 +149,15 @@ func TestV1CreateUser(t *testing.T) {
 		},
 		{
 			name: "missing required dob field",
-			requestBody: `{
+			requestBody: fmt.Sprintf(`{
 				"username": "testuser2",
 				"email": "testuser2@example.com",
 				"first_name": "Jane",
 				"last_name": "Doe",
 				"bio": "Another test user.",
 				"location": "Exampletown",
-				"password": "AnotherSecurePass123!"
-			}`,
+				"password": "%s"
+			}`, pWord),
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -183,7 +191,7 @@ func TestV1CreateUser(t *testing.T) {
 		},
 		{
 			name: "invalid email format",
-			requestBody: `{
+			requestBody: fmt.Sprintf(`{
 				"username": "testuser3",
 				"email": "invalid-email-format",
 				"first_name": "Invalid",
@@ -191,8 +199,8 @@ func TestV1CreateUser(t *testing.T) {
 				"bio": "Testing invalid email.",
 				"location": "Nowhere",
 				"dob": "1995-03-03",
-				"password": "InvalidEmailPass123!"
-			}`,
+				"password": "%s"
+			}`, pWord),
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -213,8 +221,8 @@ func TestV1CreateUser(t *testing.T) {
 				"bio": "Testing duplicate email.",
 				"location": "Somewhere",
 				"dob": "1993-04-04",
-				"password": "DuplicateEmailPass123!"
-			}`, newRandomUsername(), takenEmail),
+				"password": "%s"
+			}`, newRandomUsername(), takenEmail, pWord),
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -235,8 +243,8 @@ func TestV1CreateUser(t *testing.T) {
 				"bio": "Testing duplicate email.",
 				"location": "Somewhere",
 				"dob": "1993-04-04",
-				"password": "DuplicateEmailPass123!"
-			}`, takenUsername, newRandomEmail()),
+				"password": "%s"
+			}`, takenUsername, newRandomEmail(), pWord),
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -279,6 +287,7 @@ func TestV1CreateUser(t *testing.T) {
 				require.NoError(t, err)
 
 				assert.Equal(t, tc.expectedResponse.Username, userResp.Username, "usernames should match")
+				require.NotNil(t, userResp.Email, "email should not be nil")
 				assert.Equal(t, tc.expectedResponse.Email, userResp.Email, "emails should match")
 				assert.Equal(t, tc.expectedResponse.FirstName, userResp.FirstName, "first names should match")
 				assert.Equal(t, tc.expectedResponse.LastName, userResp.LastName, "last names should match")
@@ -289,6 +298,12 @@ func TestV1CreateUser(t *testing.T) {
 
 				assert.False(t, userResp.CreatedAt.IsZero(), "createdAt should not be zero")
 				assert.False(t, userResp.UpdatedAt.IsZero(), "updatedAt should not be zero")
+
+				usersToBeCleaned = append(usersToBeCleaned, testUser{
+					Id:       userResp.Id.String(),
+					email:    string(*tc.expectedResponse.Email),
+					password: pWord,
+				})
 
 				return
 			}

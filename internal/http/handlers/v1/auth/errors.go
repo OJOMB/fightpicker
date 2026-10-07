@@ -26,6 +26,7 @@ func classifyError(err error) *apierr.APIError {
 		logMsg    string
 		publicErr error
 	)
+
 	strErr := err.Error()
 
 	switch {

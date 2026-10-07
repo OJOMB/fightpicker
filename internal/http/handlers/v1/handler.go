@@ -9,10 +9,10 @@ import (
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	"github.com/OJOMB/fightpicker/internal/http/apierr"
 	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
+// Responder defines an interface used by handlers for writing either HTTP success or error responses.
 type Responder interface {
 	WriteError(ctx context.Context, w http.ResponseWriter, err error)
 	Write(ctx context.Context, w http.ResponseWriter, status int, v any)
@@ -20,10 +20,8 @@ type Responder interface {
 
 // HandlerFunc defines a function signature that returns a standard error.
 // the error is intended to be classified and handled by the caller.
+// it only differs from the standard http.HandlerFunc by returning an error.
 type HandlerFunc func(w http.ResponseWriter, r *http.Request) error
-
-// APIErrClassifier is a function that classifies an error into an apierr.APIError.
-type APIErrClassifier func(error) apierr.APIError
 
 // Handler is the base HTTP handler for v1 endpoints.
 type Handler struct {
@@ -42,10 +40,13 @@ func (h *Handler) AddRoute(m *mux.Router, OpPath, OpMethod, OpName string, hf Ha
 	m.Handle(
 		OpPath,
 		otelhttp.NewHandler(h.ToHandler(hf), OpName),
-	).Name(OpName).
+	).
+		Name(OpName).
 		Methods(OpMethod)
 }
 
+// ToHandler converts one of our custom HandlerFunc functions into a standard http.HandlerFunc.
+// If the HandlerFunc returns an error, it will be passed to the Responder's WriteError method.
 func (h *Handler) ToHandler(action HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := action(w, r); err != nil {

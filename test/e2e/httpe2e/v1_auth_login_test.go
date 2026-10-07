@@ -21,7 +21,14 @@ func TestV1Login(t *testing.T) {
 	email := newRandomEmail()
 	password := newRandomString(12)
 	user := createTestUser(t, email, password)
-	defer cleanupTestUser(t, user.Id)
+
+	t.Cleanup(func() {
+		cleanupTestUsers(t, testUser{
+			Id:       user.Id.String(),
+			email:    email,
+			password: password,
+		})
+	})
 
 	type testCase struct {
 		name string
@@ -105,6 +112,7 @@ func TestV1Login(t *testing.T) {
 			defer resp.Body.Close()
 
 			require.Equal(t, tc.expectedStatusCode, resp.StatusCode)
+
 			if tc.expectedStatusCode == http.StatusOK {
 				var authResp dtos.AuthResponse
 				err = json.NewDecoder(resp.Body).Decode(&authResp)
@@ -124,7 +132,9 @@ func TestV1Login(t *testing.T) {
 					}
 				}
 
-				assert.NotNil(t, refreshTokenCookie, "refresh_token cookie not found in response")
+				// require here ensures that the test stops immediately if the refresh token cookie is not found
+				// so no risk of dereferencing a nil pointer when validating the refresh token cookie
+				require.NotNil(t, refreshTokenCookie, "refresh_token cookie not found in response")
 				assert.NotEmpty(t, refreshTokenCookie.Value, "refresh_token cookie value is empty")
 
 				validateRefreshTokenCookie(t, refreshTokenCookie, user.Id.String())
