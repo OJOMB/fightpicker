@@ -16,43 +16,44 @@ import (
 )
 
 const (
-	testDomain = "http://localhost:8080"
+	TestDomain = "http://localhost:8080"
 
-	adminEmail    = "admin@fightpicker.com"
-	adminPassword = "chanko"
+	AdminEmail    = "admin@fightpicker.com"
+	AdminPassword = "chanko"
 
-	baseURLV1Users = "/api/v1/users"
-	baseURLV1Auth  = "/api/v1/auth"
+	BaseURLV1Users = "/api/v1/users"
+	BaseURLV1Auth  = "/api/v1/auth"
 )
 
-func newRandomString(n int) string {
+func NewRandomString(n int) string {
 	const letters = "abcdefghijklmnopqrstuvwxyz0123456789"
 	b := make([]byte, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
+
 	return string(b)
 }
 
-func newRandomEmail() string {
-	return newRandomString(10) + "@example.com"
+func NewRandomEmail() string {
+	return NewRandomString(10) + "@example.com"
 }
 
-func newRandomUsername() string {
-	return newRandomString(8)
+func NewRandomUsername() string {
+	return NewRandomString(8)
 }
 
-func createTestUser(t *testing.T, email, password string) dtos.UserResponse {
-	bio := newRandomString(20)
-	location := newRandomString(15)
+func CreateTestUser(t *testing.T, email, password string) dtos.UserResponse {
+	bio := NewRandomString(20)
+	location := NewRandomString(15)
 
 	userRequest := dtos.UserCreateReq{
 		Email:     openapi_types.Email(email),
 		Password:  password,
-		Username:  newRandomUsername(),
+		Username:  NewRandomUsername(),
 		Bio:       &bio,
-		FirstName: newRandomString(5),
-		LastName:  newRandomString(5),
+		FirstName: NewRandomString(5),
+		LastName:  NewRandomString(5),
 		Location:  &location,
 		Dob: openapi_types.Date{
 			Time: time.Date(1990, 01, 01, 0, 0, 0, 0, time.UTC),
@@ -64,7 +65,7 @@ func createTestUser(t *testing.T, email, password string) dtos.UserResponse {
 	err := json.NewEncoder(&requestBody).Encode(userRequest)
 	require.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", testDomain, baseURLV1Users), &requestBody)
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", TestDomain, BaseURLV1Users), &requestBody)
 	require.NoError(t, err)
 
 	req.Header.Set("Content-Type", "application/json")
@@ -84,21 +85,21 @@ func createTestUser(t *testing.T, email, password string) dtos.UserResponse {
 	return userResponse
 }
 
-type testUser struct {
+type TestUser struct {
 	Id       string
-	email    string
-	password string
+	Email    string
+	Password string
 }
 
-func cleanupTestUsers(t *testing.T, testUsers ...testUser) {
+func CleanupTestUsers(t *testing.T, testUsers ...TestUser) {
 	for _, testUser := range testUsers {
 		// login as the test user to obtain an access token for deletion
-		loginBody := bytes.NewBuffer(fmt.Appendf(nil, `{"email": "%s", "password": "%s"}`, testUser.email, testUser.password))
-		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s/login", testDomain, baseURLV1Auth), loginBody)
+		loginBody := bytes.NewBuffer(fmt.Appendf(nil, `{"email": "%s", "password": "%s"}`, testUser.Email, testUser.Password))
+		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s/login", TestDomain, BaseURLV1Auth), loginBody)
 		require.NoError(t, err)
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-Request-Id", "login-for-test-user-deletion-"+testUser.Id)
+		req.Header.Set("X-Request-Id", "login-for-test-user-deletion-"+testUser.Email)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -111,7 +112,7 @@ func cleanupTestUsers(t *testing.T, testUsers ...testUser) {
 		err = json.NewDecoder(resp.Body).Decode(&loginResp)
 		require.NoError(t, err)
 
-		req, err = http.NewRequest(http.MethodDelete, fmt.Sprintf("%s%s/%s", testDomain, baseURLV1Users, testUser.Id), nil)
+		req, err = http.NewRequest(http.MethodDelete, fmt.Sprintf("%s%s/%s", TestDomain, BaseURLV1Users, testUser.Id), nil)
 		require.NoError(t, err)
 		accessToken := loginResp.AccessToken
 

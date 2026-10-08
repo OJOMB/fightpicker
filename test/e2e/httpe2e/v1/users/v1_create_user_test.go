@@ -1,4 +1,4 @@
-package httpe2e
+package users
 
 import (
 	"encoding/json"
@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
+	"github.com/OJOMB/fightpicker/test/e2e/httpe2e"
 )
 
 func TestV1CreateUser(t *testing.T) {
@@ -26,14 +27,16 @@ func TestV1CreateUser(t *testing.T) {
 		expectedError      dtos.ErrorEnvelope
 	}
 
-	takenEmail := newRandomEmail()
-	takenUsername := newRandomUsername()
+	const reqID = "req-id"
+
+	takenEmail := httpe2e.NewRandomEmail()
+	takenUsername := httpe2e.NewRandomUsername()
 
 	pWord := "SecurePass123!"
 
-	var usersToBeCleaned []testUser
+	var usersToBeCleaned []httpe2e.TestUser
 	t.Cleanup(func() {
-		cleanupTestUsers(t, usersToBeCleaned...)
+		httpe2e.CleanupTestUsers(t, usersToBeCleaned...)
 	})
 
 	testCases := []testCase{
@@ -79,7 +82,7 @@ func TestV1CreateUser(t *testing.T) {
 				Error: dtos.ErrorObject{
 					Code:      "MISSING_REQUIRED_PARAMETER",
 					Message:   "email: missing parameter",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -101,7 +104,7 @@ func TestV1CreateUser(t *testing.T) {
 				Error: dtos.ErrorObject{
 					Code:      "MISSING_REQUIRED_PARAMETER",
 					Message:   "first_name: missing parameter",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -122,7 +125,7 @@ func TestV1CreateUser(t *testing.T) {
 				Error: dtos.ErrorObject{
 					Code:      "MISSING_REQUIRED_PARAMETER",
 					Message:   "last_name: missing parameter",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -143,7 +146,7 @@ func TestV1CreateUser(t *testing.T) {
 				Error: dtos.ErrorObject{
 					Code:      "MISSING_REQUIRED_PARAMETER",
 					Message:   "username: missing parameter",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -164,7 +167,7 @@ func TestV1CreateUser(t *testing.T) {
 				Error: dtos.ErrorObject{
 					Code:      "MISSING_REQUIRED_PARAMETER",
 					Message:   "dob: missing parameter",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -185,7 +188,7 @@ func TestV1CreateUser(t *testing.T) {
 				Error: dtos.ErrorObject{
 					Code:      "MISSING_REQUIRED_PARAMETER",
 					Message:   "password: missing parameter",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -207,7 +210,7 @@ func TestV1CreateUser(t *testing.T) {
 				Error: dtos.ErrorObject{
 					Code:      "INVALID_PARAMETER",
 					Message:   "invalid email format",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -222,14 +225,14 @@ func TestV1CreateUser(t *testing.T) {
 				"location": "Somewhere",
 				"dob": "1993-04-04",
 				"password": "%s"
-			}`, newRandomUsername(), takenEmail, pWord),
+			}`, httpe2e.NewRandomUsername(), takenEmail, pWord),
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
 					Code:      "CONFLICTING_RESOURCES",
 					Message:   "email already taken",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -244,14 +247,14 @@ func TestV1CreateUser(t *testing.T) {
 				"location": "Somewhere",
 				"dob": "1993-04-04",
 				"password": "%s"
-			}`, takenUsername, newRandomEmail(), pWord),
+			}`, takenUsername, httpe2e.NewRandomEmail(), pWord),
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
 				Error: dtos.ErrorObject{
 					Code:      "CONFLICTING_RESOURCES",
 					Message:   "username already taken",
-					RequestId: "req-id",
+					RequestId: reqID,
 				},
 			},
 		},
@@ -261,7 +264,10 @@ func TestV1CreateUser(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("%d-%s", i, tc.name), func(t *testing.T) {
-			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", testDomain, baseURLV1Users), strings.NewReader(tc.requestBody))
+			req, err := http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s%s", httpe2e.TestDomain, httpe2e.BaseURLV1Users), strings.NewReader(tc.requestBody),
+			)
 			require.NoError(t, err)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -299,10 +305,10 @@ func TestV1CreateUser(t *testing.T) {
 				assert.False(t, userResp.CreatedAt.IsZero(), "createdAt should not be zero")
 				assert.False(t, userResp.UpdatedAt.IsZero(), "updatedAt should not be zero")
 
-				usersToBeCleaned = append(usersToBeCleaned, testUser{
+				usersToBeCleaned = append(usersToBeCleaned, httpe2e.TestUser{
 					Id:       userResp.Id.String(),
-					email:    string(*tc.expectedResponse.Email),
-					password: pWord,
+					Email:    string(*tc.expectedResponse.Email),
+					Password: pWord,
 				})
 
 				return

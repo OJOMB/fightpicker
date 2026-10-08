@@ -14,19 +14,20 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
+	"github.com/OJOMB/fightpicker/test/e2e/httpe2e"
 )
 
 func TestV1Login(t *testing.T) {
 	// create a test user to login with
-	email := newRandomEmail()
-	password := newRandomString(12)
-	user := createTestUser(t, email, password)
+	email := httpe2e.NewRandomEmail()
+	password := httpe2e.NewRandomString(12)
+	user := httpe2e.CreateTestUser(t, email, password)
 
 	t.Cleanup(func() {
-		cleanupTestUsers(t, testUser{
+		httpe2e.CleanupTestUsers(t, httpe2e.TestUser{
 			Id:       user.Id.String(),
-			email:    email,
-			password: password,
+			Email:    email,
+			Password: password,
 		})
 	})
 
@@ -100,7 +101,11 @@ func TestV1Login(t *testing.T) {
 			_, err := requestBody.WriteString(tc.requestBody)
 			require.NoError(t, err)
 
-			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s/login", testDomain, baseURLV1Auth), &requestBody)
+			req, err := http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s%s/login", httpe2e.TestDomain, httpe2e.BaseURLV1Auth),
+				&requestBody,
+			)
 			require.NoError(t, err)
 
 			req.Header.Set("Content-Type", "application/json")

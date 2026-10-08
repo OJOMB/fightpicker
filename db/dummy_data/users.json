@@ -5,7 +5,6 @@
         "last_name": "Hunter",
         "username": "alexh",
         "bio": "Coffee lover and tech enthusiast.",
-        "profile_picture": "https://example.com/profiles/alexh.jpg",
         "dob": "1992-05-14",
         "location": "New York, USA",
         "is_admin": false
@@ -27,7 +26,6 @@
         "last_name": "Cole",
         "username": "jamie_c",
         "bio": null,
-        "profile_picture": "https://example.com/profiles/jamie.jpg",
         "dob": "1990-03-10",
         "location": "London, UK",
         "is_admin": false
@@ -38,7 +36,6 @@
         "last_name": "Ward",
         "username": "lward",
         "bio": "MMA analyst and stats nerd.",
-        "profile_picture": "https://example.com/profiles/lward.png",
         "dob": "1985-01-05",
         "location": "Las Vegas, USA",
         "is_admin": true
@@ -60,7 +57,6 @@
         "last_name": "Reed",
         "username": "tomreed",
         "bio": "Coach and former fighter.",
-        "profile_picture": "https://example.com/profiles/tomr.jpg",
         "dob": "1982-07-21",
         "location": "Sydney, Australia",
         "is_admin": false
@@ -82,7 +78,6 @@
         "last_name": "Bell",
         "username": "rbell99",
         "bio": "Fight card curator.",
-        "profile_picture": "https://example.com/profiles/ryanb.jpg",
         "dob": "1989-06-25",
         "location": "Chicago, USA",
         "is_admin": false
@@ -93,7 +88,6 @@
         "last_name": "Lane",
         "username": "vlanex",
         "bio": null,
-        "profile_picture": "https://example.com/profiles/vlane.jpg",
         "dob": "1991-04-30",
         "location": "Berlin, Germany",
         "is_admin": false
@@ -104,7 +98,6 @@
         "last_name": "Stone",
         "username": "mstone",
         "bio": "Fighter manager and promoter.",
-        "profile_picture": null,
         "dob": "1980-02-14",
         "location": "Dublin, Ireland",
         "is_admin": true
