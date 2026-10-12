@@ -2,8 +2,10 @@ package contextual
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"slices"
+	"unicode/utf8"
 
 	"github.com/gorilla/mux"
 
@@ -59,13 +61,14 @@ func (c *ContextTool) ReqSubjectIsAnAdmin(ctx context.Context) bool {
 func (c *ContextTool) WithRequestValues(ctx context.Context, r *http.Request) context.Context {
 	// get User-Agent header
 	userAgent := r.Header.Get("User-Agent")
-	ctx = context.WithValue(ctx, KeyRequestUserAgent, userAgent)
+	truncatedUserAgent := truncateUTF8(userAgent, 512)
+	ctx = context.WithValue(ctx, KeyRequestUserAgent, truncatedUserAgent)
 
 	// get server Host
 	ctx = context.WithValue(ctx, KeyRequestHost, r.Host)
 
-	// get remote address
-	ctx = context.WithValue(ctx, KeyRequestRemoteAddr, r.RemoteAddr)
+	// get remote IP address
+	ctx = context.WithValue(ctx, KeyRequestRemoteIPAddr, clientIP(r))
 
 	// get path variables
 	vars := mux.Vars(r)
@@ -83,6 +86,29 @@ func (c *ContextTool) WithRequestValues(ctx context.Context, r *http.Request) co
 	return ctx
 }
 
+func clientIP(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		// no port present (or unusual format); fall back to the raw value
+		return r.RemoteAddr
+	}
+	return host
+}
+
+// truncateUTF8 shortens s to at most maxBytes without splitting any potentially multi-byte characters.
+func truncateUTF8(s string, maxBytes int) string {
+	if len(s) <= maxBytes {
+		return s
+	}
+
+	// back up until we're at the start of a rune
+	for maxBytes > 0 && !utf8.RuneStart(s[maxBytes]) {
+		maxBytes--
+	}
+
+	return s[:maxBytes]
+}
+
 func (c *ContextTool) GetRequestValues(ctx context.Context) map[string]string {
 	values := make(map[string]string)
 
@@ -94,8 +120,8 @@ func (c *ContextTool) GetRequestValues(ctx context.Context) map[string]string {
 		values[string(KeyRequestHost)] = v
 	}
 
-	if v, ok := ctx.Value(KeyRequestRemoteAddr).(string); ok {
-		values[string(KeyRequestRemoteAddr)] = v
+	if v, ok := ctx.Value(KeyRequestRemoteIPAddr).(string); ok {
+		values[string(KeyRequestRemoteIPAddr)] = v
 	}
 
 	if v, ok := ctx.Value(KeyRequestRouteName).(string); ok {

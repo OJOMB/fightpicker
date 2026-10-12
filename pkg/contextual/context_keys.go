@@ -13,8 +13,8 @@ var (
 	// KeyRequestHost is the context key for the host of the request.
 	KeyRequestHost Contextkey = "request_host"
 
-	// KeyRequestRemoteAddr is the context key for the remote address of the request.
-	KeyRequestRemoteAddr Contextkey = "request_remote_addr"
+	// KeyRequestRemoteIPAddr is the context key for the remote address of the request.
+	KeyRequestRemoteIPAddr Contextkey = "request_remote_ip_addr"
 
 	// KeyRequestRouteName is the context key for the current route name.
 	KeyRequestRouteName Contextkey = "request_route_name"

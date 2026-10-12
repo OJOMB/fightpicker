@@ -8,13 +8,10 @@ import (
 
 	"github.com/OJOMB/fightpicker/pkg/clients/postgres"
 	"github.com/OJOMB/fightpicker/pkg/id"
-	"github.com/OJOMB/fightpicker/pkg/str"
 )
 
 func (r *Repo) StoreRefreshToken(ctx context.Context, userID id.UUID7, jti id.UUID7, tokenHash, ipAddress, userAgent string, expiresAt time.Time) error {
 	now := time.Now().UTC()
-	userAgentTruncated := str.TruncateUTF8(userAgent, r.maxUserAgentBytes)
-
 	params := postgres.StoreRefreshTokenParams{
 		ID:        r.id.Generate(),
 		UserID:    userID,

@@ -35,7 +35,7 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 	}
 
 	if currentRefreshToken.ReplacedBy != nil {
-		s.logger.DebugContext(ctx, "refresh token has been replaced, possible reuse detected", "token_id", currentRefreshToken.ID)
+		s.logger.WarnContext(ctx, "refresh token has been replaced, possible reuse detected", "token_id", currentRefreshToken.ID)
 		return "", "", time.Time{}, ErrRefreshTokenReused
 	}
 
@@ -78,15 +78,14 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 
 	// store the refresh token in the database
 	refreshTokenHash := s.jwtGen.HashTokenString(refreshTokenNew.TokenStr)
-	ipAddress, ok := ctx.Value(contextual.KeyRequestRemoteAddr).(string)
+	ipAddress, ok := ctx.Value(contextual.KeyRequestRemoteIPAddr).(string)
 	if !ok {
-		ipAddress = ""
+		s.logger.WarnContext(ctx, "failed to get remote IP address from context")
 	}
 
 	userAgent, ok := ctx.Value(contextual.KeyRequestUserAgent).(string)
 	if !ok {
 		s.logger.WarnContext(ctx, "failed to get user agent from context")
-		userAgent = ""
 	}
 
 	if err := s.authRepo.RotateRefreshTokens(ctx, hashedToken, refreshTokenHash, refreshTokenNew.JTI, userID, ipAddress, userAgent, refreshTokenNew.ExpiresAt); err != nil {
