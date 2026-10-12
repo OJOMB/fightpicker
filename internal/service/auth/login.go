@@ -53,6 +53,9 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 		},
 		s.secretKey,
 	)
+	if err != nil {
+		return "", "", time.Time{}, err
+	}
 
 	// generate Refresh JWT token
 	refreshToken, err := s.jwtGen.GenerateToken(

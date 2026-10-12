@@ -10,7 +10,6 @@ import (
 var (
 	// ErrInternalServerError represents a generic internal server error.
 	ErrInternalServerError = fmt.Errorf("internal server error")
-	// Err
 )
 
 const (
