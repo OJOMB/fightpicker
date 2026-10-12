@@ -22,10 +22,11 @@ type DBClient interface {
 }
 
 type Repo struct {
-	pool   *pgxpool.Pool
-	client DBClient
-	logger logs.Logger
-	id     id.UUID7GeneratorParser
+	pool              *pgxpool.Pool
+	client            DBClient
+	logger            logs.Logger
+	id                id.UUID7GeneratorParser
+	maxUserAgentBytes int
 }
 
 func New(pool *pgxpool.Pool, client DBClient, idTool id.UUID7GeneratorParser, logger logs.Logger) (*Repo, error) {
@@ -46,9 +47,10 @@ func New(pool *pgxpool.Pool, client DBClient, idTool id.UUID7GeneratorParser, lo
 	}
 
 	return &Repo{
-		pool:   pool,
-		client: client,
-		id:     idTool,
-		logger: logger.With("component", "auth_repo"),
+		pool:              pool,
+		client:            client,
+		id:                idTool,
+		logger:            logger.With("component", "auth_repo"),
+		maxUserAgentBytes: 512, // set a default value for maxUserAgentBytes
 	}, nil
 }

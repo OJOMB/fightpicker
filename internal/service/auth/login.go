@@ -48,9 +48,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 		s.accessTokenTTL,
 		s.tokenIssuer,
 		s.tokenAudience,
-		map[string]any{
-			"roles": roles, "perms": permissions, "type": "access",
-		},
+		map[string]any{"roles": roles, "perms": permissions, "type": "access"},
 		s.secretKey,
 	)
 	if err != nil {
@@ -73,14 +71,19 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 
 	// store the refresh token in the database
 	refreshTokenHash := s.jwtGen.HashTokenString(refreshToken.TokenStr)
+
+	// extract IP address and User-Agent from the context for auditing and security purposes
+	// in both cases, we don't fail the login process if we can't determine legitimate values
+	// these values are auditing metadata (for “active sessions” and spotting suspicious activity), not strictly part of authenticating the user.
+	// empty IP address should never really happen irl, empty User-Agent is also uncommon but possible (e.g. some bots or privacy-focused browsers)
 	ipAddress, ok := ctx.Value(contextual.KeyRequestRemoteAddr).(string)
-	if !ok {
-		s.logger.WarnContext(ctx, "could not get IP address from context")
+	if !ok || ipAddress == "" {
+		s.logger.WarnContext(ctx, "could not determine IP address for login")
 	}
 
 	userAgent, ok := ctx.Value(contextual.KeyRequestUserAgent).(string)
-	if !ok {
-		s.logger.WarnContext(ctx, "could not get User-Agent from context")
+	if !ok || userAgent == "" {
+		s.logger.WarnContext(ctx, "could not determine User-Agent for login")
 	}
 
 	if err := s.authRepo.StoreRefreshToken(ctx, user.ID, refreshToken.JTI, refreshTokenHash, ipAddress, userAgent, refreshToken.ExpiresAt); err != nil {
