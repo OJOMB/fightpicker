@@ -14,6 +14,7 @@ func (r *Repo) StoreRefreshToken(ctx context.Context, userID id.UUID7, jti id.UU
 	now := time.Now().UTC()
 	params := postgres.StoreRefreshTokenParams{
 		ID:        r.id.Generate(),
+		FamilyID:  r.id.Generate(),
 		UserID:    userID,
 		TokenHash: tokenHash,
 		Jti:       jti,
@@ -26,8 +27,8 @@ func (r *Repo) StoreRefreshToken(ctx context.Context, userID id.UUID7, jti id.UU
 			Valid:  ipAddress != "",
 		},
 		UserAgent: pgtype.Text{
-			String: userAgentTruncated,
-			Valid:  userAgentTruncated != "",
+			String: userAgent,
+			Valid:  userAgent != "",
 		},
 		CreatedAt: pgtype.Timestamptz{
 			Time:  now,
@@ -40,7 +41,7 @@ func (r *Repo) StoreRefreshToken(ctx context.Context, userID id.UUID7, jti id.UU
 	}
 
 	if err := r.client.StoreRefreshToken(ctx, params); err != nil {
-		return dbErrorToRepoError(err)
+		return r.dbErrorToRepoError(ctx, err)
 	}
 
 	return nil

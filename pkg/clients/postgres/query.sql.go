@@ -8,8 +8,9 @@ package postgres
 import (
 	"context"
 
-	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 const assignRoleToUserByRoleName = `-- name: AssignRoleToUserByRoleName :exec
@@ -345,7 +346,7 @@ func (q *Queries) GetFighterByID(ctx context.Context, argID id.UUID7) (Fighter, 
 }
 
 const getRefreshTokenByHash = `-- name: GetRefreshTokenByHash :one
-SELECT id, user_id, token_hash, jti, expires_at, revoked, replaced_by, ip_address, user_agent, created_at, updated_at
+SELECT id, family_id, user_id, token_hash, jti, expires_at, revoked, replaced_by, ip_address, user_agent, created_at, updated_at
 FROM refresh_tokens
 WHERE token_hash = $1
 `
@@ -355,6 +356,7 @@ func (q *Queries) GetRefreshTokenByHash(ctx context.Context, tokenHash string) (
 	var i RefreshToken
 	err := row.Scan(
 		&i.ID,
+		&i.FamilyID,
 		&i.UserID,
 		&i.TokenHash,
 		&i.Jti,
@@ -1245,6 +1247,7 @@ const storeRefreshToken = `-- name: StoreRefreshToken :exec
 
 INSERT INTO refresh_tokens (
     id,
+    family_id,
     user_id,
     token_hash,
     jti,
@@ -1254,11 +1257,13 @@ INSERT INTO refresh_tokens (
     created_at,
     updated_at
 )
-VALUES ($1,$2,$3,$4,$5,$6, $7, $8, $9)
+VALUES ($1,$2,$3,$4,$5,$6, $7, $8, $9, $10)
 `
 
 type StoreRefreshTokenParams struct {
-	ID        id.UUID7
+	ID id.UUID7
+	// Family ID for the token - links tokens created in the same session
+	FamilyID  id.UUID7
 	UserID    id.UUID7
 	TokenHash string
 	Jti       id.UUID7
@@ -1275,6 +1280,7 @@ type StoreRefreshTokenParams struct {
 func (q *Queries) StoreRefreshToken(ctx context.Context, arg StoreRefreshTokenParams) error {
 	_, err := q.db.Exec(ctx, storeRefreshToken,
 		arg.ID,
+		arg.FamilyID,
 		arg.UserID,
 		arg.TokenHash,
 		arg.Jti,

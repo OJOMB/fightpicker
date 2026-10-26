@@ -8,6 +8,7 @@ import (
 func refreshTokenDBOtoIDO(dbToken postgres.RefreshToken) service.RefreshToken {
 	return service.RefreshToken{
 		ID:        dbToken.ID,
+		FamilyID:  dbToken.FamilyID,
 		UserID:    dbToken.UserID,
 		TokenHash: dbToken.TokenHash,
 		JTI:       dbToken.Jti,

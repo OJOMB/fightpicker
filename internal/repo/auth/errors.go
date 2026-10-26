@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 
@@ -21,8 +22,8 @@ var (
 
 // public runtime errors - these are the errors that the running service layer might encounter and wish to handle
 var (
-	// ErrUserNotFound is returned when a user is not found in the database.
-	ErrUserNotFound = errors.New("user not found")
+	// ErrResourceNotFound is returned when a resource is not found in the database (user/token etc.).
+	ErrResourceNotFound = errors.New("resource not found")
 	// ErrUserEmailTaken is returned when a user email is already taken.
 	ErrUserEmailTaken = errors.New("email already taken")
 	// ErrUserUsernameTaken is returned when a user username is already taken.
@@ -35,14 +36,15 @@ var (
 	ErrInternalError = errors.New("internal error")
 )
 
-func dbErrorToRepoError(err error) error {
+func (r *Repo) dbErrorToRepoError(ctx context.Context, err error) error {
 	// handle pgconn.PgError and convert to service errors as needed
 	if err == nil {
 		return nil
 	}
 
-	if err == sql.ErrNoRows {
-		return ErrUserNotFound
+	if errors.Is(err, sql.ErrNoRows) {
+		r.logger.DebugContext(ctx, "no rows")
+		return ErrResourceNotFound
 	}
 
 	var pgErr *pgconn.PgError
@@ -55,7 +57,12 @@ func dbErrorToRepoError(err error) error {
 			case "users_username_key":
 				return ErrUserUsernameTaken
 			}
+		// catch no rows
+		case "02000": // no_data
 		}
+	} else {
+		r.logger.ErrorContext(ctx, "unexpected db error", err)
+		return ErrInternalError
 	}
 
 	return err

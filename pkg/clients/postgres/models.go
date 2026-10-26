@@ -457,6 +457,7 @@ type Pick struct {
 
 type RefreshToken struct {
 	ID         id.UUID7
+	FamilyID   id.UUID7
 	UserID     id.UUID7
 	TokenHash  string
 	Jti        id.UUID7

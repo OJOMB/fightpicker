@@ -69,7 +69,9 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 		s.refreshTokenTTL,
 		s.tokenIssuer,
 		s.tokenAudience,
-		map[string]any{"type": tokenTypeRefresh},
+		map[string]any{
+			"type": tokenTypeRefresh, "family_id": currentRefreshToken.FamilyID,
+		},
 		s.secretKey,
 	)
 	if err != nil {
@@ -88,7 +90,7 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 		s.logger.WarnContext(ctx, "failed to get user agent from context")
 	}
 
-	if err := s.authRepo.RotateRefreshTokens(ctx, hashedToken, refreshTokenHash, refreshTokenNew.JTI, userID, ipAddress, userAgent, refreshTokenNew.ExpiresAt); err != nil {
+	if err := s.authRepo.RotateRefreshTokens(ctx, hashedToken, refreshTokenHash, refreshTokenNew.JTI, currentRefreshToken.FamilyID, userID, ipAddress, userAgent, refreshTokenNew.ExpiresAt); err != nil {
 		s.logger.ErrorContext(ctx, "failed to rotate refresh tokens", "error", err, "token_id", currentRefreshToken.ID)
 		return "", "", time.Time{}, err
 	}

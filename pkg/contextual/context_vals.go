@@ -61,6 +61,8 @@ func (c *ContextTool) ReqSubjectIsAnAdmin(ctx context.Context) bool {
 func (c *ContextTool) WithRequestValues(ctx context.Context, r *http.Request) context.Context {
 	// get User-Agent header
 	userAgent := r.Header.Get("User-Agent")
+
+	// make sure the user agent string is not too long as an arbitrary long value could cause storage issues
 	truncatedUserAgent := truncateUTF8(userAgent, 512)
 	ctx = context.WithValue(ctx, KeyRequestUserAgent, truncatedUserAgent)
 
@@ -70,13 +72,13 @@ func (c *ContextTool) WithRequestValues(ctx context.Context, r *http.Request) co
 	// get remote IP address
 	ctx = context.WithValue(ctx, KeyRequestRemoteIPAddr, clientIP(r))
 
-	// get path variables
+	// get path variables userID, fighterID, etc.
 	vars := mux.Vars(r)
 	for k, v := range vars {
 		ctx = context.WithValue(ctx, Contextkey(k), v)
 	}
 
-	// get current route name
+	// get current route name e.g /api/v1/users
 	route := mux.CurrentRoute(r)
 	if route != nil {
 		routeName := route.GetName()
@@ -89,9 +91,10 @@ func (c *ContextTool) WithRequestValues(ctx context.Context, r *http.Request) co
 func clientIP(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
-		// no port present (or unusual format); fall back to the raw value
+		// if theres no port present (or unexpected format) - fall back to the raw value
 		return r.RemoteAddr
 	}
+
 	return host
 }
 

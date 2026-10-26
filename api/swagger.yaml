@@ -85,7 +85,7 @@ paths:
       tags:
         - auth
       description: >
-        Issues a new access token using a valid refresh token.
+        Issues a new access token given a valid refresh token.
         The refresh token is provided via an HttpOnly cookie.
       responses:
         '200':

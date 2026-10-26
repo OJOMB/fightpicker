@@ -21,7 +21,7 @@ type AuthRepo interface {
 	GetUserPermissions(ctx context.Context, userID id.UUID7) ([]string, Permissions, error)
 	StoreRefreshToken(ctx context.Context, userID, jti id.UUID7, tokenHash, ipAddress, userAgent string, expiresAt time.Time) error
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
-	RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, userID id.UUID7, ipAddress, userAgent string, newExpiresAt time.Time) error
+	RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, familyID, userID id.UUID7, ipAddress, userAgent string, newExpiresAt time.Time) error
 	RevokeRefreshTokenByHash(ctx context.Context, tokenHash string) error
 }
 

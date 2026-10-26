@@ -62,7 +62,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 		s.refreshTokenTTL,
 		s.tokenIssuer,
 		s.tokenAudience,
-		map[string]any{"type": "refresh"},
+		map[string]any{"type": "refresh", "family_id": s.id.Generate()},
 		s.secretKey,
 	)
 	if err != nil {

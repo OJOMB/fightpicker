@@ -50,6 +50,7 @@ type AuthClaims struct {
 // RefreshToken represents a stored refresh token.
 type RefreshToken struct {
 	ID         id.UUID7  `json:"id"`
+	FamilyID   id.UUID7  `json:"family_id"`
 	UserID     id.UUID7  `json:"user_id"`
 	TokenHash  string    `json:"token_hash"`
 	JTI        id.UUID7  `json:"jti"`

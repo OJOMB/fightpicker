@@ -13,7 +13,7 @@ import (
 
 // RotateRefreshTokens revokes the old refresh token identified by oldTokenHash and
 // creates a new refresh token with the provided parameters in a single transaction.
-func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, userID id.UUID7, ipAddress, userAgent string, newExpiresAt time.Time) error {
+func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, familyID, userID id.UUID7, ipAddress, userAgent string, newExpiresAt time.Time) error {
 	if newJTI == id.UUID7Nil {
 		return ErrInvalidJTI
 	}
@@ -37,6 +37,7 @@ func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHa
 	// store the new refresh token
 	params := postgres.StoreRefreshTokenParams{
 		ID:        newID,
+		FamilyID:  familyID,
 		UserID:    userID,
 		TokenHash: newTokenHash,
 		Jti:       newJTI,
@@ -63,7 +64,7 @@ func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHa
 	}
 
 	if err := qs.StoreRefreshToken(ctx, params); err != nil {
-		return dbErrorToRepoError(err)
+		return r.dbErrorToRepoError(ctx, err)
 	}
 
 	// update the old refresh token to be revoked
@@ -78,7 +79,7 @@ func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHa
 			Valid: true,
 		},
 	}); err != nil {
-		return dbErrorToRepoError(err)
+		return r.dbErrorToRepoError(ctx, err)
 	}
 
 	return tx.Commit(ctx)

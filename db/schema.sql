@@ -110,6 +110,10 @@ CREATE TABLE IF NOT EXISTS user_roles (
 -- refresh_tokens table to store issued refresh tokens for users
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id UUID PRIMARY KEY,
+    -- family_id is used to group all tokens issued for the same user "session"
+    -- depending on the expiry time duration this session may or may not be continuous in terms of user activity,
+    -- but it does link a chain of rotated refresh tokens from login.
+    family_id UUID NOT NULL,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token_hash TEXT NOT NULL UNIQUE,
     jti UUID NOT NULL UNIQUE,
@@ -117,7 +121,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
     replaced_by UUID REFERENCES refresh_tokens(id),
     ip_address TEXT NULL, -- IP address from which the token was issued
-    user_agent TEXT NULL, -- User agent string of the client device, these are stored for forensics (security, auditing) purposes
+    user_agent TEXT NULL, -- User agent string of the client device, these are stored for security and auditing purposes
 
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL

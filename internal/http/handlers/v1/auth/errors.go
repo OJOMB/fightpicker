@@ -8,6 +8,7 @@ import (
 
 	"github.com/OJOMB/fightpicker/internal/http/apierr"
 	v1 "github.com/OJOMB/fightpicker/internal/http/handlers/v1"
+	authrepo "github.com/OJOMB/fightpicker/internal/repo/auth"
 	repo "github.com/OJOMB/fightpicker/internal/repo/users"
 	authservice "github.com/OJOMB/fightpicker/internal/service/auth"
 	"github.com/OJOMB/fightpicker/pkg/logs"
@@ -54,6 +55,12 @@ func classifyError(err error) *apierr.APIError {
 		logLevel = logs.LevelDebug
 		logMsg = "resource not found"
 		publicErr = repo.ErrUserNotFound
+	case errors.Is(err, authrepo.ErrResourceNotFound):
+		status = http.StatusNotFound
+		code = v1.ErrCodeResourceNotFound
+		logLevel = logs.LevelDebug
+		logMsg = "resource not found"
+		publicErr = authrepo.ErrResourceNotFound
 	case errors.Is(err, authservice.ErrInvalidCredentials):
 		status = http.StatusUnauthorized
 		code = v1.ErrCodeInvalidCredentials

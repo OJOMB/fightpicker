@@ -217,6 +217,7 @@ RETURNING id;
 -- name: StoreRefreshToken :exec
 INSERT INTO refresh_tokens (
     id,
+    family_id,
     user_id,
     token_hash,
     jti,
@@ -226,10 +227,10 @@ INSERT INTO refresh_tokens (
     created_at,
     updated_at
 )
-VALUES ($1,$2,$3,$4,$5,$6, $7, $8, $9);
+VALUES ($1,$2,$3,$4,$5,$6, $7, $8, $9, $10);
 
 -- name: GetRefreshTokenByHash :one
-SELECT id, user_id, token_hash, jti, expires_at, revoked, replaced_by, ip_address, user_agent, created_at, updated_at
+SELECT id, family_id, user_id, token_hash, jti, expires_at, revoked, replaced_by, ip_address, user_agent, created_at, updated_at
 FROM refresh_tokens
 WHERE token_hash = $1;
 
