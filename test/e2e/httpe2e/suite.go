@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"testing"
 	"time"
@@ -13,47 +12,27 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
+	"github.com/OJOMB/fightpicker/test/e2e"
 )
 
 const (
 	TestDomain = "http://localhost:8080"
 
-	AdminEmail    = "admin@fightpicker.com"
-	AdminPassword = "chanko"
-
 	BaseURLV1Users = "/api/v1/users"
 	BaseURLV1Auth  = "/api/v1/auth"
 )
 
-func NewRandomString(n int) string {
-	const letters = "abcdefghijklmnopqrstuvwxyz0123456789"
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-
-	return string(b)
-}
-
-func NewRandomEmail() string {
-	return NewRandomString(10) + "@example.com"
-}
-
-func NewRandomUsername() string {
-	return NewRandomString(8)
-}
-
-func CreateTestUser(t *testing.T, email, password string) dtos.UserResponse {
-	bio := NewRandomString(20)
-	location := NewRandomString(15)
+func CreateTestUserV1(t *testing.T, email, password string) dtos.UserResponse {
+	bio := e2e.NewRandomString(20)
+	location := e2e.NewRandomString(15)
 
 	userRequest := dtos.UserCreateReq{
 		Email:     openapi_types.Email(email),
 		Password:  password,
-		Username:  NewRandomUsername(),
+		Username:  e2e.NewRandomUsername(),
 		Bio:       &bio,
-		FirstName: NewRandomString(5),
-		LastName:  NewRandomString(5),
+		FirstName: e2e.NewRandomString(5),
+		LastName:  e2e.NewRandomString(5),
 		Location:  &location,
 		Dob: openapi_types.Date{
 			Time: time.Date(1990, 01, 01, 0, 0, 0, 0, time.UTC),

@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
+	"github.com/OJOMB/fightpicker/test/e2e"
 	"github.com/OJOMB/fightpicker/test/e2e/httpe2e"
 )
 
@@ -29,8 +30,8 @@ func TestV1CreateUser(t *testing.T) {
 
 	const reqID = "req-id"
 
-	takenEmail := httpe2e.NewRandomEmail()
-	takenUsername := httpe2e.NewRandomUsername()
+	takenEmail := e2e.NewRandomEmail()
+	takenUsername := e2e.NewRandomUsername()
 
 	pWord := "SecurePass123!"
 
@@ -225,7 +226,7 @@ func TestV1CreateUser(t *testing.T) {
 				"location": "Somewhere",
 				"dob": "1993-04-04",
 				"password": "%s"
-			}`, httpe2e.NewRandomUsername(), takenEmail, pWord),
+			}`, e2e.NewRandomUsername(), takenEmail, pWord),
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{
@@ -247,7 +248,7 @@ func TestV1CreateUser(t *testing.T) {
 				"location": "Somewhere",
 				"dob": "1993-04-04",
 				"password": "%s"
-			}`, takenUsername, httpe2e.NewRandomEmail(), pWord),
+			}`, takenUsername, e2e.NewRandomEmail(), pWord),
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   dtos.UserResponse{},
 			expectedError: dtos.ErrorEnvelope{

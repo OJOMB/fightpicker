@@ -14,14 +14,15 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/OJOMB/fightpicker/internal/http/dtos"
+	"github.com/OJOMB/fightpicker/test/e2e"
 	"github.com/OJOMB/fightpicker/test/e2e/httpe2e"
 )
 
 func TestV1Login(t *testing.T) {
 	// create a test user to login with
-	email := httpe2e.NewRandomEmail()
-	password := httpe2e.NewRandomString(12)
-	user := httpe2e.CreateTestUser(t, email, password)
+	email := e2e.NewRandomEmail()
+	password := e2e.NewRandomString(12)
+	user := httpe2e.CreateTestUserV1(t, email, password)
 
 	t.Cleanup(func() {
 		httpe2e.CleanupTestUsers(t, httpe2e.TestUser{
