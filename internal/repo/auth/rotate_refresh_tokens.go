@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -68,7 +69,7 @@ func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHa
 	}
 
 	// update the old refresh token to be revoked
-	if err := qs.RevokeAndRotateRefreshTokenByHash(ctx, postgres.RevokeAndRotateRefreshTokenByHashParams{
+	rowsAffected, err := qs.RevokeAndRotateRefreshTokenByHash(ctx, postgres.RevokeAndRotateRefreshTokenByHashParams{
 		TokenHash: oldTokenHash,
 		ReplacedBy: pgtype.UUID{
 			Bytes: newID,
@@ -78,8 +79,19 @@ func (r *Repo) RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHa
 			Time:  time.Now().UTC(),
 			Valid: true,
 		},
-	}); err != nil {
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrRefreshTokenInvalidOrReused
+		}
+
 		return r.dbErrorToRepoError(ctx, err)
+	}
+
+	if rowsAffected == 0 {
+		// this can happen because we have concurrent refresh requests
+		// in the time between checking and updating, another request may have already rotated and revoked this token
+		return ErrRefreshTokenInvalidOrReused
 	}
 
 	return tx.Commit(ctx)

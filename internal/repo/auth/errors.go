@@ -34,6 +34,8 @@ var (
 	ErrInvalidUserID = errors.New("invalid user ID provided")
 	// ErrInternalError is returned when an unexpected internal error occurs.
 	ErrInternalError = errors.New("internal error")
+	// ErrRefreshTokenInvalidOrReused is returned when a refresh token is invalid or reused.
+	ErrRefreshTokenInvalidOrReused = errors.New("refresh token invalid or reused")
 )
 
 func (r *Repo) dbErrorToRepoError(ctx context.Context, err error) error {

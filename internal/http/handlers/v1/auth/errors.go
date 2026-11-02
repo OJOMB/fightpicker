@@ -67,6 +67,12 @@ func classifyError(err error) *apierr.APIError {
 		logLevel = logs.LevelDebug
 		logMsg = "invalid credentials provided"
 		publicErr = authservice.ErrInvalidCredentials
+	case errors.Is(err, authservice.ErrRefreshTokenReused):
+		status = http.StatusUnauthorized
+		code = v1.ErrCodeInvalidCredentials
+		logLevel = logs.LevelDebug
+		logMsg = "refresh token reused"
+		publicErr = authservice.ErrRefreshTokenReused
 	default:
 		return apierr.NewInternalError(err)
 	}

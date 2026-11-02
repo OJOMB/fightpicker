@@ -17,7 +17,7 @@ type DBClient interface {
 	StoreRefreshToken(ctx context.Context, arg postgres.StoreRefreshTokenParams) error
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (postgres.RefreshToken, error)
 	RevokeRefreshTokenByHash(ctx context.Context, arg postgres.RevokeRefreshTokenByHashParams) error
-	RevokeAndRotateRefreshTokenByHash(ctx context.Context, arg postgres.RevokeAndRotateRefreshTokenByHashParams) error
+	RevokeAndRotateRefreshTokenByHash(ctx context.Context, arg postgres.RevokeAndRotateRefreshTokenByHashParams) (int64, error)
 	WithTx(tx pgx.Tx) *postgres.Queries
 }
 

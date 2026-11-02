@@ -8,9 +8,8 @@ package postgres
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
-
 	"github.com/OJOMB/fightpicker/pkg/id"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const assignRoleToUserByRoleName = `-- name: AssignRoleToUserByRoleName :exec
@@ -1207,12 +1206,14 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUse
 	return items, nil
 }
 
-const revokeAndRotateRefreshTokenByHash = `-- name: RevokeAndRotateRefreshTokenByHash :exec
+const revokeAndRotateRefreshTokenByHash = `-- name: RevokeAndRotateRefreshTokenByHash :execrows
 UPDATE refresh_tokens SET
     revoked = TRUE,
     replaced_by = $2,
     updated_at = $3
 WHERE token_hash = $1
+  AND revoked = FALSE
+  AND expires_at > $3
 `
 
 type RevokeAndRotateRefreshTokenByHashParams struct {
@@ -1221,9 +1222,12 @@ type RevokeAndRotateRefreshTokenByHashParams struct {
 	UpdatedAt  pgtype.Timestamptz
 }
 
-func (q *Queries) RevokeAndRotateRefreshTokenByHash(ctx context.Context, arg RevokeAndRotateRefreshTokenByHashParams) error {
-	_, err := q.db.Exec(ctx, revokeAndRotateRefreshTokenByHash, arg.TokenHash, arg.ReplacedBy, arg.UpdatedAt)
-	return err
+func (q *Queries) RevokeAndRotateRefreshTokenByHash(ctx context.Context, arg RevokeAndRotateRefreshTokenByHashParams) (int64, error) {
+	result, err := q.db.Exec(ctx, revokeAndRotateRefreshTokenByHash, arg.TokenHash, arg.ReplacedBy, arg.UpdatedAt)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const revokeRefreshTokenByHash = `-- name: RevokeRefreshTokenByHash :exec
@@ -1261,8 +1265,7 @@ VALUES ($1,$2,$3,$4,$5,$6, $7, $8, $9, $10)
 `
 
 type StoreRefreshTokenParams struct {
-	ID id.UUID7
-	// Family ID for the token - links tokens created in the same session
+	ID        id.UUID7
 	FamilyID  id.UUID7
 	UserID    id.UUID7
 	TokenHash string

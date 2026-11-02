@@ -43,9 +43,6 @@ type DBClient interface {
 	ListFollowees(ctx context.Context, arg postgres.ListFolloweesParams) ([]postgres.ListFolloweesRow, error)
 	ListFollowers(ctx context.Context, arg postgres.ListFollowersParams) ([]postgres.ListFollowersRow, error)
 	ListUsers(ctx context.Context, arg postgres.ListUsersParams) ([]postgres.ListUsersRow, error)
-	RevokeAndRotateRefreshTokenByHash(ctx context.Context, arg postgres.RevokeAndRotateRefreshTokenByHashParams) error
-	RevokeRefreshTokenByHash(ctx context.Context, arg postgres.RevokeRefreshTokenByHashParams) error
-	StoreRefreshToken(ctx context.Context, arg postgres.StoreRefreshTokenParams) error
 	UnfollowUser(ctx context.Context, arg postgres.UnfollowUserParams) error
 	UpdateEmailVerificationTokenHashByUserID(ctx context.Context, arg postgres.UpdateEmailVerificationTokenHashByUserIDParams) error
 	UpdateLastLoginAtByUserID(ctx context.Context, arg postgres.UpdateLastLoginAtByUserIDParams) error

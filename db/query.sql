@@ -234,12 +234,14 @@ SELECT id, family_id, user_id, token_hash, jti, expires_at, revoked, replaced_by
 FROM refresh_tokens
 WHERE token_hash = $1;
 
--- name: RevokeAndRotateRefreshTokenByHash :exec
+-- name: RevokeAndRotateRefreshTokenByHash :execrows
 UPDATE refresh_tokens SET
     revoked = TRUE,
     replaced_by = $2,
     updated_at = $3
-WHERE token_hash = $1;
+WHERE token_hash = $1
+  AND revoked = FALSE
+  AND expires_at > $3;
 
 -- name: RevokeRefreshTokenByHash :exec
 UPDATE refresh_tokens SET

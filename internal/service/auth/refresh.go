@@ -23,6 +23,20 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 		return "", "", time.Time{}, err
 	}
 
+	if currentRefreshToken.ReplacedBy != nil {
+		// we allow a 10 second grace time for concurrent requests
+		if time.Since(currentRefreshToken.UpdatedAt) < 10*time.Second {
+			s.logger.DebugContext(ctx, "refresh token replaced recently, possible concurrent request")
+			return "", "", time.Time{}, ErrRefreshTokenReused
+		}
+
+		s.logger.WarnContext(ctx, "refresh token has been replaced over 10 seconds ago, likely reuse detected", "token_id", currentRefreshToken.ID)
+
+		// TODO: REVOKE ALL TOKENS IN FAMILY
+
+		return "", "", time.Time{}, ErrRefreshTokenReused
+	}
+
 	// check the validity of the current refresh token
 	if currentRefreshToken.Revoked {
 		s.logger.DebugContext(ctx, "refresh token has been revoked", "token_id", currentRefreshToken.ID)
@@ -32,11 +46,6 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 	if currentRefreshToken.ExpiresAt.Before(time.Now()) {
 		s.logger.DebugContext(ctx, "refresh token has expired", "token_id", currentRefreshToken.ID)
 		return "", "", time.Time{}, ErrRefreshTokenExpired
-	}
-
-	if currentRefreshToken.ReplacedBy != nil {
-		s.logger.WarnContext(ctx, "refresh token has been replaced, possible reuse detected", "token_id", currentRefreshToken.ID)
-		return "", "", time.Time{}, ErrRefreshTokenReused
 	}
 
 	userID := currentRefreshToken.UserID
