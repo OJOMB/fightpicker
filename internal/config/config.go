@@ -50,14 +50,15 @@ type APIConfig struct {
 }
 
 type AuthConfig struct {
-	PrivateKey      string `mapstructure:"private_key"`
-	PublicKey       string `mapstructure:"public_key"`
-	HashingCost     int    `mapstructure:"hashing_cost"`
-	AccessTTLHours  int    `mapstructure:"access_ttl_hours"`
-	RefreshTTLHours int    `mapstructure:"refresh_ttl_hours"`
-	TokenAudience   string `mapstructure:"token_audience"`
-	TokenIssuer     string `mapstructure:"token_issuer"`
-	SSLMode         string `mapstructure:"ssl_mode"`
+	PrivateKey                   string `mapstructure:"private_key"`
+	PublicKey                    string `mapstructure:"public_key"`
+	HashingCost                  int    `mapstructure:"hashing_cost"`
+	AccessTTLMinutes             int    `mapstructure:"access_ttl_minutes"`
+	RefreshTTLHours              int    `mapstructure:"refresh_ttl_hours"`
+	TokenReuseAlertWindowSeconds int    `mapstructure:"token_reuse_alert_window_seconds"`
+	TokenAudience                string `mapstructure:"token_audience"`
+	TokenIssuer                  string `mapstructure:"token_issuer"`
+	SSLMode                      string `mapstructure:"ssl_mode"`
 }
 
 type ObservabilityConfig struct {

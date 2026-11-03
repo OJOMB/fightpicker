@@ -40,8 +40,12 @@ var (
 	// ErrRefreshTokenExpired is returned when a refresh token has expired.
 	ErrRefreshTokenExpired = fmt.Errorf("refresh token has expired")
 
-	// ErrRefreshTokenReused is returned when a refresh token has been reused.
-	ErrRefreshTokenReused = fmt.Errorf("refresh token has been reused")
+	// ErrRefreshTokenReuseNonSuspicious is returned when a refresh token has been reused within the reuse window.
+	ErrRefreshTokenReuseNonSuspicious = fmt.Errorf("refresh token has been reused")
+
+	// ErrSuspiciousRefreshTokenReuse is returned when a refresh token is reused outside the window - and may indicate abuse.
+	ErrRefreshTokenReuseSuspicious = fmt.Errorf("suspicious refresh token reuse")
+
 	// ErrInvalidCredentials is returned when the provided credentials are invalid.
 	ErrInvalidCredentials = fmt.Errorf("invalid credentials provided")
 )

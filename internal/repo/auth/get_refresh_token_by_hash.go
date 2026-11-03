@@ -13,5 +13,5 @@ func (r *Repo) GetRefreshTokenByHash(ctx context.Context, tokenHash string) (aut
 		return authservice.RefreshToken{}, r.dbErrorToRepoError(ctx, err)
 	}
 
-	return refreshTokenDBOtoIDO(row), nil
+	return r.refreshTokenDBOtoIDO(ctx, row), nil
 }

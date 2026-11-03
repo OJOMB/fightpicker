@@ -243,6 +243,13 @@ WHERE token_hash = $1
   AND revoked = FALSE
   AND expires_at > $3;
 
+-- name: RevokeRefreshTokensByFamilyID :execrows
+UPDATE refresh_tokens SET
+    revoked = TRUE,
+    updated_at = $2
+WHERE family_id = $1
+  AND revoked = FALSE;
+
 -- name: RevokeRefreshTokenByHash :exec
 UPDATE refresh_tokens SET
     revoked = TRUE,

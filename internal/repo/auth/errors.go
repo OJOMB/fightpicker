@@ -18,6 +18,8 @@ var (
 	errNilIDTool = errors.New("id tool is required to init auth repo")
 	// errNilLogger is returned when a nil logger is provided.
 	errNilLogger = errors.New("logger is required to init auth repo")
+	// errNilDatetimeTool is returned when a nil datetime tool is provided.
+	errNilDatetimeTool = errors.New("datetime tool is required to init auth repo")
 )
 
 // public runtime errors - these are the errors that the running service layer might encounter and wish to handle

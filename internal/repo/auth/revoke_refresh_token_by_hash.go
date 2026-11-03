@@ -17,6 +17,7 @@ func (r *Repo) RevokeRefreshTokenByHash(ctx context.Context, tokenHash string) e
 			Valid: true,
 		},
 	}
+
 	if err := r.client.RevokeRefreshTokenByHash(ctx, params); err != nil {
 		return r.dbErrorToRepoError(ctx, err)
 	}

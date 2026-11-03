@@ -25,16 +25,19 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 
 	if currentRefreshToken.ReplacedBy != nil {
 		// we allow a 10 second grace time for concurrent requests
-		if time.Since(currentRefreshToken.UpdatedAt) < 10*time.Second {
+		if time.Since(currentRefreshToken.UpdatedAt) < 15*time.Second {
 			s.logger.DebugContext(ctx, "refresh token replaced recently, possible concurrent request")
-			return "", "", time.Time{}, ErrRefreshTokenReused
+			return "", "", time.Time{}, ErrRefreshTokenReuseNonSuspicious
 		}
 
-		s.logger.WarnContext(ctx, "refresh token has been replaced over 10 seconds ago, likely reuse detected", "token_id", currentRefreshToken.ID)
+		s.logger.WarnContext(ctx, "refresh token has been replaced over 15 seconds ago, likely reuse detected", "token_id", currentRefreshToken.ID)
 
-		// TODO: REVOKE ALL TOKENS IN FAMILY
+		// REVOKE ALL TOKENS IN FAMILY
+		if err := s.authRepo.RevokeRefreshTokensByFamilyID(ctx, currentRefreshToken.FamilyID); err != nil {
+			s.logger.ErrorContext(ctx, "failed to revoke family tokens", "error", err)
+		}
 
-		return "", "", time.Time{}, ErrRefreshTokenReused
+		return "", "", time.Time{}, ErrRefreshTokenReuseSuspicious
 	}
 
 	// check the validity of the current refresh token
