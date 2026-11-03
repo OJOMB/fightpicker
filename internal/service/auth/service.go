@@ -10,6 +10,15 @@ import (
 	"github.com/OJOMB/fightpicker/pkg/logs"
 )
 
+const (
+	defaultTokenReuseAlertWindow = 15 * time.Second
+	defaultAccessTokenTTL        = 15 * time.Minute
+	defaultRefreshTokenTTL       = 24 * time.Hour
+
+	defaultTokenAudience = "fightpicker"
+	defaultTokenIssuer   = "fightpicker"
+)
+
 // UserRepo defines the interface for user-related operations needed by the auth service.
 type UserRepo interface {
 	GetUserByEmail(ctx context.Context, email string) (serviceusers.User, error)
@@ -23,6 +32,7 @@ type AuthRepo interface {
 	GetRefreshTokenByHash(ctx context.Context, tokenHash string) (RefreshToken, error)
 	RotateRefreshTokens(ctx context.Context, oldTokenHash, newTokenHash string, newJTI, familyID, userID id.UUID7, ipAddress, userAgent string, newExpiresAt time.Time) error
 	RevokeRefreshTokenByHash(ctx context.Context, tokenHash string) error
+	RevokeRefreshTokensByFamilyID(ctx context.Context, familyID id.UUID7) error
 }
 
 // PasswordVerifier defines the interface for verifying passwords.
@@ -38,21 +48,31 @@ type JWTGenerator interface {
 
 // Service provides authentication services.
 type Service struct {
-	userRepo         UserRepo
-	authRepo         AuthRepo
-	id               id.UUID7GeneratorParser
-	passwordVerifier PasswordVerifier
-	jwtGen           JWTGenerator
-	accessTokenTTL   time.Duration
-	refreshTokenTTL  time.Duration
-	secretKey        []byte
-	tokenAudience    string
-	tokenIssuer      string
-	logger           logs.Logger
+	userRepo              UserRepo
+	authRepo              AuthRepo
+	id                    id.UUID7GeneratorParser
+	passwordVerifier      PasswordVerifier
+	jwtGen                JWTGenerator
+	accessTokenTTL        time.Duration
+	refreshTokenTTL       time.Duration
+	tokenReuseAlertWindow time.Duration
+	secretKey             []byte
+	tokenAudience         string
+	tokenIssuer           string
+	logger                logs.Logger
 }
 
 // New creates a new instance of the auth Service.
-func New(userRepo UserRepo, authRepo AuthRepo, passwordVerifier PasswordVerifier, idTool id.UUID7GeneratorParser, jwtGen JWTGenerator, accessTokenTTL, refreshTokenTTL time.Duration, secretKey string, tokenAudience string, tokenIssuer string, logger logs.Logger) (*Service, error) {
+func New(
+	userRepo UserRepo,
+	authRepo AuthRepo,
+	passwordVerifier PasswordVerifier,
+	idTool id.UUID7GeneratorParser,
+	jwtGen JWTGenerator,
+	accessTokenTTL, refreshTokenTTL, tokenReuseAlertWindow time.Duration,
+	secretKey, tokenAudience, tokenIssuer string,
+	logger logs.Logger,
+) (*Service, error) {
 	if userRepo == nil {
 		return nil, errNilUserRepo
 	}
@@ -85,17 +105,37 @@ func New(userRepo UserRepo, authRepo AuthRepo, passwordVerifier PasswordVerifier
 		return nil, errEmptySecretKey
 	}
 
+	if tokenAudience == "" {
+		tokenAudience = defaultTokenAudience
+	}
+	if tokenIssuer == "" {
+		tokenIssuer = defaultTokenIssuer
+	}
+
+	if accessTokenTTL <= 0 {
+		accessTokenTTL = defaultAccessTokenTTL
+	}
+
+	if refreshTokenTTL <= 0 {
+		refreshTokenTTL = defaultRefreshTokenTTL
+	}
+
+	if tokenReuseAlertWindow <= 0 {
+		tokenReuseAlertWindow = defaultTokenReuseAlertWindow
+	}
+
 	return &Service{
-		userRepo:         userRepo,
-		authRepo:         authRepo,
-		id:               idTool,
-		passwordVerifier: passwordVerifier,
-		jwtGen:           jwtGen,
-		accessTokenTTL:   accessTokenTTL,
-		refreshTokenTTL:  refreshTokenTTL,
-		secretKey:        []byte(secretKey),
-		tokenAudience:    tokenAudience,
-		tokenIssuer:      tokenIssuer,
-		logger:           logger.With("component", "auth_service"),
+		userRepo:              userRepo,
+		authRepo:              authRepo,
+		id:                    idTool,
+		passwordVerifier:      passwordVerifier,
+		jwtGen:                jwtGen,
+		accessTokenTTL:        accessTokenTTL,
+		refreshTokenTTL:       refreshTokenTTL,
+		secretKey:             []byte(secretKey),
+		tokenAudience:         tokenAudience,
+		tokenIssuer:           tokenIssuer,
+		tokenReuseAlertWindow: tokenReuseAlertWindow,
+		logger:                logger.With("component", "auth_service"),
 	}, nil
 }

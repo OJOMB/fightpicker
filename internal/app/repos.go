@@ -17,7 +17,7 @@ type repos struct {
 }
 
 func (a *App) newRepos(ctx context.Context, cfg *config.Config) error {
-	authRepo, err := authrepo.New(a.DB.pool, a.DB.queries, a.Utils.IDTool, a.Logger)
+	authRepo, err := authrepo.New(a.DB.pool, a.DB.queries, a.Utils.IDTool, a.Utils.DateTimeTool, a.Logger)
 	if err != nil {
 		a.Logger.ErrorContext(ctx, "failed to create auth repo", "error", err)
 		return err

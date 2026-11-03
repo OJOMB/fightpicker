@@ -19,8 +19,9 @@ type services struct {
 
 func (a *App) newServices(ctx context.Context, cfg *config.Config) error {
 	// auth Service + Handler
-	accessTokenTTL := time.Hour * time.Duration(cfg.Auth.AccessTTLHours)
+	accessTokenTTL := time.Hour * time.Duration(cfg.Auth.AccessTTLMinutes)
 	refreshTokenTTL := time.Hour * time.Duration(cfg.Auth.RefreshTTLHours)
+	tokenReuseAlertWindow := time.Duration(cfg.Auth.TokenReuseAlertWindowSeconds) * time.Second
 
 	authService, err := authservice.New(
 		a.Repos.UsersRepo,
@@ -30,6 +31,7 @@ func (a *App) newServices(ctx context.Context, cfg *config.Config) error {
 		a.Utils.JWTTool,
 		accessTokenTTL,
 		refreshTokenTTL,
+		tokenReuseAlertWindow,
 		cfg.Auth.PrivateKey,
 		cfg.Auth.TokenAudience,
 		cfg.Auth.TokenIssuer,

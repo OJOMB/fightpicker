@@ -1247,6 +1247,27 @@ func (q *Queries) RevokeRefreshTokenByHash(ctx context.Context, arg RevokeRefres
 	return err
 }
 
+const revokeRefreshTokensByFamilyID = `-- name: RevokeRefreshTokensByFamilyID :execrows
+UPDATE refresh_tokens SET
+    revoked = TRUE,
+    updated_at = $2
+WHERE family_id = $1
+  AND revoked = FALSE
+`
+
+type RevokeRefreshTokensByFamilyIDParams struct {
+	FamilyID  id.UUID7
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) RevokeRefreshTokensByFamilyID(ctx context.Context, arg RevokeRefreshTokensByFamilyIDParams) (int64, error) {
+	result, err := q.db.Exec(ctx, revokeRefreshTokensByFamilyID, arg.FamilyID, arg.UpdatedAt)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const storeRefreshToken = `-- name: StoreRefreshToken :exec
 
 INSERT INTO refresh_tokens (

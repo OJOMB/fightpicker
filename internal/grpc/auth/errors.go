@@ -22,7 +22,7 @@ func (s *Server) toStatus(ctx context.Context, err error) error {
 		return status.Error(codes.Unauthenticated, err.Error())
 	case errors.Is(err, authservice.ErrRefreshTokenExpired):
 		return status.Error(codes.Unauthenticated, err.Error())
-	case errors.Is(err, authservice.ErrRefreshTokenReused):
+	case errors.Is(err, authservice.ErrRefreshTokenReuseNonSuspicious):
 		return status.Error(codes.Unauthenticated, err.Error())
 	default:
 		s.logger.ErrorContext(ctx, "unexpected internal error", err)
