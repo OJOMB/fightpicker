@@ -37,3 +37,8 @@ clean-all:
 test:
 	@echo "Running tests..."
 	go test ./... -v -covermode=atomic
+
+make run-local-env:
+	@echo "Running local environment..."
+	podman-compose down -v
+	podman-compose up --build

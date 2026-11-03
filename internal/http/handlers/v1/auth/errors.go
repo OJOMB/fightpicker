@@ -75,7 +75,7 @@ func classifyError(err error) *apierr.APIError {
 		publicErr = authservice.ErrRefreshTokenReuseNonSuspicious
 	case errors.Is(err, authservice.ErrRefreshTokenReuseSuspicious):
 		status = http.StatusBadRequest
-		code = v1.ErrCodeInvalidCredentials
+		code = v1.ErrCodeUnauthorized
 		logLevel = logs.LevelDebug
 		logMsg = "invalid grant"
 		publicErr = authservice.ErrRefreshTokenReuseSuspicious

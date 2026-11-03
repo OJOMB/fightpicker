@@ -35,7 +35,6 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (string, str
 		// REVOKE ALL TOKENS IN FAMILY
 		if err := s.authRepo.RevokeRefreshTokensByFamilyID(ctx, currentRefreshToken.FamilyID); err != nil {
 			s.logger.ErrorContext(ctx, "failed to revoke family tokens", "error", err)
-			return "", "", time.Time{}, err
 		}
 
 		return "", "", time.Time{}, ErrRefreshTokenReuseSuspicious
