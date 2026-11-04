@@ -57,10 +57,10 @@ func (h *Handler) generateRefreshCookie(refreshToken string, expiresAt time.Time
 	return &http.Cookie{
 		Name:     v1.CookieKeyRefreshToken,
 		Value:    refreshToken,
-		HttpOnly: true,
-		Secure:   true,
-		Path:     h.pathPrefix, // restrict where it's sent
-		SameSite: http.SameSiteStrictMode,
+		HttpOnly: true,                    // not accessible via JS
+		Secure:   true,                    // https only
+		Path:     h.pathPrefix,            // restrict where it's sent
+		SameSite: http.SameSiteStrictMode, // only sent to same site
 		Expires:  expiresAt,
 	}
 }
