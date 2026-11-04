@@ -879,6 +879,537 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
 
+  #-------------------------#
+  #       CARDS PATHS       #
+  #-------------------------#
+
+  /cards:
+    post:
+      summary: Create a card
+      operationId: v1.cards.post.create
+      tags:
+        - cards
+      x-required-role: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardCreateReq'
+      responses:
+        '201':
+          description: Card created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict with existing resources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    get:
+      summary: List cards paginated
+      description: |
+        Returns a paginated list of cards ordered by date.
+        Supports cursor-based pagination using `last_seen_id` and `page_size` parameters.
+        If no cards match the criteria, an empty array is returned.
+      operationId: v1.cards.get.list
+      tags:
+        - cards
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: |
+            Filter cards by their temporal status.
+            `upcoming` returns cards whose date is in the future, `past` returns cards whose date has passed.
+            If omitted, all cards are returned.
+          schema:
+            type: string
+            enum:
+              - upcoming
+              - past
+        - name: last_seen_id
+          in: query
+          required: false
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: A list of cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCardsResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  /cards/{card_id}:
+    get:
+      summary: Get card by ID
+      operationId: v1.cards.get.get
+      tags:
+        - cards
+      parameters:
+        - name: card_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+      responses:
+        '200':
+          description: Card found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    patch:
+      summary: Update card by ID
+      operationId: v1.cards.patch.update
+      tags:
+        - cards
+      x-required-role: admin
+      parameters:
+        - name: card_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardUpdateReq'
+      responses:
+        '200':
+          description: Card successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict with existing resources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      summary: Delete card by ID
+      description: |
+        Deletes the card. Fights are not deleted, only their association with the card is removed.
+      operationId: v1.cards.delete.delete
+      tags:
+        - cards
+      x-required-role: admin
+      parameters:
+        - name: card_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+      responses:
+        '204':
+          description: Card successfully deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  #-------------------------#
+  #       FIGHTS PATHS      #
+  #-------------------------#
+
+  /cards/{card_id}/fights:
+    post:
+      summary: Create a fight on a card
+      description: |
+        Creates a fight, its participants and its placement on the card (stage and order) in a single operation.
+      operationId: v1.fights.post.create
+      tags:
+        - fights
+      x-required-role: admin
+      parameters:
+        - name: card_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FightCreateReq'
+      responses:
+        '201':
+          description: Fight created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FightResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Card or fighter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict with existing resources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    get:
+      summary: List the fights on a card
+      description: |
+        Returns all fights on the card ordered by stage and then `order_in_card`.
+        Card fight counts are bounded so this endpoint is not paginated.
+      operationId: v1.fights.get.list
+      tags:
+        - fights
+      parameters:
+        - name: card_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+      responses:
+        '200':
+          description: The fights on the card
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFightsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  /fights/{fight_id}:
+    get:
+      summary: Get fight by ID
+      operationId: v1.fights.get.get
+      tags:
+        - fights
+      parameters:
+        - name: fight_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+      responses:
+        '200':
+          description: Fight found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FightResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Fight not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    patch:
+      summary: Update fight by ID
+      description: |
+        Updates fight details, card placement, and/or records the result.
+        Supplying `result` creates the result if none exists, otherwise replaces it.
+      operationId: v1.fights.patch.update
+      tags:
+        - fights
+      x-required-role: admin
+      parameters:
+        - name: fight_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FightUpdateReq'
+      responses:
+        '200':
+          description: Fight successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FightResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Fight not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Conflict with existing resources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      summary: Delete fight by ID
+      operationId: v1.fights.delete.delete
+      tags:
+        - fights
+      x-required-role: admin
+      parameters:
+        - name: fight_id
+          in: path
+          required: true
+          schema:
+            type: string
+            x-go-type: id.UUID7
+            x-go-import:
+              path: github.com/OJOMB/fightpicker/pkg/id
+      responses:
+        '204':
+          description: Fight successfully deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Fight not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -1426,6 +1957,462 @@ components:
         - page_size
         - last_seen_id
         - total_count
+
+    # -------------------------#
+    #   CARDS & FIGHTS SCHEMAS #
+    # -------------------------#
+
+    CardCreateReq:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        location:
+          type: string
+          maxLength: 255
+        date:
+          type: string
+          format: date-time
+        promotion:
+          type: string
+          maxLength: 100
+      required:
+        - name
+        - location
+        - date
+        - promotion
+
+    CardUpdateReq:
+      type: object
+      description: Partial update, at least one field must be provided
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        location:
+          type: string
+          maxLength: 255
+        date:
+          type: string
+          format: date-time
+        promotion:
+          type: string
+          maxLength: 100
+
+    CardResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+        name:
+          type: string
+        location:
+          type: string
+        date:
+          type: string
+          format: date-time
+        promotion:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          nullable: true
+      required:
+        - id
+        - name
+        - location
+        - date
+        - promotion
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+
+    ListCardsResponse:
+      description: |
+        Paginated list of cards.
+      type: object
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardResponse'
+        last_seen_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          nullable: true
+        page_size:
+          type: integer
+        total_count:
+          type: integer
+          description: Total number of cards matching the filters (ignoring pagination).
+      required:
+        - cards
+        - page_size
+        - last_seen_id
+        - total_count
+
+    FightStatus:
+      type: string
+      enum:
+        - scheduled
+        - in_progress
+        - completed
+        - cancelled
+
+    CardStage:
+      type: string
+      enum:
+        - early_prelims
+        - prelims
+        - main
+
+    Corner:
+      type: string
+      enum:
+        - red
+        - blue
+
+    WinMethod:
+      type: string
+      description: |
+        ko = knockout, tko = technical knockout, dq = disqualification, sub = submission,
+        ud = unanimous decision, sd = split decision, md = majority decision
+      enum:
+        - ko
+        - tko
+        - dq
+        - sub
+        - ud
+        - sd
+        - md
+
+    FightParticipantReq:
+      type: object
+      properties:
+        fighter_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+        corner:
+          $ref: '#/components/schemas/Corner'
+      required:
+        - fighter_id
+        - corner
+
+    FightParticipantResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          description: Fight participant ID, referenced by `result.winner_id` and by picks
+        fighter_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+        corner:
+          $ref: '#/components/schemas/Corner'
+      required:
+        - id
+        - fighter_id
+        - corner
+
+    FightResultReq:
+      type: object
+      description: |
+        The outcome of a fight. Exactly one of the following must hold:
+        a win (`winner_id` and `method` set, `is_draw` and `is_no_contest` false),
+        a draw (`is_draw` true, no `winner_id` or `method`),
+        or a no contest (`is_no_contest` true, no `winner_id` or `method`).
+      properties:
+        is_draw:
+          type: boolean
+          default: false
+        is_no_contest:
+          type: boolean
+          default: false
+        winner_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          description: ID of the winning fight participant (not the fighter ID)
+        method:
+          $ref: '#/components/schemas/WinMethod'
+        round:
+          type: integer
+          minimum: 1
+        fight_time:
+          type: string
+          description: Time elapsed in the round when the fight ended, as an ISO 8601 duration
+          example: PT3M42S
+        judges_scorecard:
+          type: object
+          additionalProperties: true
+        referee:
+          type: string
+          maxLength: 255
+        fight_of_the_night:
+          type: boolean
+          default: false
+
+    FightResultResponse:
+      type: object
+      properties:
+        is_draw:
+          type: boolean
+        is_no_contest:
+          type: boolean
+        winner_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          description: ID of the winning fight participant
+          nullable: true
+        method:
+          allOf:
+            - $ref: '#/components/schemas/WinMethod'
+          nullable: true
+        round:
+          type: integer
+          nullable: true
+        fight_time:
+          type: string
+          nullable: true
+          example: PT3M42S
+        judges_scorecard:
+          type: object
+          additionalProperties: true
+          nullable: true
+        referee:
+          type: string
+          nullable: true
+        fight_of_the_night:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          nullable: true
+      required:
+        - is_draw
+        - is_no_contest
+        - winner_id
+        - method
+        - round
+        - fight_time
+        - judges_scorecard
+        - referee
+        - fight_of_the_night
+        - created_at
+        - updated_at
+
+    FightCreateReq:
+      type: object
+      description: The card is taken from the path.
+      properties:
+        date:
+          type: string
+          format: date-time
+        no_of_rounds:
+          type: integer
+          minimum: 1
+          default: 3
+        weight_class:
+          type: string
+          maxLength: 50
+        is_championship:
+          type: boolean
+          default: false
+        referee:
+          type: string
+          maxLength: 255
+        location:
+          type: string
+          maxLength: 255
+        stage:
+          $ref: '#/components/schemas/CardStage'
+        order_in_card:
+          type: integer
+          minimum: 1
+          description: 1 is the main event, 2 is the co-main, etc. Must be unique within the card.
+        participants:
+          type: array
+          description: Exactly one fighter per corner
+          minItems: 2
+          maxItems: 2
+          items:
+            $ref: '#/components/schemas/FightParticipantReq'
+      required:
+        - date
+        - weight_class
+        - stage
+        - order_in_card
+        - participants
+
+    FightUpdateReq:
+      type: object
+      description: |
+        Partial update, at least one field must be provided.
+        Participants cannot be changed here, delete and recreate the fight instead.
+      minProperties: 1
+      properties:
+        date:
+          type: string
+          format: date-time
+        no_of_rounds:
+          type: integer
+          minimum: 1
+        weight_class:
+          type: string
+          maxLength: 50
+        is_championship:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/FightStatus'
+        referee:
+          type: string
+          maxLength: 255
+        location:
+          type: string
+          maxLength: 255
+        stage:
+          $ref: '#/components/schemas/CardStage'
+        order_in_card:
+          type: integer
+          minimum: 1
+        result:
+          $ref: '#/components/schemas/FightResultReq'
+
+    FightResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+        card_id:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+        date:
+          type: string
+          format: date-time
+        no_of_rounds:
+          type: integer
+        weight_class:
+          type: string
+        is_championship:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/FightStatus'
+        referee:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        stage:
+          $ref: '#/components/schemas/CardStage'
+        order_in_card:
+          type: integer
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/FightParticipantResponse'
+        result:
+          allOf:
+            - $ref: '#/components/schemas/FightResultResponse'
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          x-go-type: id.UUID7
+          x-go-import:
+            path: github.com/OJOMB/fightpicker/pkg/id
+          nullable: true
+      required:
+        - id
+        - card_id
+        - date
+        - no_of_rounds
+        - weight_class
+        - is_championship
+        - status
+        - referee
+        - location
+        - stage
+        - order_in_card
+        - participants
+        - result
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+
+    ListFightsResponse:
+      type: object
+      properties:
+        fights:
+          type: array
+          items:
+            $ref: '#/components/schemas/FightResponse'
+      required:
+        - fights
+
     # -------------------------#
     #     ERROR STRUCTURES     #
     # -------------------------#
