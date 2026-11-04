@@ -33,7 +33,7 @@ auth:
   public_key: AUTH_PUBLIC_KEY
   access_ttl_minutes: 15
   refresh_ttl_hours: 24
-  token_reuse_alert_window_seconds: 15
+  token_reuse_alert_window_seconds: 5 # short grace window for testing purposes
   token_issuer: fightpicker
   token_audience: fightpicker_users
 
