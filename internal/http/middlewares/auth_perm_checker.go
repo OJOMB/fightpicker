@@ -72,6 +72,12 @@ func (apc *AuthPermissionsChecker) Middleware(next http.Handler) http.Handler {
 		route := mux.CurrentRoute(r)
 		name := route.GetName()
 
+		// skip checking for ignored paths that don't need auth
+		if _, ok := apc.ignorePaths[name]; ok {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		permissionComponents := strings.Split(name, ".")
 		if len(permissionComponents) != 4 {
 			apc.WriteError(ctx, w, ErrInvalidRouteName)
@@ -83,8 +89,8 @@ func (apc *AuthPermissionsChecker) Middleware(next http.Handler) http.Handler {
 		operation := permissionComponents[2]
 		permissionName := permissionComponents[3]
 
-		// skip checking for ignored paths that don't need auth
-		if _, ok := apc.ignorePaths[name]; ok || version == "static" {
+		// skip checking for static routes i.e. profile pics
+		if version == "static" {
 			next.ServeHTTP(w, r)
 			return
 		}

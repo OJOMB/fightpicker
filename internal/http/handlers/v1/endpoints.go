@@ -25,4 +25,14 @@ const (
 	EndpointNameV1FightersList   = "v1.fighters.get.list"
 	EndpointNameV1FightersUpdate = "v1.fighters.patch.update"
 	EndpointNameV1FightersDelete = "v1.fighters.delete.delete"
+
+	// v1 Cards
+	EndpointNameV1CardsCreate = "v1.cards.post.create"
+	EndpointNameV1CardsList   = "v1.cards.get.list"
+	EndpointNameV1CardsGet    = "v1.cards.get.get"
+	EndpointNameV1CardsPatch  = "v1.cards.patch.update"
+	EndpointNameV1CardsDelete = "v1.cards.delete.delete"
+
+	// v1 Fights
+	EndpointNameV1FightsCreate = "v1.fights.post.create"
 )

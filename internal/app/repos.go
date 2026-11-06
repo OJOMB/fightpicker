@@ -6,6 +6,7 @@ import (
 
 	"github.com/OJOMB/fightpicker/internal/config"
 	authrepo "github.com/OJOMB/fightpicker/internal/repo/auth"
+	cardsrepo "github.com/OJOMB/fightpicker/internal/repo/cards"
 	fightersrepo "github.com/OJOMB/fightpicker/internal/repo/fighters"
 	usersrepo "github.com/OJOMB/fightpicker/internal/repo/users"
 )
@@ -14,6 +15,7 @@ type repos struct {
 	AuthRepo     *authrepo.Repo
 	UsersRepo    *usersrepo.Repo
 	FightersRepo *fightersrepo.Repo
+	CardsRepo    *cardsrepo.Repo
 }
 
 func (a *App) newRepos(ctx context.Context, cfg *config.Config) error {
@@ -54,10 +56,17 @@ func (a *App) newRepos(ctx context.Context, cfg *config.Config) error {
 		return err
 	}
 
+	cardsRepo, err := cardsrepo.New(a.DB.pool, a.DB.queries, a.Logger)
+	if err != nil {
+		a.Logger.ErrorContext(ctx, "failed to create cards repo", "error", err)
+		return err
+	}
+
 	a.Repos = repos{
 		AuthRepo:     authRepo,
 		UsersRepo:    usersRepo,
 		FightersRepo: fightersRepo,
+		CardsRepo:    cardsRepo,
 	}
 
 	return nil

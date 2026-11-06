@@ -8,14 +8,34 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/OJOMB/fightpicker/pkg/id"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-
-	"github.com/OJOMB/fightpicker/pkg/id"
 )
 
 const (
 	BearerAuthScopes = "BearerAuth.Scopes"
+)
+
+// Defines values for CardStage.
+const (
+	EarlyPrelims CardStage = "early_prelims"
+	Main         CardStage = "main"
+	Prelims      CardStage = "prelims"
+)
+
+// Defines values for Corner.
+const (
+	Blue Corner = "blue"
+	Red  Corner = "red"
+)
+
+// Defines values for FightStatus.
+const (
+	Cancelled  FightStatus = "cancelled"
+	Completed  FightStatus = "completed"
+	InProgress FightStatus = "in_progress"
+	Scheduled  FightStatus = "scheduled"
 )
 
 // Defines values for FighterCreateReqGender.
@@ -68,11 +88,63 @@ const (
 	UserUpdateReqGenderOther  UserUpdateReqGender = "other"
 )
 
+// Defines values for WinMethod.
+const (
+	Dq  WinMethod = "dq"
+	Ko  WinMethod = "ko"
+	Md  WinMethod = "md"
+	Sd  WinMethod = "sd"
+	Sub WinMethod = "sub"
+	Tko WinMethod = "tko"
+	Ud  WinMethod = "ud"
+)
+
+// Defines values for V1CardsGetListParamsStatus.
+const (
+	Past     V1CardsGetListParamsStatus = "past"
+	Upcoming V1CardsGetListParamsStatus = "upcoming"
+)
+
 // AuthResponse Authentication response.
 // The refresh token is issued via an HttpOnly cookie and is not included in the response body.
 type AuthResponse struct {
 	AccessToken string `json:"access_token"`
 }
+
+// CardCreateReq defines model for CardCreateReq.
+type CardCreateReq struct {
+	Date      time.Time `json:"date"`
+	Location  string    `json:"location"`
+	Name      string    `json:"name"`
+	Promotion string    `json:"promotion"`
+}
+
+// CardResponse defines model for CardResponse.
+type CardResponse struct {
+	CreatedAt time.Time `json:"created_at"`
+	CreatedBy id.UUID7  `json:"created_by"`
+	Date      time.Time `json:"date"`
+	Id        id.UUID7  `json:"id"`
+	Location  string    `json:"location"`
+	Name      string    `json:"name"`
+	Promotion string    `json:"promotion"`
+	UpdatedAt time.Time `json:"updated_at"`
+	UpdatedBy id.UUID7  `json:"updated_by"`
+}
+
+// CardStage defines model for CardStage.
+type CardStage string
+
+// CardUpdateReq Partial update, at least one field must be provided
+type CardUpdateReq struct {
+	Date      *time.Time `json:"date,omitempty"`
+	Location  *string    `json:"location,omitempty"`
+	Name      *string    `json:"name,omitempty"`
+	Promotion *string    `json:"promotion,omitempty"`
+}
+
+// Corner defines model for Corner.
+type Corner string
 
 // ErrorEnvelope Standard API error wrapper
 type ErrorEnvelope struct {
@@ -90,6 +162,124 @@ type ErrorObject struct {
 
 	// RequestId Correlation ID for tracing the request
 	RequestId string `json:"request_id"`
+}
+
+// FightCreateReq The card is taken from the path.
+type FightCreateReq struct {
+	Date           time.Time `json:"date"`
+	IsChampionship *bool     `json:"is_championship,omitempty"`
+	Location       *string   `json:"location,omitempty"`
+	NoOfRounds     *int      `json:"no_of_rounds,omitempty"`
+
+	// OrderInCard 1 is the main event, 2 is the co-main, etc. Must be unique within the card.
+	OrderInCard int `json:"order_in_card"`
+
+	// Participants Exactly one fighter per corner
+	Participants []FightParticipantReq `json:"participants"`
+	Referee      *string               `json:"referee,omitempty"`
+	Stage        CardStage             `json:"stage"`
+	WeightClass  string                `json:"weight_class"`
+}
+
+// FightParticipantReq defines model for FightParticipantReq.
+type FightParticipantReq struct {
+	Corner    Corner   `json:"corner"`
+	FighterId id.UUID7 `json:"fighter_id"`
+}
+
+// FightParticipantResponse defines model for FightParticipantResponse.
+type FightParticipantResponse struct {
+	Corner    Corner   `json:"corner"`
+	FighterId id.UUID7 `json:"fighter_id"`
+
+	// Id Fight participant ID, referenced by `result.winner_id` and by picks
+	Id id.UUID7 `json:"id"`
+}
+
+// FightResponse defines model for FightResponse.
+type FightResponse struct {
+	CardId         id.UUID7                   `json:"card_id"`
+	CreatedAt      time.Time                  `json:"created_at"`
+	CreatedBy      *id.UUID7                  `json:"created_by"`
+	Date           time.Time                  `json:"date"`
+	Id             id.UUID7                   `json:"id"`
+	IsChampionship bool                       `json:"is_championship"`
+	Location       *string                    `json:"location"`
+	NoOfRounds     int                        `json:"no_of_rounds"`
+	OrderInCard    int                        `json:"order_in_card"`
+	Participants   []FightParticipantResponse `json:"participants"`
+	Referee        *string                    `json:"referee"`
+	Result         *FightResultResponse       `json:"result"`
+	Stage          CardStage                  `json:"stage"`
+	Status         FightStatus                `json:"status"`
+	UpdatedAt      time.Time                  `json:"updated_at"`
+	UpdatedBy      *id.UUID7                  `json:"updated_by"`
+	WeightClass    string                     `json:"weight_class"`
+}
+
+// FightResultReq The outcome of a fight. Exactly one of the following must hold:
+// a win (`winner_id` and `method` set, `is_draw` and `is_no_contest` false),
+// a draw (`is_draw` true, no `winner_id` or `method`),
+// or a no contest (`is_no_contest` true, no `winner_id` or `method`).
+type FightResultReq struct {
+	FightOfTheNight *bool `json:"fight_of_the_night,omitempty"`
+
+	// FightTime Time elapsed in the round when the fight ended, as an ISO 8601 duration
+	FightTime       *string                 `json:"fight_time,omitempty"`
+	IsDraw          *bool                   `json:"is_draw,omitempty"`
+	IsNoContest     *bool                   `json:"is_no_contest,omitempty"`
+	JudgesScorecard *map[string]interface{} `json:"judges_scorecard,omitempty"`
+
+	// Method ko = knockout, tko = technical knockout, dq = disqualification, sub = submission,
+	// ud = unanimous decision, sd = split decision, md = majority decision
+	Method  *WinMethod `json:"method,omitempty"`
+	Referee *string    `json:"referee,omitempty"`
+	Round   *int       `json:"round,omitempty"`
+
+	// WinnerId ID of the winning fight participant (not the fighter ID)
+	WinnerId *id.UUID7 `json:"winner_id,omitempty"`
+}
+
+// FightResultResponse defines model for FightResultResponse.
+type FightResultResponse struct {
+	CreatedAt       time.Time               `json:"created_at"`
+	CreatedBy       *id.UUID7               `json:"created_by"`
+	FightOfTheNight bool                    `json:"fight_of_the_night"`
+	FightTime       *string                 `json:"fight_time"`
+	IsDraw          bool                    `json:"is_draw"`
+	IsNoContest     bool                    `json:"is_no_contest"`
+	JudgesScorecard *map[string]interface{} `json:"judges_scorecard"`
+	Method          *WinMethod              `json:"method"`
+	Referee         *string                 `json:"referee"`
+	Round           *int                    `json:"round"`
+	UpdatedAt       time.Time               `json:"updated_at"`
+	UpdatedBy       *id.UUID7               `json:"updated_by"`
+
+	// WinnerId ID of the winning fight participant
+	WinnerId *id.UUID7 `json:"winner_id"`
+}
+
+// FightStatus defines model for FightStatus.
+type FightStatus string
+
+// FightUpdateReq Partial update, at least one field must be provided.
+// Participants cannot be changed here, delete and recreate the fight instead.
+type FightUpdateReq struct {
+	Date           *time.Time `json:"date,omitempty"`
+	IsChampionship *bool      `json:"is_championship,omitempty"`
+	Location       *string    `json:"location,omitempty"`
+	NoOfRounds     *int       `json:"no_of_rounds,omitempty"`
+	OrderInCard    *int       `json:"order_in_card,omitempty"`
+	Referee        *string    `json:"referee,omitempty"`
+
+	// Result The outcome of a fight. Exactly one of the following must hold:
+	// a win (`winner_id` and `method` set, `is_draw` and `is_no_contest` false),
+	// a draw (`is_draw` true, no `winner_id` or `method`),
+	// or a no contest (`is_no_contest` true, no `winner_id` or `method`).
+	Result      *FightResultReq `json:"result,omitempty"`
+	Stage       *CardStage      `json:"stage,omitempty"`
+	Status      *FightStatus    `json:"status,omitempty"`
+	WeightClass *string         `json:"weight_class,omitempty"`
 }
 
 // FighterCreateReq defines model for FighterCreateReq.
@@ -251,6 +441,16 @@ type FightersIngestionSummary struct {
 	Updated int `json:"updated"`
 }
 
+// ListCardsResponse Paginated list of cards.
+type ListCardsResponse struct {
+	Cards      []CardResponse `json:"cards"`
+	LastSeenId *id.UUID7      `json:"last_seen_id"`
+	PageSize   int            `json:"page_size"`
+
+	// TotalCount Total number of cards matching the filters (ignoring pagination).
+	TotalCount int `json:"total_count"`
+}
+
 // ListFightersResponse Paginated list of fighters.
 type ListFightersResponse struct {
 	Fighters   []FighterResponse `json:"fighters"`
@@ -260,6 +460,11 @@ type ListFightersResponse struct {
 	// TotalCount Total number of fighters available (ignoring pagination). Useful for clients to understand the size of the dataset.
 	// if filtering by email or username is used, this will be either 0 or 1.
 	TotalCount int `json:"total_count"`
+}
+
+// ListFightsResponse defines model for ListFightsResponse.
+type ListFightsResponse struct {
+	Fights []FightResponse `json:"fights"`
 }
 
 // ListUsersResponse Paginated list of users.
@@ -375,6 +580,23 @@ type UserUpdateReq6 = interface{}
 // UserUpdateReq7 defines model for .
 type UserUpdateReq7 = interface{}
 
+// WinMethod ko = knockout, tko = technical knockout, dq = disqualification, sub = submission,
+// ud = unanimous decision, sd = split decision, md = majority decision
+type WinMethod string
+
+// V1CardsGetListParams defines parameters for V1CardsGetList.
+type V1CardsGetListParams struct {
+	// Status Filter cards by their temporal status.
+	// `upcoming` returns cards whose date is in the future, `past` returns cards whose date has passed.
+	// If omitted, all cards are returned.
+	Status     *V1CardsGetListParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+	LastSeenId *id.UUID7                   `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
+	PageSize   *int                        `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
+// V1CardsGetListParamsStatus defines parameters for V1CardsGetList.
+type V1CardsGetListParamsStatus string
+
 // V1FightersGetListParams defines parameters for V1FightersGetList.
 type V1FightersGetListParams struct {
 	LastSeenId *id.UUID7 `form:"last_seen_id,omitempty" json:"last_seen_id,omitempty"`
@@ -423,11 +645,23 @@ type V1UsersGetFollowersParams struct {
 // V1AuthPostLoginJSONRequestBody defines body for V1AuthPostLogin for application/json ContentType.
 type V1AuthPostLoginJSONRequestBody = LoginRequest
 
+// V1CardsPostCreateJSONRequestBody defines body for V1CardsPostCreate for application/json ContentType.
+type V1CardsPostCreateJSONRequestBody = CardCreateReq
+
+// V1CardsPatchUpdateJSONRequestBody defines body for V1CardsPatchUpdate for application/json ContentType.
+type V1CardsPatchUpdateJSONRequestBody = CardUpdateReq
+
+// V1FightsPostCreateJSONRequestBody defines body for V1FightsPostCreate for application/json ContentType.
+type V1FightsPostCreateJSONRequestBody = FightCreateReq
+
 // V1FightersPatchUpdateJSONRequestBody defines body for V1FightersPatchUpdate for application/json ContentType.
 type V1FightersPatchUpdateJSONRequestBody = FighterUpdateReq
 
 // V1FightersPostIngestJSONRequestBody defines body for V1FightersPostIngest for application/json ContentType.
 type V1FightersPostIngestJSONRequestBody = FightersIngestionReq
+
+// V1FightsPatchUpdateJSONRequestBody defines body for V1FightsPatchUpdate for application/json ContentType.
+type V1FightsPatchUpdateJSONRequestBody = FightUpdateReq
 
 // V1UsersPostCreateJSONRequestBody defines body for V1UsersPostCreate for application/json ContentType.
 type V1UsersPostCreateJSONRequestBody = UserCreateReq

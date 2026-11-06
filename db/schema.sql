@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS fighters (
 CREATE TYPE source AS ENUM ('ufcstats', 'tapology', 'sherdog');
 
 -- fighter_external_ids table to store external IDs for fighters from various sources
--- e.g. Sherdog ID, Tapology ID, etc.
+-- e.g. Sherdog ID, Tapology ID, UFC STATS etc.
 CREATE TABLE fighter_external_ids (
     fighter_id UUID NOT NULL REFERENCES fighters(id) ON DELETE CASCADE ON UPDATE CASCADE,
     source source NOT NULL,
@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS fights (
     updated_by UUID REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- cards table to represent fight cards/events
+-- cards table to represent fight cards (collection of fights)
 CREATE TABLE IF NOT EXISTS cards (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -204,7 +204,9 @@ CREATE TABLE IF NOT EXISTS cards (
     created_at TIMESTAMPTZ NOT NULL,
     created_by UUID REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
     updated_at TIMESTAMPTZ NOT NULL,
-    updated_by UUID REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
+    updated_by UUID REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+    UNIQUE (name, promotion)
 );
 
 CREATE TYPE card_stage AS ENUM ('early_prelims', 'prelims', 'main');
@@ -301,7 +303,7 @@ CREATE TABLE IF NOT EXISTS fight_results (
 );
 
 -- picks table to store user predictions for fight outcomes
-CREATE TABLE picks (
+CREATE TABLE IF NOT EXISTS picks (
     id UUID PRIMARY KEY,
     fight_id UUID NOT NULL REFERENCES fights(id) ON DELETE CASCADE ON UPDATE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -345,4 +347,5 @@ CREATE INDEX followers_follower_id_id_desc
   ON followers (follower_id, id DESC);
 
 -- REVOKE UPDATE (created_at) ON ALL TABLES IN SCHEMA fightpicker FROM postgres;
--- REVOKE UPDATE (created_by) ON ALL TABLES IN SCHEMA fightpicker FROM postgres;
+
+

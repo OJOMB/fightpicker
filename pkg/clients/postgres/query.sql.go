@@ -95,6 +95,47 @@ func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 	return user_count, err
 }
 
+const createCard = `-- name: CreateCard :exec
+INSERT INTO cards (
+  id,
+  name,
+  location,
+  date,
+  promotion,
+  created_at,
+  created_by,
+  updated_at,
+  updated_by
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+`
+
+type CreateCardParams struct {
+	ID        id.UUID7
+	Name      string
+	Location  string
+	Date      pgtype.Timestamptz
+	Promotion string
+	CreatedAt pgtype.Timestamptz
+	CreatedBy pgtype.UUID
+	UpdatedAt pgtype.Timestamptz
+	UpdatedBy pgtype.UUID
+}
+
+func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) error {
+	_, err := q.db.Exec(ctx, createCard,
+		arg.ID,
+		arg.Name,
+		arg.Location,
+		arg.Date,
+		arg.Promotion,
+		arg.CreatedAt,
+		arg.CreatedBy,
+		arg.UpdatedAt,
+		arg.UpdatedBy,
+	)
+	return err
+}
+
 const createFighter = `-- name: CreateFighter :exec
 INSERT INTO fighters (
     id,

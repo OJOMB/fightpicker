@@ -2026,7 +2026,6 @@ components:
           x-go-type: id.UUID7
           x-go-import:
             path: github.com/OJOMB/fightpicker/pkg/id
-          nullable: true
         updated_at:
           type: string
           format: date-time
@@ -2035,7 +2034,6 @@ components:
           x-go-type: id.UUID7
           x-go-import:
             path: github.com/OJOMB/fightpicker/pkg/id
-          nullable: true
       required:
         - id
         - name

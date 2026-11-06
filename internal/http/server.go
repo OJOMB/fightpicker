@@ -12,6 +12,7 @@ import (
 	"github.com/OJOMB/fightpicker/internal/app"
 	"github.com/OJOMB/fightpicker/internal/config"
 	handlersv1auth "github.com/OJOMB/fightpicker/internal/http/handlers/v1/auth"
+	handlersv1cards "github.com/OJOMB/fightpicker/internal/http/handlers/v1/cards"
 	handlersv1fighters "github.com/OJOMB/fightpicker/internal/http/handlers/v1/fighters"
 	handlersv1users "github.com/OJOMB/fightpicker/internal/http/handlers/v1/users"
 	"github.com/OJOMB/fightpicker/internal/http/middlewares"
@@ -68,10 +69,16 @@ func New(cfg *config.Config, app *app.App) (*Server, error) {
 		return nil, err
 	}
 
+	handlerCards, err := handlersv1cards.New(app.Services.CardsService, app.Utils.IDTool, app.Utils.ContextTool, app.Logger)
+	if err != nil {
+		return nil, err
+	}
+
 	handlers := []RouteRegistrar{
 		handlerAuth,
 		handlerUsers,
 		handlerFighters,
+		handlerCards,
 	}
 
 	authMW, err := middlewares.NewAuthPermissionsChecker([]byte(cfg.Auth.PrivateKey), app.Utils.JWTTool, app.Utils.ContextTool, app.Logger)

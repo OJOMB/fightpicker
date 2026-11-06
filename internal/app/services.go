@@ -7,6 +7,7 @@ import (
 
 	"github.com/OJOMB/fightpicker/internal/config"
 	authservice "github.com/OJOMB/fightpicker/internal/service/auth"
+	cardsservice "github.com/OJOMB/fightpicker/internal/service/cards"
 	fightersservice "github.com/OJOMB/fightpicker/internal/service/fighters"
 	usersservice "github.com/OJOMB/fightpicker/internal/service/users"
 )
@@ -15,6 +16,7 @@ type services struct {
 	AuthService     *authservice.Service
 	UsersService    *usersservice.Service
 	FightersService *fightersservice.Service
+	CardsService    *cardsservice.Service
 }
 
 func (a *App) newServices(ctx context.Context, cfg *config.Config) error {
@@ -64,10 +66,17 @@ func (a *App) newServices(ctx context.Context, cfg *config.Config) error {
 		return err
 	}
 
+	cardsService, err := cardsservice.New(a.Repos.CardsRepo, a.Utils.DateTimeTool, a.Utils.ContextTool, a.Utils.IDTool, a.Logger)
+	if err != nil {
+		a.Logger.ErrorContext(ctx, "failed to create cards service", "error", err)
+		return err
+	}
+
 	a.Services = services{
 		AuthService:     authService,
 		UsersService:    usersService,
 		FightersService: fightersService,
+		CardsService:    cardsService,
 	}
 
 	return nil

@@ -17,7 +17,7 @@ type CacheClient interface {
 	redis.Cmdable
 }
 
-type Client interface {
+type DBClient interface {
 	GetFighterByID(ctx context.Context, id id.UUID7) (postgres.Fighter, error)
 	ListFighters(ctx context.Context, arg postgres.ListFightersParams) ([]postgres.Fighter, error)
 	CountFighters(ctx context.Context) (int64, error)
@@ -27,7 +27,7 @@ type Client interface {
 
 type Repo struct {
 	pool           *pgxpool.Pool
-	dbClient       Client
+	dbClient       DBClient
 	cachingEnabled bool
 	cache          CacheClient
 	id             id.UUID7Parser
@@ -35,7 +35,7 @@ type Repo struct {
 	logger         logs.Logger
 }
 
-func New(pool *pgxpool.Pool, client Client, cache CacheClient, now datetimes.Now, logger logs.Logger) (*Repo, error) {
+func New(pool *pgxpool.Pool, client DBClient, cache CacheClient, now datetimes.Now, logger logs.Logger) (*Repo, error) {
 	if logger == nil {
 		return nil, errNilLogger
 	}

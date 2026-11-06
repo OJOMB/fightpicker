@@ -550,3 +550,16 @@ SELECT
 FROM
   resolved r
   JOIN upserted_fighters u ON u.id = COALESCE(r.existing_fighter_id, r.supplied_id);
+
+-- name: CreateCard :exec
+INSERT INTO cards (
+  id,
+  name,
+  location,
+  date,
+  promotion,
+  created_at,
+  created_by,
+  updated_at,
+  updated_by
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
